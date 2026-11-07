@@ -3,7 +3,6 @@ import { fireEvent, render } from '@testing-library/react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 import { paymentsService } from '@/shared/api/payments.service';
-import { showAlert } from '@/shared/utils/alert';
 
 import FeatureAdSheet from '../FeatureAdSheet';
 
@@ -48,6 +47,9 @@ jest.mock('@/shared/api/payments.service', () => ({
 }));
 
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+
+const mockRouterPush = jest.fn();
+jest.mock('expo-router', () => ({ router: { push: (...a: unknown[]) => mockRouterPush(...a) } }));
 
 // Prices come from the server (admin-editable), not the app
 const PACKAGES = [
@@ -134,52 +136,33 @@ describe('FeatureAdSheet', () => {
     expect(getByText('إتمام الدفع • 4.5 د.ك')).toBeTruthy();
   });
 
-  it('pays through Tap and reports success only once the payment went through', async () => {
-    mockOpenAuthSession.mockResolvedValue({
-      type: 'success',
-      url: 'buyootna://payment-callback?status=success&invoiceId=inv-1&purpose=feature',
-    });
-    const onSuccess = jest.fn();
+  // «الدفع» (Figma 5557:142956) takes over: «كود الخصم», the method, Tap
+  // and the outcome popup; the sheet only picks the package
+  it('opens the payment screen with the ad and the package, without charging', async () => {
     const { findByTestId, getByTestId } = await renderSheet({
       propertyId: 'prop-123',
-      onSuccess,
     });
 
     await fireEvent.press(await findByTestId('package-option-feature-week'));
     await fireEvent.press(getByTestId('feature-ad-checkout-button'));
 
-    expect(mockCreateCharge).toHaveBeenCalledWith(
-      'prop-123',
-      'feature-week',
-      'buyootna://payment-callback',
-    );
-    expect(mockOpenAuthSession).toHaveBeenCalledWith(
-      'https://checkout.tap.company/x',
-      'buyootna://payment-callback',
-    );
-    expect(onSuccess).toHaveBeenCalledTimes(1);
-    expect(showAlert).not.toHaveBeenCalled();
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      pathname: '/checkout',
+      params: {
+        purpose: 'feature',
+        propertyId: 'prop-123',
+        featurePackageId: 'feature-week',
+      },
+    });
+    expect(mockCreateCharge).not.toHaveBeenCalled();
+    expect(mockOpenAuthSession).not.toHaveBeenCalled();
   });
 
-  it('does not claim success when the payment fails', async () => {
-    mockOpenAuthSession.mockResolvedValue({
-      type: 'success',
-      url: 'buyootna://payment-callback?status=failed&invoiceId=inv-1',
-    });
-    const onSuccess = jest.fn();
-    const { findByTestId, getByTestId } = await renderSheet({
-      propertyId: 'prop-123',
-      onSuccess,
-    });
-
-    await fireEvent.press(await findByTestId('package-option-feature-week'));
+  it('does nothing until a package is picked', async () => {
+    const { getByTestId, findByTestId } = await renderSheet();
+    await findByTestId('package-option-feature-week');
     await fireEvent.press(getByTestId('feature-ad-checkout-button'));
-
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(showAlert).toHaveBeenCalledWith(
-      'خطأ',
-      'فشلت عملية الدفع أو تم إلغاؤها.',
-    );
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
   it('offers a retry when the packages fail to load', async () => {

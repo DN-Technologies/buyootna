@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
+import { router } from 'expo-router';
 import { useState } from 'react';
 
 import {
@@ -10,10 +9,7 @@ import {
   type PlanTierId,
 } from '@/features/individual/components/plans/constants';
 import { withApiPrice } from '@/features/individual/utils/planPricing';
-import { paymentsService } from '@/shared/api/payments.service';
 import { plansService } from '@/shared/api/plans.service';
-import { showAlert } from '@/shared/utils/alert';
-import { paymentErrorMessage } from '@/shared/utils/paymentErrorMessage';
 
 async function fetchPlansData() {
   const [plansRes, walletRes] = await Promise.all([
@@ -29,7 +25,6 @@ export interface PlanTierState extends PlanTier {
 }
 
 export function usePlans() {
-  const [isProcessing, setIsProcessing] = useState<PlanTierId | null>(null);
   const [selectedOptionIds, setSelectedOptionIds] = useState<
     Record<PlanTierId, string>
   >({ basic: 'basic-2', gold: 'gold-1' });
@@ -37,7 +32,6 @@ export function usePlans() {
   const {
     data = { plans: [], wallet: { freeAdsRemaining: 0, slots: [] } },
     isLoading,
-    refetch,
   } = useQuery({
     queryKey: ['plans'],
     queryFn: fetchPlansData,
@@ -58,51 +52,33 @@ export function usePlans() {
   const selectOption = (tier: PlanTierId, optionId: string) =>
     setSelectedOptionIds((prev) => ({ ...prev, [tier]: optionId }));
 
-  const buyPlan = async (tier: PlanTierId, option: PlanOption) => {
-    if (isProcessing) return;
+  // «الدفع» (Figma 5557:142956) takes over: «كود الخصم», the method, Tap,
+  // and the outcome popup, which refreshes the wallet
+  const buyPlan = (tier: PlanTierId, option: PlanOption) => {
+    const targetSlug =
+      plans.find(
+        (p) =>
+          p.slug === option.slug ||
+          (tier === 'basic' && (p.slug === 'regular' || p.slug === 'basic')) ||
+          (tier === 'gold' && p.slug === 'gold'),
+      )?.slug || option.slug;
 
-    setIsProcessing(tier);
-    try {
-      const targetSlug =
-        plans.find(
-          (p) =>
-            p.slug === option.slug ||
-            (tier === 'basic' && (p.slug === 'regular' || p.slug === 'basic')) ||
-            (tier === 'gold' && p.slug === 'gold'),
-        )?.slug || option.slug;
-
-      const appRedirectUrl = Linking.createURL('payment-callback');
-      const charge = await paymentsService.createCharge(
-        targetSlug,
-        appRedirectUrl,
-        undefined,
-        option.adsCount,
-      );
-
-      if (charge.status === 'PAID') {
-        showAlert('نجاح', 'تم تفعيل الباقة بنجاح!');
-        refetch();
-        return;
-      }
-
-      if (!charge.checkoutUrl) {
-        throw new Error('لم يتم استلام رابط الدفع من بوابة الدفع.');
-      }
-
-      await WebBrowser.openBrowserAsync(charge.checkoutUrl);
-    } catch (error: any) {
-      console.error('Payment Error:', error);
-      showAlert('خطأ', paymentErrorMessage(error));
-    } finally {
-      setIsProcessing(null);
-    }
+    router.push({
+      pathname: '/checkout',
+      params: {
+        purpose: 'plan',
+        planSlug: targetSlug,
+        ...(option.adsCount ? { adsCount: String(option.adsCount) } : {}),
+      },
+    });
   };
 
   return {
     tiers,
     wallet,
     isLoading,
-    isProcessing,
+    // Paying happens on «الدفع» now; the cards no longer wait here
+    isProcessing: null as PlanTierId | null,
     selectOption,
     buyPlan,
   };

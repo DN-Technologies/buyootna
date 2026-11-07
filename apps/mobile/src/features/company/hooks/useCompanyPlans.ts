@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform } from 'react-native';
 
@@ -8,9 +7,6 @@ import {
   type CompanyPlan,
   companySubscriptionsService,
 } from '@/shared/api/companySubscriptions.service';
-import { paymentsService } from '@/shared/api/payments.service';
-import { showAlert } from '@/shared/utils/alert';
-import { paymentErrorMessage } from '@/shared/utils/paymentErrorMessage';
 
 export const COMPANY_SUBSCRIPTION_KEY = ['company-subscription'];
 
@@ -43,33 +39,14 @@ export function useCompanyPlans() {
     void queryClient.invalidateQueries({ queryKey: ['companyDashboard'] });
   };
 
-  const subscribe = async (plan: CompanyPlan) => {
+  // «الدفع» (Figma 5557:142956): «كود الخصم», the method, Tap, and the
+  // outcome popup, which refreshes the subscription
+  const subscribe = (plan: CompanyPlan) => {
     if (!canPurchaseInApp() || processingPlanId) return;
-
-    setProcessingPlanId(plan.id);
-    try {
-      const charge = await paymentsService.createSubscriptionCharge(
-        plan.id,
-        // Tap's checkout comes back to app/payment-callback.tsx
-        Linking.createURL('payment-callback'),
-      );
-
-      if (charge.status === 'PAID') {
-        showAlert('نجاح', 'تم تفعيل اشتراكك بنجاح!');
-        refresh();
-        return;
-      }
-      if (!charge.checkoutUrl) {
-        throw new Error('لم يتم استلام رابط الدفع من بوابة الدفع.');
-      }
-      await WebBrowser.openBrowserAsync(charge.checkoutUrl);
-      // Back from the checkout, paid or not
-      refresh();
-    } catch (error) {
-      showAlert('خطأ', paymentErrorMessage(error));
-    } finally {
-      setProcessingPlanId(null);
-    }
+    router.push({
+      pathname: '/checkout',
+      params: { purpose: 'subscription', companyPlanId: plan.id },
+    });
   };
 
   return {

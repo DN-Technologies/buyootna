@@ -17,6 +17,45 @@ export interface FeaturePackage {
 
 export interface PaymentStatusResponse {
   status: 'PAID' | 'PENDING' | 'OVERDUE' | 'CANCELLED';
+  // What was bought and when it ends, for «تم الدفع بنجاح» (newer API)
+  purpose?: CheckoutPurpose;
+  planName?: string;
+  planDetails?: string | null;
+  endsAt?: string | null;
+}
+
+/** What the «الدفع» screen is paying for. */
+export type CheckoutPurpose = 'plan' | 'subscription' | 'feature';
+
+/** «طريقة الدفع»: each opens Tap's page on that method. */
+export type PaymentMethod = 'apple_pay' | 'google_pay' | 'card' | 'knet';
+
+/** «كود الخصم» and «طريقة الدفع», sent with any charge. */
+export interface CheckoutChoice {
+  method?: PaymentMethod;
+  discountCode?: string;
+}
+
+export interface QuoteRequest {
+  purpose: CheckoutPurpose;
+  planSlug?: string;
+  adsCount?: number;
+  companyPlanId?: string;
+  propertyId?: string;
+  featurePackageId?: string;
+  discountCode?: string;
+}
+
+/** The «الدفع» screen's card and «ملخص الدفع», priced by the server. */
+export interface CheckoutQuote {
+  title: string;
+  subtitle: string;
+  price: number;
+  discount: number;
+  total: number;
+  currency: 'KWD';
+  discountCode: string | null;
+  methods: PaymentMethod[];
 }
 
 export const paymentsService = {
@@ -25,13 +64,24 @@ export const paymentsService = {
     appRedirectUrl: string,
     sourceId?: string,
     adsCount?: number,
+    choice: CheckoutChoice = {},
   ): Promise<ChargeResponse> => {
     const response = await apiClient.post<ChargeResponse>('/payments/charge', {
       planSlug,
       adsCount,
       appRedirectUrl,
       sourceId,
+      ...choice,
     });
+    return response.data;
+  },
+
+  /** What the payment screen shows before paying (writes nothing). */
+  quote: async (request: QuoteRequest): Promise<CheckoutQuote> => {
+    const response = await apiClient.post<CheckoutQuote>(
+      '/payments/quote',
+      request,
+    );
     return response.data;
   },
 
@@ -46,10 +96,11 @@ export const paymentsService = {
     propertyId: string,
     featurePackageId: string,
     appRedirectUrl: string,
+    choice: CheckoutChoice = {},
   ): Promise<ChargeResponse> => {
     const response = await apiClient.post<ChargeResponse>(
       '/payments/feature-charge',
-      { propertyId, featurePackageId, appRedirectUrl },
+      { propertyId, featurePackageId, appRedirectUrl, ...choice },
     );
     return response.data;
   },
@@ -58,10 +109,11 @@ export const paymentsService = {
   createSubscriptionCharge: async (
     companyPlanId: string,
     appRedirectUrl: string,
+    choice: CheckoutChoice = {},
   ): Promise<ChargeResponse> => {
     const response = await apiClient.post<ChargeResponse>(
       '/payments/subscription-charge',
-      { companyPlanId, appRedirectUrl },
+      { companyPlanId, appRedirectUrl, ...choice },
     );
     return response.data;
   },

@@ -2,6 +2,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
+import { router } from 'expo-router';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -10,17 +11,15 @@ import FeatureAdCheckoutButton from '@/features/individual/components/activity/a
 import FeatureAdHeader from '@/features/individual/components/activity/ads/feature-ad/FeatureAdHeader';
 import FeaturePackageList from '@/features/individual/components/activity/ads/feature-ad/FeaturePackageList';
 import { useFeatureAd } from '@/features/individual/hooks/useFeatureAd';
-import { showAlert } from '@/shared/utils/alert';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface FeatureAdSheetProps {
   propertyId?: string;
-  onSuccess?: () => void;
 }
 
-// Pick a package and pay (Tap) to feature one of the user's ads
+// Pick a package, then pay on «الدفع» (Tap) to feature one of the user's ads
 const FeatureAdSheet = forwardRef<BottomSheetModal, FeatureAdSheetProps>(
-  ({ propertyId, onSuccess }, ref) => {
+  ({ propertyId }, ref) => {
     const snapPoints = useMemo(() => ['78%'], []);
     const feature = useFeatureAd(propertyId);
 
@@ -42,15 +41,19 @@ const FeatureAdSheet = forwardRef<BottomSheetModal, FeatureAdSheetProps>(
       }
     };
 
-    const handlePayment = async () => {
-      const result = await feature.checkout();
-      if (result === 'success') {
-        handleClose();
-        onSuccess?.();
-      } else if (result === 'failed') {
-        showAlert('خطأ', 'فشلت عملية الدفع أو تم إلغاؤها.');
-      }
-      // 'cancelled': the user closed checkout -- leave the sheet as it was
+    // «الدفع» (Figma 5557:142956) takes it from here: «كود الخصم», the
+    // method, Tap, and the outcome popup, which refreshes the ad
+    const handlePayment = () => {
+      if (!propertyId || !feature.selectedPackage) return;
+      handleClose();
+      router.push({
+        pathname: '/checkout',
+        params: {
+          purpose: 'feature',
+          propertyId,
+          featurePackageId: feature.selectedPackage.id,
+        },
+      });
     };
 
     return (

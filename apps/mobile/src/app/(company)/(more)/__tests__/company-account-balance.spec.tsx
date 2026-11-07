@@ -10,8 +10,10 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import CompanyAccountBalanceScreen from '../company-account-balance';
 
 const mockPush = jest.fn();
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), push: mockPush, replace: jest.fn() }),
+  router: { push: (...args: unknown[]) => mockRouterPush(...args) },
 }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('expo-linking', () => ({
@@ -213,7 +215,11 @@ describe('CompanyAccountBalanceScreen', () => {
       fireEvent.press(getByTestId('balance-renew-plan'));
     });
 
-    expect(mockCharge).toHaveBeenCalledWith('p3', 'buyootna://payment-callback');
+    // Renewing opens «الدفع» for the same plan
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      pathname: '/checkout',
+      params: { purpose: 'subscription', companyPlanId: 'p3' },
+    });
   });
 
   it('with an expired plan on iOS shows no renew button and no purchase wording', async () => {

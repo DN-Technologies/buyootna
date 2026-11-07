@@ -9,12 +9,14 @@ import PlansScreen from '../plans';
 
 const mockBack = jest.fn();
 
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     back: mockBack,
     push: jest.fn(),
     replace: jest.fn(),
   }),
+  router: { push: (...args: unknown[]) => mockRouterPush(...args) },
 }));
 
 jest.mock('expo-linking', () => ({
@@ -120,7 +122,8 @@ describe('PlansScreen', () => {
     });
   });
 
-  it('handles plan purchase via paymentsService and opens browser', async () => {
+  // «اشتر الان» opens «الدفع» (Figma 5557:142956), which charges through Tap
+  it('opens the payment screen for the chosen package', async () => {
     (paymentsService.createCharge as jest.Mock).mockResolvedValue({
       id: 'charge_123',
       status: 'INITIATED',
@@ -138,16 +141,13 @@ describe('PlansScreen', () => {
     await fireEvent.press(buyButtons[0]);
 
     await waitFor(() => {
-      expect(paymentsService.createCharge).toHaveBeenCalledWith(
-        'regular',
-        expect.stringContaining('payment-callback'),
-        undefined,
-        2,
-      );
-      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
-        'https://payment.tap.company/test',
-      );
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/checkout',
+        params: { purpose: 'plan', planSlug: 'regular', adsCount: '2' },
+      });
     });
+    expect(paymentsService.createCharge).not.toHaveBeenCalled();
+    expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
   });
 
   it('allows selecting different package options before purchasing', async () => {
@@ -172,15 +172,10 @@ describe('PlansScreen', () => {
     await fireEvent.press(buyButtons[1]);
 
     await waitFor(() => {
-      expect(paymentsService.createCharge).toHaveBeenCalledWith(
-        'gold',
-        expect.stringContaining('payment-callback'),
-        undefined,
-        5,
-      );
-      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
-        'https://payment.tap.company/gold-test',
-      );
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/checkout',
+        params: { purpose: 'plan', planSlug: 'gold', adsCount: '5' },
+      });
     });
   });
 
