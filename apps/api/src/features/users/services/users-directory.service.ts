@@ -296,6 +296,8 @@ export class UsersDirectoryService {
       name: companyData.name,
       logoUrl: companyData.logoUrl,
       isVerified: companyData.isVerified,
+      // «التخصص»: طلب عرض سعر shows it as the request's field (مجال التخصص)
+      specialty: companyData.specialty ?? null,
       acceptsRequests,
       isActiveNow: stats.presence.isOnline,
       lastSeenAt: stats.presence.lastSeenAt,

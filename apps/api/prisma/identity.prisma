@@ -113,7 +113,9 @@ model CompanyIdentityData {
   licenseActivity String?
   // Normalised (no spaces, Western digits); unique across companies AND
   // offices -- the cross-table half is enforced in IdentitiesService
-  licenseNumber   String         @unique
+  // Optional for a company: it signs up without one and adds it in its
+  // «طلب التوثيق» (the unique index allows many NULLs)
+  licenseNumber   String?        @unique
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

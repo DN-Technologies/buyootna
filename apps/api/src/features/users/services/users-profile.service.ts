@@ -17,6 +17,7 @@ import { UpdateProjectDto } from '../../company/dto/update-project.dto';
 import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
+import { assertSpecialtyChangeAllowed } from '../../identities/persona-rules';
 
 // The app's old stand-in for "no photo" (via.placeholder.com), never a photo
 const PLACEHOLDER_AVATAR = /^https?:\/\/via\.placeholder\.com\//i;
@@ -176,6 +177,12 @@ export class UsersProfileService {
       if (!identity || !identity.companyData)
         throw new NotFoundException('الملف الشخصي غير موجود');
 
+      await assertSpecialtyChangeAllowed(
+        this.prisma,
+        identity.id,
+        identity.companyData.specialty,
+        dto.specialty?.trim(),
+      );
       const updated = await this.prisma.companyIdentityData.update({
         where: { identityId: identity.id },
         data: {
@@ -184,7 +191,7 @@ export class UsersProfileService {
           about: dto.about ?? identity.companyData.about,
           services: dto.services ?? identity.companyData.services,
           serviceAreas: dto.serviceAreas ?? identity.companyData.serviceAreas,
-          specialty: dto.specialty ?? identity.companyData.specialty,
+          specialty: dto.specialty?.trim() || identity.companyData.specialty,
           logoUrl: logoUrl ?? identity.companyData.logoUrl,
         },
       });

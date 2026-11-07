@@ -9,6 +9,45 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-signup-specialty",
+      title: {
+        en: "Company sign-up: no licence (it comes with «طلب التوثيق»), «التخصص» required and kept",
+        ar: "تسجيل الشركة: دون رخصة (تأتي مع «طلب التوثيق»)، و«التخصص» مطلوب ويبقى",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /users/register/company and POST /identities/company no longer need licenseNumber, licenseExpiry or a licence file: the company's licence comes with its verification request. CompanyIdentityData.licenseNumber is optional (migration); a licence that is sent is still normalised and unique across companies and offices. «التخصص» (specialty, the services catalogue's مجال التخصص) is required; older app builds that send only licenseActivity (النشاط) have it taken as the specialty. The company is approved at once and not verified (isVerified false). The specialty stays: deleting all services no longer clears it, and edit profile can change it only while the company has no services. GET /users/company/:id returns specialty. Offices are unchanged and still need their licence.",
+        ar: "لم يعد POST /users/register/company وPOST /identities/company يحتاجان رقم الرخصة أو تاريخها أو ملفها: تأتي رخصة الشركة مع طلب التوثيق. وأصبح licenseNumber اختيارياً للشركة (migration)؛ والرخصة المرسلة ما زالت تُوحَّد وتكون فريدة بين الشركات والمكاتب. و«التخصص» مطلوب؛ والنسخ القديمة التي ترسل النشاط فقط يُعتبر نشاطها تخصصاً. تُعتمد الشركة فوراً دون توثيق. ويبقى التخصص: حذف كل الخدمات لم يعد يمسحه، ولا يتغير من تعديل الملف إلا إن لم تكن للشركة خدمات. ويعيد GET /users/company/:id التخصص. والمكاتب كما هي وتحتاج رخصتها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company registers with a specialty and no licence: APPROVED, isVerified false, licenseNumber null.",
+          "Two companies without a licence can both register.",
+          "No specialty (and no النشاط): 400 «التخصص مطلوب».",
+          "Deleting all services keeps the specialty; changing it while services exist is refused.",
+          "An office without a licence: 400 «رقم الرخصة مطلوب».",
+        ],
+        ar: [
+          "تسجيل شركة بتخصص ودون رخصة: معتمدة وغير موثقة ورقم الرخصة فارغ.",
+          "تسجيل شركتين دون رخصة يعمل للاثنتين.",
+          "دون تخصص (ودون نشاط): 400 «التخصص مطلوب».",
+          "حذف كل الخدمات يبقي التخصص؛ وتغييره مع وجود خدمات يُرفض.",
+          "مكتب دون رخصة: 400 «رقم الرخصة مطلوب».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Register a company with only a specialty; open its profile: the specialty shows, no «موثق» badge.",
+          "In the admin, the company's licence reads «لم يُرفع الترخيص بعد».",
+        ],
+        ar: [
+          "سجّل شركة بالتخصص فقط؛ افتح ملفها: يظهر التخصص دون شارة «موثق».",
+          "في لوحة الإدارة تظهر رخصة الشركة «لم يُرفع الترخيص بعد».",
+        ],
+      },
+      updatedIn: "feat/company-signup-specialty",
+    },
+    {
       id: "api-office-properties",
       title: {
         en: "Office ads: close (تم البيع), bulk hide / show / delete, and the activity and dashboard fields",
