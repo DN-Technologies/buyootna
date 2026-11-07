@@ -9,6 +9,43 @@ export const admin: DocSection = {
   },
   stories: [
     {
+      id: "admin-discount-codes",
+      title: {
+        en: "«أكواد الخصم»: create and manage the codes the app's payment screen accepts",
+        ar: "«أكواد الخصم»: إنشاء وإدارة الأكواد التي تقبلها شاشة الدفع في التطبيق",
+      },
+      priority: "P1",
+      story: {
+        en: "A new page under المالية lists every discount code with its discount, what it applies to (باقات الإعلانات / اشتراك الشركات / تمييز الإعلان), paid uses, expiry and state (فعّال، موقوف، منتهي، مستنفد، لم يبدأ), with totals on top. «إضافة كود» and «تعديل» open a drawer: code (stored upper-case), percent (with an optional cap) or fixed KWD, applies to, start and end dates, max uses, minimum amount, one use per account, active. «إيقاف / تفعيل» toggles a code; codes are never deleted, so paid invoices keep pointing at them. Every create and edit is in سجل العمليات.",
+        ar: "صفحة جديدة تحت المالية تعرض كل كود خصم: قيمته، وما يُستخدم فيه (باقات الإعلانات / اشتراك الشركات / تمييز الإعلان)، والاستخدامات المدفوعة، والانتهاء، والحالة (فعّال، موقوف، منتهي، مستنفد، لم يبدأ)، مع الإجماليات أعلاها. «إضافة كود» و«تعديل» يفتحان نافذة: الكود (يُحفظ بأحرف كبيرة)، نسبة (بحد أعلى اختياري) أو مبلغ ثابت، ما يُستخدم فيه، تاريخا البداية والنهاية، عدد الاستخدامات، أقل مبلغ، مرة لكل حساب، فعّال. «إيقاف / تفعيل» يبدّل الحالة؛ ولا تُحذف الأكواد حتى تبقى الفواتير المدفوعة مرتبطة بها. وكل إنشاء وتعديل يظهر في سجل العمليات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Create WELCOME10 (10%, all purchases): it appears as فعّال with 0 uses.",
+          "A percent over 100, an end before the start, or a duplicate code is refused with a message.",
+          "«إيقاف» makes the app refuse it; «تفعيل» brings it back.",
+          "After a paid purchase with the code, its uses go up by one.",
+        ],
+        ar: [
+          "أنشئ WELCOME10 (10%، لكل المشتريات): يظهر فعّالاً بـ0 استخدامات.",
+          "النسبة فوق 100 أو انتهاء قبل البداية أو كود مكرر يُرفض برسالة.",
+          "«إيقاف» يجعل التطبيق يرفضه؛ و«تفعيل» يعيده.",
+          "بعد شراء مدفوع بالكود، تزيد استخداماته واحداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "المالية → أكواد الخصم → إضافة كود; fill and save; edit it; إيقاف then تفعيل.",
+          "Use the code in the app's payment screen and pay with Tap test keys; reload the page: uses 1.",
+        ],
+        ar: [
+          "المالية ← أكواد الخصم ← إضافة كود؛ املأ واحفظ؛ عدّله؛ إيقاف ثم تفعيل.",
+          "استخدم الكود في شاشة الدفع بالتطبيق وادفع بمفاتيح Tap التجريبية؛ أعد تحميل الصفحة: الاستخدامات 1.",
+        ],
+      },
+      updatedIn: "feat/admin-discount-codes",
+    },
+    {
       id: "admin-company-verification-fields",
       title: {
         en: "Verifications: a company's «طلب التوثيق», sent back per field",
