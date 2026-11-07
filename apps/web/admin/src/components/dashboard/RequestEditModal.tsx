@@ -1,31 +1,67 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import type {
+  VerificationIssueField,
+  VerificationIssues,
+} from '@/lib/admin-dashboard'
+
+export interface RequestEditOptions {
+  notes: string
+  issues?: VerificationIssues
+  notifyEmail: boolean
+  notifyInApp: boolean
+}
 
 export interface RequestEditModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (options: {
-    notes: string
-    notifyEmail: boolean
-    notifyInApp: boolean
-  }) => void
+  onConfirm: (options: RequestEditOptions) => void
   isLoading?: boolean
+  // A company's «طلب التوثيق»: pick the fields to fix, a reason each
+  withFields?: boolean
 }
+
+// The company sees each reason under that field («استكمال البيانات»)
+const FIELDS: { key: VerificationIssueField; label: string; hint: string }[] = [
+  {
+    key: 'licenseFile',
+    label: 'صورة الرخصة',
+    hint: 'صورة الرخصة غير واضحة، يرجى رفعها مرة اخرى.',
+  },
+  {
+    key: 'licenseNumber',
+    label: 'رقم الرخصة',
+    hint: 'غير مطابق لصورة الرخصة، يرجى ادخاله مرة اخرى.',
+  },
+  {
+    key: 'licenseActivity',
+    label: 'النشاط',
+    hint: 'النشاط غير مطابق للرخصة، يرجى اختياره مرة اخرى.',
+  },
+  {
+    key: 'licenseExpiry',
+    label: 'تاريخ الانتهاء',
+    hint: 'تاريخ الانتهاء غير مطابق للرخصة، يرجى اختياره مرة اخرى.',
+  },
+]
 
 export default function RequestEditModal({
   isOpen,
   onClose,
   onConfirm,
   isLoading = false,
+  withFields = false,
 }: RequestEditModalProps) {
   const [notes, setNotes] = useState('')
+  const [issues, setIssues] = useState<VerificationIssues>({})
   const [notifyEmail, setNotifyEmail] = useState(false)
   const [notifyInApp, setNotifyInApp] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       setNotes('')
+      setIssues({})
       setNotifyEmail(false)
       setNotifyInApp(false)
     }
@@ -33,8 +69,27 @@ export default function RequestEditModal({
 
   if (!isOpen) return null
 
+  const picked = FIELDS.filter((field) => field.key in issues)
+  // Each picked field needs its reason; a note alone also works
+  const canSend =
+    picked.every((field) => issues[field.key]?.trim()) &&
+    (picked.length > 0 || notes.trim().length > 0)
+
+  const toggleField = (key: VerificationIssueField, hint: string) =>
+    setIssues((prev) => {
+      const next = { ...prev }
+      if (key in next) delete next[key]
+      else next[key] = hint
+      return next
+    })
+
   const handleConfirm = () => {
-    onConfirm({ notes, notifyEmail, notifyInApp })
+    onConfirm({
+      notes,
+      issues: picked.length ? issues : undefined,
+      notifyEmail,
+      notifyInApp,
+    })
   }
 
   return (
@@ -84,6 +139,47 @@ export default function RequestEditModal({
             className="flex flex-col gap-4 items-start w-full text-right"
             data-node-id="2804:65087"
           >
+            {withFields ? (
+              <div className="flex flex-col gap-2 items-start w-full">
+                <p className="font-['Cairo'] font-medium text-[14px] text-[#111111]">
+                  البيانات المطلوب تعديلها
+                </p>
+                {FIELDS.map((field) => {
+                  const checked = field.key in issues
+                  return (
+                    <div key={field.key} className="flex flex-col gap-1.5 w-full">
+                      <label className="flex items-center gap-2 py-1 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleField(field.key, field.hint)}
+                          className="size-4 accent-primary cursor-pointer"
+                          data-testid={`issue-${field.key}`}
+                        />
+                        <span className="font-['Cairo'] font-medium text-[14px] text-[#111111]">
+                          {field.label}
+                        </span>
+                      </label>
+                      {checked ? (
+                        <input
+                          type="text"
+                          value={issues[field.key] ?? ''}
+                          onChange={(e) =>
+                            setIssues((prev) => ({
+                              ...prev,
+                              [field.key]: e.target.value,
+                            }))
+                          }
+                          placeholder="سبب التعديل"
+                          className="w-full bg-white border border-[#ECECEC] rounded-lg px-3.5 py-2 text-right font-['Cairo'] text-[13px] text-[#9C1E28] placeholder:text-[#979797] focus:outline-none focus:border-primary"
+                        />
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
+
             {/* Notes / Problem Type matching Figma 2804:65088 */}
             <div
               className="flex flex-col gap-2 items-start w-full"
@@ -94,7 +190,7 @@ export default function RequestEditModal({
                 className="font-['Cairo'] font-medium text-[14px] text-[#111111]"
                 data-node-id="I2804:65088;301:27756"
               >
-                نوع المشكلة
+                {withFields ? 'ملاحظة عامة (اختياري)' : 'نوع المشكلة'}
               </label>
               <textarea
                 value={notes}
@@ -204,7 +300,7 @@ export default function RequestEditModal({
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={isLoading}
+            disabled={isLoading || !canSend}
             className="flex-1 h-12 bg-primary hover:bg-[#1E4368] text-white rounded-3xl font-['Cairo'] font-semibold text-[14px] tracking-[0.28px] flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
             data-node-id="2804:65100"
           >

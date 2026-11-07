@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
@@ -164,4 +165,23 @@ export async function findDefaultPersonaId(
     personas[0]?.id ??
     null
   );
+}
+
+/**
+ * A company's «التخصص» can change only while it has no services: they
+ * must stay within its specialty (اضافة خدمة checks the same).
+ */
+export async function assertSpecialtyChangeAllowed(
+  db: Db,
+  identityId: string,
+  current: string | null | undefined,
+  next: string | null | undefined,
+): Promise<void> {
+  if (!next || !current || next === current) return;
+  const services = await db.companyService.count({ where: { identityId } });
+  if (services > 0) {
+    throw new BadRequestException(
+      'لا يمكن تغيير التخصص مع وجود خدمات منه. احذف الخدمات أولاً.',
+    );
+  }
 }

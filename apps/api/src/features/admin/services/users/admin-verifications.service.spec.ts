@@ -13,6 +13,7 @@ describe('AdminVerificationsService', () => {
     officeIdentityData: {
       findMany: jest.Mock;
     };
+    companyVerificationRequest: { count: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -24,6 +25,7 @@ describe('AdminVerificationsService', () => {
       officeIdentityData: {
         findMany: jest.fn(),
       },
+      companyVerificationRequest: { count: jest.fn().mockResolvedValue(0) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -48,8 +50,10 @@ describe('AdminVerificationsService', () => {
       id: 'c-1',
       identityId: 'ident-c-1',
       name: 'شركة الفوز العقارية',
-      status: ApprovalStatus.PENDING,
-      licenseNumber: 'LIC-12345',
+      // A company is live from sign-up; its row follows «طلب التوثيق»
+      status: ApprovalStatus.APPROVED,
+      isVerified: false,
+      licenseNumber: null,
       licenseActivity: 'وساطة عقارية',
       licenseExpiry: '2026-12-31',
       licenseFileUrl: 'https://example.com/license.pdf',
@@ -64,6 +68,18 @@ describe('AdminVerificationsService', () => {
           isBlocked: false,
           isDisabled: false,
         },
+        verificationRequests: [
+          {
+            id: 'vr-1',
+            status: 'PENDING',
+            licenseNumber: 'LIC-12345',
+            licenseActivity: 'وساطة عقارية',
+            licenseExpiry: '2026-12-31',
+            licenseFileUrl: 'https://example.com/license.pdf',
+            issues: null,
+            submittedAt: new Date('2026-03-01T10:00:00Z'),
+          },
+        ],
       },
     };
 
@@ -96,11 +112,12 @@ describe('AdminVerificationsService', () => {
 
       // counts: countAllCompanies, countAllOffices, pendingCompanies, pendingOffices,
       // approvedTodayCompanies, approvedTodayOffices, rejectedTodayCompanies, rejectedTodayOffices
-      prisma.companyIdentityData.count
-        .mockResolvedValueOnce(5) // countAllCompanies
-        .mockResolvedValueOnce(2) // pendingCompanies
-        .mockResolvedValueOnce(1) // approvedTodayCompanies
-        .mockResolvedValueOnce(0); // rejectedTodayCompanies
+      prisma.companyIdentityData.count.mockResolvedValueOnce(5); // all companies
+      // Companies' requests: pending, approved today, sent back today
+      prisma.companyVerificationRequest.count
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(0);
 
       (prisma.officeIdentityData as any).count = jest
         .fn()
@@ -132,6 +149,9 @@ describe('AdminVerificationsService', () => {
       expect(result.data[1].accountStatus).toBe('نشط');
       expect(result.data[1].attachmentsText).toBe('1');
       expect(result.data[1].actionLabel).toBe('مراجعة');
+      // The licence under review is the request's
+      expect(result.data[1].licenseNumber).toBe('LIC-12345');
+      expect(result.data[1].verificationRequestId).toBe('vr-1');
 
       expect(result.counts.all).toBe(8);
       expect(result.counts.companies).toBe(5);

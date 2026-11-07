@@ -25,6 +25,9 @@ interface Options {
   // A company with no services yet: pick from the services catalogue
   // (مجال التخصص, then نوع الطلب) as in طلب عرض سعر
   catalogFallback?: boolean;
+  // The company's «التخصص» (sign-up): shown fixed, its types offered
+  // when it has no services, and the request's category
+  companySpecialty?: string | null;
   targetIdentityId?: string;
   // Called after a successful send (the sheet closes itself)
   onSent: () => void;
@@ -38,11 +41,14 @@ export function useQuoteRequestForm({
   companyName,
   services,
   catalogFallback = false,
+  companySpecialty,
   targetIdentityId,
   onSent,
 }: Options) {
+  const fixedSpecialty = companySpecialty?.trim() || '';
   const [serviceId, setServiceId] = useState('');
-  const [specialtyId, setSpecialtyIdState] = useState('');
+  const [pickedSpecialty, setSpecialtyIdState] = useState('');
+  const specialtyId = fixedSpecialty || pickedSpecialty;
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
   // Where: the governorate and an area of it (no map pin)
@@ -64,6 +70,7 @@ export function useQuoteRequestForm({
 
   // Another specialty has another list of request types
   const setSpecialtyId = (id: string) => {
+    if (fixedSpecialty) return;
     setSpecialtyIdState(id);
     setServiceId('');
   };
@@ -134,7 +141,8 @@ export function useQuoteRequestForm({
     const type = usesCatalog
       ? serviceId
       : services.find((svc) => svc.id === serviceId)?.title || serviceId;
-    const specialty = usesCatalog ? specialtyId : specialtyOfType(type);
+    const specialty =
+      fixedSpecialty || (usesCatalog ? specialtyId : specialtyOfType(type));
     const title = type || specialty || '';
     const category = specialty || title;
 
@@ -171,7 +179,10 @@ export function useQuoteRequestForm({
 
   return {
     usesCatalog,
-    specialtyOptions: SPECIALTY_OPTIONS,
+    fixedSpecialty,
+    specialtyOptions: fixedSpecialty
+      ? [{ id: fixedSpecialty, label: fixedSpecialty }]
+      : SPECIALTY_OPTIONS,
     specialtyId,
     setSpecialtyId,
     serviceOptions,

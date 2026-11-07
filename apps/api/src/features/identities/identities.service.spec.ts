@@ -15,9 +15,10 @@ interface IdentityCreateArgs {
     };
     companyData?: {
       create: {
-        licenseNumber: string;
+        licenseNumber: string | null;
         logoUrl: string | null;
         status?: string;
+        specialty?: string;
       };
     };
     officeData?: { create: { licenseNumber: string; status?: string } };
@@ -35,7 +36,12 @@ describe('IdentitiesService', () => {
       count: jest.fn(),
       create: jest.fn(),
     },
-    companyIdentityData: { findFirst: jest.fn(), update: jest.fn() },
+    companyIdentityData: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    companyService: { count: jest.fn() },
     officeIdentityData: { findFirst: jest.fn(), update: jest.fn() },
     individualIdentityData: { update: jest.fn() },
     reviewRequest: { create: jest.fn() },
@@ -142,7 +148,11 @@ describe('IdentitiesService', () => {
   });
 
   describe('createCompany / createOffice', () => {
-    const companyDto = { name: 'شركة', licenseNumber: ' ١٢٣ ٤٥ ' };
+    const companyDto = {
+      name: 'شركة',
+      licenseNumber: ' ١٢٣ ٤٥ ',
+      specialty: 'مكتب هندسي',
+    };
 
     beforeEach(() => {
       mockPrismaService.identity.create.mockImplementation(
@@ -174,6 +184,45 @@ describe('IdentitiesService', () => {
       ]);
       // Locked on both the persona slot and the licence
       expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(2);
+      expect(data.companyData?.create.specialty).toBe('مكتب هندسي');
+    });
+
+    // The licence comes with «طلب التوثيق»; sign-up asks «التخصص»
+    it('creates a company without a licence, with its specialty', async () => {
+      await service.createCompany('user-1', {
+        name: 'شركة',
+        specialty: 'مكتب هندسي',
+      });
+
+      const data = createCalls()[0][0].data;
+      expect(data.companyData?.create.licenseNumber).toBeNull();
+      expect(data.companyData?.create.specialty).toBe('مكتب هندسي');
+      expect(data.companyData?.create.status).toBe('APPROVED');
+      // Only the persona slot is locked: there's no licence to hold
+      expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it("takes an older app build's النشاط as the specialty", async () => {
+      await service.createCompany('user-1', {
+        name: 'شركة',
+        licenseActivity: 'مقاولات عامة',
+      });
+      expect(createCalls()[0][0].data.companyData?.create.specialty).toBe(
+        'مقاولات عامة',
+      );
+    });
+
+    it('refuses a company with no specialty', async () => {
+      await expect(
+        service.createCompany('user-1', { name: 'شركة' }),
+      ).rejects.toThrow('التخصص مطلوب');
+      expect(mockPrismaService.identity.create).not.toHaveBeenCalled();
+    });
+
+    it('an office still needs its licence', async () => {
+      await expect(
+        service.createOffice('user-1', { name: 'مكتب' } as never),
+      ).rejects.toThrow('رقم الرخصة مطلوب');
     });
 
     it('refuses a second company with 409 and uploads nothing', async () => {
@@ -250,37 +299,62 @@ describe('IdentitiesService', () => {
       type: IdentityType.COMPANY,
       companyData: { id: 'cd-1', licenseNumber: '12345' },
     };
+    const officeIdentity = {
+      id: 'identity-o',
+      userId: 'user-1',
+      type: IdentityType.OFFICE,
+      officeData: { id: 'od-1', licenseNumber: '12345' },
+    };
 
-    it('uploads attached logo/license into the company folders and writes the URLs', async () => {
+    it('uploads an office logo/license into the office folders and writes the URLs', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(officeIdentity);
+      mockPrismaService.officeIdentityData.update.mockResolvedValue({});
+
+      await service.update('user-1', 'identity-o', {}, file, file);
+
+      expect(mockStorage.uploadFile).toHaveBeenCalledWith(file, 'office-logos');
+      expect(mockStorage.uploadFile).toHaveBeenCalledWith(
+        file,
+        'office-licenses',
+      );
+    });
+
+    // «طلب التوثيق»: a company's licence is reviewed before the badge, so
+    // edit profile (including older app builds) can't change it
+    it("uploads a company's logo but ignores its licence file and fields", async () => {
       mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
       mockPrismaService.companyIdentityData.update.mockResolvedValue({});
 
       await service.update(
         'user-1',
         'identity-c',
-        { about: 'نبذة' },
+        { about: 'نبذة', licenseNumber: '999', licenseExpiry: '2030' },
         file,
         file,
       );
 
+      expect(mockStorage.uploadFile).toHaveBeenCalledTimes(1);
       expect(mockStorage.uploadFile).toHaveBeenCalledWith(
         file,
         'company-logos',
       );
-      expect(mockStorage.uploadFile).toHaveBeenCalledWith(
-        file,
-        'company-licenses',
-      );
-      expect(mockPrismaService.companyIdentityData.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { identityId: 'identity-c' },
-          data: expect.objectContaining({
-            about: 'نبذة',
-            logoUrl: 'https://bucket/company-logos/f.png',
-            licenseFileUrl: 'https://bucket/company-licenses/f.png',
-          }),
-        }),
-      );
+      const { data } = (
+        mockPrismaService.companyIdentityData.update.mock.calls[0] as [
+          { data: Record<string, unknown> },
+        ]
+      )[0];
+      expect(data).toMatchObject({
+        about: 'نبذة',
+        logoUrl: 'https://bucket/company-logos/f.png',
+      });
+      for (const key of [
+        'licenseNumber',
+        'licenseExpiry',
+        'licenseActivity',
+        'licenseFileUrl',
+      ]) {
+        expect(data).not.toHaveProperty(key);
+      }
       expect(mockStorage.deleteFile).not.toHaveBeenCalled();
     });
 
@@ -296,9 +370,6 @@ describe('IdentitiesService', () => {
 
       expect(mockStorage.deleteFile).toHaveBeenCalledWith(
         'https://bucket/company-logos/f.png',
-      );
-      expect(mockStorage.deleteFile).toHaveBeenCalledWith(
-        'https://bucket/company-licenses/f.png',
       );
     });
 
@@ -374,30 +445,28 @@ describe('IdentitiesService', () => {
       mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
       mockPrismaService.companyIdentityData.update.mockResolvedValue({});
 
-      await service.update('user-1', 'identity-c', {
-        licenseActivity: 'كهرباء',
-      });
+      await service.update('user-1', 'identity-c', { about: 'نبذة' });
 
       expect(mockStorage.uploadFile).not.toHaveBeenCalled();
       expect(mockPrismaService.companyIdentityData.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ licenseActivity: 'كهرباء' }),
+          data: expect.objectContaining({ about: 'نبذة' }),
         }),
       );
     });
 
-    it('still enforces licence uniqueness on update', async () => {
-      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
-      mockPrismaService.officeIdentityData.findFirst.mockResolvedValue({
-        id: 'od-other',
+    it("still enforces licence uniqueness on an office's update", async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(officeIdentity);
+      mockPrismaService.companyIdentityData.findFirst.mockResolvedValue({
+        id: 'cd-other',
       });
 
       await expect(
-        service.update('user-1', 'identity-c', { licenseNumber: ' ١٢٣ ٤٥ ' }),
+        service.update('user-1', 'identity-o', { licenseNumber: ' ١٢٣ ٤٥ ' }),
       ).rejects.toThrow('رقم الترخيص مسجل مسبقاً');
       expect(mockStorage.uploadFile).not.toHaveBeenCalled();
       expect(
-        mockPrismaService.companyIdentityData.update,
+        mockPrismaService.officeIdentityData.update,
       ).not.toHaveBeenCalled();
     });
 

@@ -103,9 +103,14 @@ export function useBusinessAuth() {
         formData.append('serviceAreas', data.serviceAreas);
       }
       formData.append('about', data.about || '');
-      formData.append('licenseActivity', data.licenseActivity || '');
-      formData.append('licenseNumber', data.licenseNumber || '');
-      formData.append('licenseExpiry', data.licenseExpiry || '');
+      if (type === 'company') {
+        // «التخصص»; the licence comes later with «طلب التوثيق»
+        formData.append('specialty', data.specialty || '');
+      } else {
+        formData.append('licenseActivity', data.licenseActivity || '');
+        formData.append('licenseNumber', data.licenseNumber || '');
+        formData.append('licenseExpiry', data.licenseExpiry || '');
+      }
 
       // 3. Append files
       if (logoFile) {
@@ -116,7 +121,7 @@ export function useBusinessAuth() {
         } as any);
       }
 
-      if (licenseFile) {
+      if (type === 'office' && licenseFile) {
         formData.append('license', {
           uri: licenseFile.uri,
           name: licenseFile.name || 'license.jpg',

@@ -17,6 +17,7 @@ import {
   UpdateOfficeIdentityDto,
 } from './dto';
 import {
+  assertSpecialtyChangeAllowed,
   assertLicenseAvailable,
   assertNoPersonaOfType,
   lockKeys,
@@ -31,7 +32,8 @@ type ProviderType = Extract<IdentityType, 'COMPANY' | 'OFFICE'>;
 // The company/office fields both signup paths collect (files resolved to URLs)
 export interface ProviderPersonaData {
   name: string;
-  licenseNumber: string;
+  // A company signs up without one (it comes with «طلب التوثيق»)
+  licenseNumber?: string;
   services?: string;
   hqLocation?: string;
   serviceAreas?: string;
@@ -231,9 +233,14 @@ export class IdentitiesService {
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    const licenseNumber = normalizeLicenseNumber(dto.licenseNumber);
     await assertNoPersonaOfType(this.prisma, userId, type);
-    await assertLicenseAvailable(this.prisma, licenseNumber);
+    // A company may come without a licence (it comes with «طلب التوثيق»)
+    if (dto.licenseNumber?.trim()) {
+      await assertLicenseAvailable(
+        this.prisma,
+        normalizeLicenseNumber(dto.licenseNumber),
+      );
+    }
 
     const uploaded = await this.uploadProviderFiles(
       type,
@@ -301,10 +308,27 @@ export class IdentitiesService {
     data: ProviderPersonaData,
     options: { isActive: boolean },
   ) {
-    const licenseNumber = normalizeLicenseNumber(data.licenseNumber);
-    await lockKeys(tx, `persona:${userId}:${type}`, `license:${licenseNumber}`);
+    const licenseNumber = data.licenseNumber?.trim()
+      ? normalizeLicenseNumber(data.licenseNumber)
+      : null;
+    // An office still registers with its licence; a company adds it later
+    if (type === IdentityType.OFFICE && !licenseNumber) {
+      throw new BadRequestException('رقم الرخصة مطلوب');
+    }
+    // «التخصص» (the services catalogue's مجال التخصص). Older app builds sent
+    // only «النشاط», from the same list
+    const specialty =
+      data.specialty?.trim() || data.licenseActivity?.trim() || undefined;
+    if (type === IdentityType.COMPANY && !specialty) {
+      throw new BadRequestException('التخصص مطلوب');
+    }
+    await lockKeys(
+      tx,
+      `persona:${userId}:${type}`,
+      ...(licenseNumber ? [`license:${licenseNumber}`] : []),
+    );
     await assertNoPersonaOfType(tx, userId, type);
-    await assertLicenseAvailable(tx, licenseNumber);
+    if (licenseNumber) await assertLicenseAvailable(tx, licenseNumber);
 
     const common = {
       name: data.name,
@@ -332,7 +356,7 @@ export class IdentitiesService {
                   // stays off until an admin has checked the licence
                   status: 'APPROVED',
                   serviceAreas: data.serviceAreas,
-                  specialty: data.specialty,
+                  specialty,
                   latitude:
                     data.latitude !== undefined && data.latitude !== ''
                       ? Number(data.latitude)
@@ -344,7 +368,12 @@ export class IdentitiesService {
                 },
               },
             }
-          : { officeData: { create: common } }),
+          : {
+              officeData: {
+                // Checked above: an office always has one
+                create: { ...common, licenseNumber: licenseNumber! },
+              },
+            }),
       },
       include: IDENTITY_INCLUDE,
     });
@@ -405,10 +434,14 @@ export class IdentitiesService {
           ? Prisma.DbNull
           : (parsedHours as unknown as Prisma.InputJsonValue);
 
+    // A company's licence changes only through «طلب التوثيق» (reviewed
+    // before the «موثق» badge); edit profile can't touch it. An office
+    // keeps editing its own here.
+    const editsLicence = identity.type === IdentityType.OFFICE;
     // A changed licence number must still be free platform-wide
-    const nextLicense = (
-      dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto
-    ).licenseNumber;
+    const nextLicense = editsLicence
+      ? (dto as UpdateOfficeIdentityDto).licenseNumber
+      : undefined;
     const licenseNumber = nextLicense
       ? normalizeLicenseNumber(nextLicense)
       : undefined;
@@ -416,13 +449,15 @@ export class IdentitiesService {
       await assertLicenseAvailable(this.prisma, licenseNumber, identityId);
     }
 
+    const licenceUpload = editsLicence ? licenseFile : undefined;
     const hasFiles =
-      identity.type !== IdentityType.INDIVIDUAL && !!(logoFile || licenseFile);
+      identity.type !== IdentityType.INDIVIDUAL &&
+      !!(logoFile || licenceUpload);
     const uploaded = hasFiles
       ? await this.uploadProviderFiles(
           identity.type as ProviderType,
           logoFile,
-          licenseFile,
+          licenceUpload,
         )
       : {};
     const payload = hasFiles
@@ -442,23 +477,32 @@ export class IdentitiesService {
         });
       } else if (identity.type === IdentityType.COMPANY) {
         const companyDto = payload as UpdateCompanyIdentityDto;
+        // Multipart forms send "" for untouched fields: never clear it
+        const specialty = companyDto.specialty?.trim() || undefined;
+        await assertSpecialtyChangeAllowed(
+          this.prisma,
+          identityId,
+          (
+            await this.prisma.companyIdentityData.findUnique({
+              where: { identityId },
+              select: { specialty: true },
+            })
+          )?.specialty,
+          specialty,
+        );
         await this.prisma.companyIdentityData.update({
           where: { identityId },
           data: {
             name: companyDto.name,
-            licenseNumber,
             services: companyDto.services,
             hqLocation: companyDto.hqLocation,
             serviceAreas: companyDto.serviceAreas,
             about: companyDto.about,
-            licenseActivity: companyDto.licenseActivity,
-            licenseExpiry: companyDto.licenseExpiry,
             logoUrl: companyDto.logoUrl,
-            licenseFileUrl: companyDto.licenseFileUrl,
             // Multipart bodies carry the map point as text
             latitude: toCoordinate(companyDto.latitude),
             longitude: toCoordinate(companyDto.longitude),
-            specialty: companyDto.specialty,
+            specialty,
             workingHours,
           },
         });

@@ -17,6 +17,8 @@ interface CompanyModalsProps {
   services?: CompanyServiceItemData[];
   // The company is still loading: so are its services
   servicesLoading?: boolean;
+  // The company's «التخصص», shown fixed on the quote sheet
+  companySpecialty?: string | null;
   targetIdentityId?: string;
   reviewSort: string;
   onSelectSort: (value: string) => void;
@@ -35,6 +37,7 @@ export default function CompanyModals({
   companyLogoUrl,
   services,
   servicesLoading,
+  companySpecialty,
   targetIdentityId,
   reviewSort,
   onSelectSort,
@@ -59,6 +62,7 @@ export default function CompanyModals({
         servicesLoading={servicesLoading}
         // No services yet: the client picks from the services catalogue
         catalogFallback
+        companySpecialty={companySpecialty}
         targetIdentityId={targetIdentityId}
         onRequestSubmitted={onRequestSubmitted ?? (() => {})}
       />

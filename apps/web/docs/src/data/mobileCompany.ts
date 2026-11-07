@@ -9,6 +9,88 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-verification-request",
+      title: {
+        en: "«طلب التوثيق»: a company sends its licence for the «موثق» badge",
+        ar: "«طلب التوثيق»: الشركة ترسل رخصتها لشارة «موثق»",
+      },
+      priority: "P1",
+      story: {
+        en: "On المزيد the company card has a second button beside تعديل that follows its verification (Figma 10305:134994 – 10312:142425). «طلب توثيق» opens «تقديم طلب توثيق»: النشاط, رقم الرخصة (required), تاريخ انتهاء and the licence image (required, up to 10 MB); «ارسال الطلب» shows «تم إرسال طلبك بنجاح». The button then reads «طلبك قيد المراجعة» and opens «تفاصيل طلب التوثيق» with what was sent. If the admin sends fields back it reads «استكمال البيانات» and opens «استكمال بيانات طلب التوثيق»: each field sent back with the admin's reason and a way to fix it, the rest listed as accepted, and «اعادة ارسال الطلب». Once approved it reads «حساب موثق», the badge shows next to the name, and «حسابك موثق بنجاح» shows once. Company edit profile no longer edits the licence; it keeps «التخصص».",
+        ar: "في المزيد أصبح لبطاقة الشركة زر ثانٍ بجانب تعديل يتبع حالة التوثيق. «طلب توثيق» يفتح «تقديم طلب توثيق»: النشاط ورقم الرخصة (مطلوب) وتاريخ الانتهاء وصورة الرخصة (مطلوبة، حتى 10 ميجا)؛ و«ارسال الطلب» يظهر «تم إرسال طلبك بنجاح». ثم يصبح الزر «طلبك قيد المراجعة» ويفتح «تفاصيل طلب التوثيق». وإن أعاد المشرف حقولاً يصبح «استكمال البيانات» ويفتح «استكمال بيانات طلب التوثيق»: كل حقل مع سببه وطريقة تعديله، والباقي مقبول، ثم «اعادة ارسال الطلب». وعند الاعتماد يصبح «حساب موثق» وتظهر الشارة بجانب الاسم و«حسابك موثق بنجاح» مرة واحدة. ولم يعد تعديل الملف يعدّل الرخصة؛ يبقى فيه «التخصص».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The button shows the right state: طلب توثيق / طلبك قيد المراجعة / استكمال البيانات / حساب موثق.",
+          "The form can't be sent without the licence number and image.",
+          "«استكمال البيانات» asks only the fields sent back and sends only those.",
+          "«حسابك موثق بنجاح» shows once after approval.",
+          "Company edit profile has «التخصص» and no licence fields.",
+        ],
+        ar: [
+          "الزر يعرض الحالة الصحيحة: طلب توثيق / طلبك قيد المراجعة / استكمال البيانات / حساب موثق.",
+          "لا يُرسل النموذج دون رقم الرخصة وصورتها.",
+          "«استكمال البيانات» يطلب الحقول المعادة فقط ويرسلها فقط.",
+          "«حسابك موثق بنجاح» يظهر مرة واحدة بعد الاعتماد.",
+          "تعديل ملف الشركة فيه «التخصص» دون حقول الرخصة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "New company: المزيد → «طلب توثيق» → fill and send → «تم إرسال طلبك بنجاح»; the button reads «طلبك قيد المراجعة» and opens the details.",
+          "In the admin, request edits on رقم الرخصة only: the app shows «استكمال البيانات»; fix the number and resend.",
+          "Approve in the admin: «حساب موثق», the badge by the name, and «حسابك موثق بنجاح» once.",
+        ],
+        ar: [
+          "شركة جديدة: المزيد ← «طلب توثيق» ← املأ وأرسل ← «تم إرسال طلبك بنجاح»؛ ويصبح الزر «طلبك قيد المراجعة» ويفتح التفاصيل.",
+          "في لوحة الإدارة اطلب تعديل رقم الرخصة فقط: يظهر في التطبيق «استكمال البيانات»؛ عدّل الرقم وأعد الإرسال.",
+          "اعتمد في لوحة الإدارة: «حساب موثق» والشارة بجانب الاسم و«حسابك موثق بنجاح» مرة واحدة.",
+        ],
+      },
+      updatedIn: "feat/company-verification-request",
+    },
+    {
+      id: "mobile-company-signup-specialty",
+      title: {
+        en: "Company sign-up asks «التخصص», not the licence; the quote sheet shows it fixed",
+        ar: "تسجيل الشركة يطلب «التخصص» لا الرخصة؛ ونموذج طلب عرض السعر يظهره ثابتاً",
+      },
+      priority: "P1",
+      story: {
+        en: "Step 3 of company sign-up (and «إضافة حساب» → company) no longer has «رقم الرخصة», «تاريخ انتهاء الرخصة» or «صورة الرخصة»: the licence comes with «طلب التوثيق». It asks «التخصص» instead, a required pick from the services catalogue's مجال التخصص, sent as specialty with no licence fields. Office sign-up is unchanged. On company edit profile the field «النشاط» is now «التخصص» and saves the specialty (the API refuses a change while the company has services). On a company's profile and from the companies list, «طلب عرض سعر» shows the company's specialty as a fixed «مجال التخصص»; «نوع الطلب» lists its own services, or that specialty's types when it has none, and the request's category is the specialty. A company without a specialty (older accounts) keeps the catalogue picker.",
+        ar: "لم تعد الخطوة الثالثة من تسجيل الشركة (و«إضافة حساب» ← شركة) تحتوي «رقم الرخصة» و«تاريخ انتهاء الرخصة» و«صورة الرخصة»: الرخصة تأتي مع «طلب التوثيق». وتطلب بدلها «التخصص»، اختياراً مطلوباً من مجالات التخصص في كتالوج الخدمات، ويُرسل دون حقول الرخصة. وتسجيل المكتب كما هو. وفي تعديل ملف الشركة أصبح حقل «النشاط» «التخصص» ويحفظ التخصص (ويرفض الخادم تغييره مع وجود خدمات). وفي ملف الشركة ومن قائمة الشركات يظهر «طلب عرض سعر» تخصص الشركة «مجال التخصص» ثابتاً؛ و«نوع الطلب» يعرض خدماتها، أو أنواع ذلك التخصص إن لم تكن لها خدمات، وفئة الطلب هي التخصص. والشركة دون تخصص (الحسابات القديمة) يبقى لها اختيار المجال من الكتالوج.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company sign-up step 3 shows only «التخصص»; it can't finish without one («التخصص مطلوب»).",
+          "The sign-up request carries specialty and no licenseNumber, licenseExpiry, licenseActivity or licence file.",
+          "Office sign-up still shows and requires its licence.",
+          "Company edit profile shows «التخصص» with the saved specialty.",
+          "The quote sheet shows the company's specialty fixed; the sent request's category is that specialty.",
+        ],
+        ar: [
+          "الخطوة الثالثة لتسجيل الشركة تعرض «التخصص» فقط؛ ولا يكتمل التسجيل دونه («التخصص مطلوب»).",
+          "طلب التسجيل يحمل التخصص دون رقم الرخصة أو تاريخها أو النشاط أو ملفها.",
+          "تسجيل المكتب ما زال يعرض رخصته ويطلبها.",
+          "تعديل ملف الشركة يعرض «التخصص» بالتخصص المحفوظ.",
+          "نموذج طلب عرض السعر يعرض تخصص الشركة ثابتاً؛ وفئة الطلب المرسل هي ذلك التخصص.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign up a new company, pick «مقاول عام» in step 3: the account is created and lands in the company app, without «موثق».",
+          "As an individual, open that company and tap «طلب عرض سعر»: «مجال التخصص» reads «مقاول عام» and can't be changed; «نوع الطلب» lists its types.",
+          "Sign up an office: step 3 still asks the licence number, expiry and image.",
+        ],
+        ar: [
+          "سجّل شركة جديدة واختر «مقاول عام» في الخطوة الثالثة: يُنشأ الحساب ويفتح تطبيق الشركة دون «موثق».",
+          "كفرد، افتح تلك الشركة واضغط «طلب عرض سعر»: «مجال التخصص» «مقاول عام» ولا يتغير؛ و«نوع الطلب» يعرض أنواعه.",
+          "سجّل مكتباً: الخطوة الثالثة ما زالت تطلب رقم الرخصة وتاريخها وصورتها.",
+        ],
+      },
+      updatedIn: "feat/company-signup-specialty-app",
+    },
+    {
       id: "mobile-company-services",
       title: {
         en: "More › الخدمات from Figma: sub-service switches, edit, add a sub-service, hide or delete the service",

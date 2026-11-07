@@ -1,5 +1,6 @@
 'use client'
 
+import type { RequestEditOptions } from '@/components/dashboard/RequestEditModal'
 import { useState, useEffect, useCallback } from 'react'
 import { VerificationStatusFilter } from '@/components/dashboard/StatusFilterDropdown'
 import { SortByOption } from '@/components/dashboard/SortByDropdown'
@@ -242,16 +243,13 @@ export function useVerificationRequests() {
     }
   }
 
-  const handleConfirmRequestEdit = async (options: {
-    notes: string
-    notifyEmail: boolean
-    notifyInApp: boolean
-  }) => {
+  const handleConfirmRequestEdit = async (options: RequestEditOptions) => {
     if (!selectedForReview) return
     setIsSubmitting(true)
     try {
       await requestIdentityEdit(selectedForReview.identityId, {
-        notes: options.notes,
+        notes: options.notes || undefined,
+        issues: options.issues,
         notifyEmail: options.notifyEmail,
       })
       setToastMessage('تم إرسال طلب التعديل إلى المستخدم.')

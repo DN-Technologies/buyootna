@@ -52,7 +52,7 @@ export default function AddIdentityOfficeScreen() {
     try {
       const formData = new FormData();
       formData.append('name', data.name);
-      formData.append('licenseNumber', data.licenseNumber);
+      formData.append('licenseNumber', data.licenseNumber || '');
       formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation || '');
       formData.append('about', data.about || '');

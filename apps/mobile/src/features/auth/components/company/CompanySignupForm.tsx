@@ -15,6 +15,7 @@ import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSheet';
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
+import { SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { isCoordinates } from '@/shared/utils/location';
 
@@ -26,8 +27,9 @@ interface CompanySignupFormProps {
   onSubmit: (data: CompanySignupFormValues) => Promise<boolean>;
   logoFile: DocumentPicker.DocumentPickerAsset | null;
   pickLogo: () => void;
-  licenseFile: DocumentPicker.DocumentPickerAsset | null;
-  pickLicense: () => void;
+  // An office's licence image; a company sends its licence later
+  licenseFile?: DocumentPicker.DocumentPickerAsset | null;
+  pickLicense?: () => void;
   isLoading?: boolean;
   // False when adding an identity to an already logged-in account — that
   // account already has an email/phone/password, so skip collecting them.
@@ -54,6 +56,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const [showMapPicker, setShowMapPicker] = useState(false);
 
   const activitySheetRef = useRef<BottomSheetModal>(null);
+  const specialtySheetRef = useRef<BottomSheetModal>(null);
   const serviceAreasSheetRef = useRef<BottomSheetModal>(null);
   const successSheetRef = useRef<BottomSheetModal>(null);
 
@@ -67,6 +70,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
     });
 
   const selectedActivity = watch('licenseActivity');
+  const selectedSpecialty = watch('specialty');
   const selectedServiceAreas = watch('serviceAreas');
 
   useEffect(() => {
@@ -145,14 +149,15 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
       )}
       {step === 3 && (
         <SignupStep3
+          onOpenSpecialtySheet={() => specialtySheetRef.current?.present()}
           control={control}
           type={type}
           onOpenActivitySheet={() => activitySheetRef.current?.present()}
           onOpenDatePicker={() => setShowDatePicker(true)}
           showDatePicker={showDatePicker}
           onDateChange={handleDateChange}
-          licenseFile={licenseFile}
-          pickLicense={pickLicense}
+          licenseFile={licenseFile ?? null}
+          pickLicense={pickLicense ?? (() => {})}
         />
       )}
 
@@ -196,6 +201,15 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* «التخصص»: the services catalogue's مجال التخصص */}
+      <SelectionBottomSheet
+        ref={specialtySheetRef}
+        title="اختر التخصص"
+        options={SPECIALTIES}
+        selectedValue={selectedSpecialty}
+        onSelect={(val) => setValue('specialty', val, { shouldValidate: true })}
+      />
 
       <SelectionBottomSheet
         ref={activitySheetRef}
