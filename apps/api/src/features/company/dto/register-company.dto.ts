@@ -47,13 +47,22 @@ export class RegisterCompanyDto {
   })
   about?: string;
 
+  // Older app builds still send it; newer ones send specialty instead
   @IsString()
   @IsOptional()
   licenseActivity?: string;
 
+  // «التخصص»: the services catalogue's مجال التخصص (required by the
+  // service; older builds fall back to licenseActivity)
   @IsString()
-  @IsNotEmpty({ message: 'رقم الرخصة مطلوب' })
-  licenseNumber: string;
+  @IsOptional()
+  @MaxLength(100)
+  specialty?: string;
+
+  // The licence comes with «طلب التوثيق» now; older builds still send it
+  @IsString()
+  @IsOptional()
+  licenseNumber?: string;
 
   @IsString()
   @IsOptional()

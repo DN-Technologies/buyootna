@@ -59,7 +59,11 @@ export default function ReviewVerificationDrawer({
             />
 
             <div className="px-5 py-6 flex flex-col gap-6">
-              <ReviewInfoField label="رقم الرخصة" value={request.licenseNumber} />
+              <ReviewInfoField
+                label="رقم الرخصة"
+                // A company signs up without one; it comes with «طلب التوثيق»
+                value={request.licenseNumber || 'لم يُرفع الترخيص بعد'}
+              />
               <ReviewInfoField label="نشاط الرخصة" value={request.licenseActivity} />
               <ReviewInfoField
                 label="تاريخ انتهاء الرخصة"

@@ -249,10 +249,13 @@ export class UsersRegistrationService {
     failureMessage: string,
   ) {
     await checkUserExists(this.prisma, dto.email, dto.phone);
-    await assertLicenseAvailable(
-      this.prisma,
-      normalizeLicenseNumber(dto.licenseNumber),
-    );
+    // A company may sign up without a licence (it comes with «طلب التوثيق»)
+    if (dto.licenseNumber?.trim()) {
+      await assertLicenseAvailable(
+        this.prisma,
+        normalizeLicenseNumber(dto.licenseNumber),
+      );
+    }
 
     const uploaded = await this.identitiesService.uploadProviderFiles(
       type,

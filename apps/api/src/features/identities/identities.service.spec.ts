@@ -35,7 +35,12 @@ describe('IdentitiesService', () => {
       count: jest.fn(),
       create: jest.fn(),
     },
-    companyIdentityData: { findFirst: jest.fn(), update: jest.fn() },
+    companyIdentityData: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    companyService: { count: jest.fn() },
     officeIdentityData: { findFirst: jest.fn(), update: jest.fn() },
     individualIdentityData: { update: jest.fn() },
     reviewRequest: { create: jest.fn() },
@@ -142,7 +147,11 @@ describe('IdentitiesService', () => {
   });
 
   describe('createCompany / createOffice', () => {
-    const companyDto = { name: 'شركة', licenseNumber: ' ١٢٣ ٤٥ ' };
+    const companyDto = {
+      name: 'شركة',
+      licenseNumber: ' ١٢٣ ٤٥ ',
+      specialty: 'مكتب هندسي',
+    };
 
     beforeEach(() => {
       mockPrismaService.identity.create.mockImplementation(
@@ -174,6 +183,45 @@ describe('IdentitiesService', () => {
       ]);
       // Locked on both the persona slot and the licence
       expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(2);
+      expect(data.companyData?.create.specialty).toBe('مكتب هندسي');
+    });
+
+    // The licence comes with «طلب التوثيق»; sign-up asks «التخصص»
+    it('creates a company without a licence, with its specialty', async () => {
+      await service.createCompany('user-1', {
+        name: 'شركة',
+        specialty: 'مكتب هندسي',
+      });
+
+      const data = createCalls()[0][0].data;
+      expect(data.companyData?.create.licenseNumber).toBeNull();
+      expect(data.companyData?.create.specialty).toBe('مكتب هندسي');
+      expect(data.companyData?.create.status).toBe('APPROVED');
+      // Only the persona slot is locked: there's no licence to hold
+      expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it("takes an older app build's النشاط as the specialty", async () => {
+      await service.createCompany('user-1', {
+        name: 'شركة',
+        licenseActivity: 'مقاولات عامة',
+      });
+      expect(createCalls()[0][0].data.companyData?.create.specialty).toBe(
+        'مقاولات عامة',
+      );
+    });
+
+    it('refuses a company with no specialty', async () => {
+      await expect(
+        service.createCompany('user-1', { name: 'شركة' }),
+      ).rejects.toThrow('التخصص مطلوب');
+      expect(mockPrismaService.identity.create).not.toHaveBeenCalled();
+    });
+
+    it('an office still needs its licence', async () => {
+      await expect(
+        service.createOffice('user-1', { name: 'مكتب' } as never),
+      ).rejects.toThrow('رقم الرخصة مطلوب');
     });
 
     it('refuses a second company with 409 and uploads nothing', async () => {

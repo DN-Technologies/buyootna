@@ -43,8 +43,8 @@ export function legacyServicesText(
 
 /**
  * A company's services (اضافة خدمة). Each chosen type is a CompanyService
- * row. The company's `specialty` is set by its first service and fixed
- * after that, and the legacy `services` text is kept in step so search,
+ * row. The company's `specialty` is chosen at sign-up (older companies:
+ * set by their first service) and services must match it, and the legacy `services` text is kept in step so search,
  * the directory and company cards keep reading it unchanged.
  */
 @Injectable()
@@ -197,8 +197,8 @@ export class CompanyServicesService {
   }
 
   /**
-   * حذف الخدمة نهائيا: every sub-service goes, and the specialty is
-   * cleared so the company can start again under any specialty.
+   * حذف الخدمة نهائيا: every sub-service goes. The specialty stays: the
+   * company chose it at sign-up (التخصص), and it still matches requests.
    */
   async deleteAllMine(userId: string) {
     const { identity, companyData } = await this.findCompany(userId);
@@ -220,7 +220,6 @@ export class CompanyServicesService {
       this.prisma.companyIdentityData.update({
         where: { identityId: identity.id },
         data: {
-          specialty: null,
           servicesHidden: false,
           services: typed.length ? typed.join('، ') : null,
         },
