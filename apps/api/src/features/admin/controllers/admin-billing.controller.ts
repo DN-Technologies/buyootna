@@ -14,6 +14,10 @@ import {
   AdminGrantBulkCouponDto,
 } from '../dto/admin-grant-coupon.dto';
 import { AdminUpdatePlanDto } from '../dto/admin-update-plan.dto';
+import {
+  AdminCreateDiscountCodeDto,
+  AdminUpdateDiscountCodeDto,
+} from '../dto/admin-discount-code.dto';
 import { AdminIdentityQueryDto } from '../dto/admin-identity-query.dto';
 import {
   AdminInvoicesFilterDto,
@@ -181,6 +185,45 @@ export class AdminBillingController {
     @Body() dto: AdminUpdateFeaturePackageDto,
   ) {
     return this.adminService.updateFeaturePackage(id, dto, reqUser.userId);
+  }
+
+  @Get('discount-codes')
+  @ApiOperation({
+    summary:
+      'List every discount code (أكواد الخصم), active and inactive, with its uses',
+  })
+  @ApiResponse({ status: 200, description: 'Discount codes' })
+  @ApiCommonErrors()
+  getDiscountCodes() {
+    return this.adminService.getDiscountCodes();
+  }
+
+  @Post('discount-codes')
+  @ApiOperation({
+    summary: "Create a discount code for the app's payment screen",
+  })
+  @ApiResponse({ status: 201, description: 'The created code' })
+  @ApiCommonErrors()
+  createDiscountCode(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: AdminCreateDiscountCodeDto,
+  ) {
+    return this.adminService.createDiscountCode(dto, reqUser.userId);
+  }
+
+  @Patch('discount-codes/:id')
+  @ApiOperation({
+    summary: 'Edit a discount code (value, limits, dates, or deactivate it)',
+  })
+  @ApiParam({ name: 'id', description: 'Discount code ID' })
+  @ApiResponse({ status: 200, description: 'The updated code' })
+  @ApiCommonErrors()
+  updateDiscountCode(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminUpdateDiscountCodeDto,
+  ) {
+    return this.adminService.updateDiscountCode(id, dto, reqUser.userId);
   }
 
   @Post('users/bulk/coupon')

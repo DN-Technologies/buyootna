@@ -4,9 +4,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { ChargeResult, invoiceDueDate, newInvoiceNo } from '../payments.types';
+import { enabledPaymentMethods, tapSourceFor } from '../payment-methods';
+import {
+  ChargeResult,
+  CheckoutOptions,
+  CheckoutQuote,
+  invoiceDueDate,
+  newInvoiceNo,
+} from '../payments.types';
+import {
+  DiscountCodesService,
+  invoiceAmountFields,
+} from './discount-codes.service';
 import { PaymentFulfillmentService } from './payment-fulfillment.service';
 import { TapGatewayService } from './tap-gateway.service';
+
+const adsLabel = (ads: number) => (ads === 1 ? 'إعلان واحد' : `${ads} إعلانات`);
 
 /** Buying a plan package (ads credited to the user's wallet). */
 @Injectable()
@@ -15,26 +28,11 @@ export class PlanCheckoutService {
     private readonly prisma: PrismaService,
     private readonly tap: TapGatewayService,
     private readonly fulfillment: PaymentFulfillmentService,
+    private readonly discounts: DiscountCodesService,
   ) {}
 
-  async createCharge(
-    userId: string,
-    identityId: string,
-    planSlug: string,
-    appRedirectUrl: string,
-    sourceId = 'src_all',
-    adsCount?: number | string,
-  ): Promise<ChargeResult> {
-    this.tap.assertConfigured();
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new NotFoundException('المستخدم غير موجود');
-    }
-
+  /** The plan and package bought, and its price (from the database only). */
+  private async resolve(planSlug: string, adsCount?: number | string) {
     const plan = await this.prisma.plan.findUnique({
       where: { slug: planSlug, isActive: true },
     });
@@ -63,13 +61,72 @@ export class PlanCheckoutService {
     }
     const amount = planPackage ? planPackage.price : plan.price;
     const adsToGrant = planPackage ? planPackage.adsCount : plan.maxActiveAds;
+    return { plan, planPackage, amount, adsToGrant };
+  }
+
+  /** The payment screen's card and summary, with a code if given. */
+  async quote(
+    userId: string,
+    planSlug: string,
+    adsCount?: number | string,
+    discountCode?: string,
+  ): Promise<CheckoutQuote> {
+    const { plan, amount, adsToGrant } = await this.resolve(planSlug, adsCount);
+    const priced = await this.discounts.price(
+      discountCode,
+      'PLAN',
+      amount,
+      userId,
+    );
+    return {
+      title: `الباقة ${plan.name}`,
+      subtitle: adsLabel(adsToGrant),
+      price: priced.price,
+      discount: priced.discount,
+      total: priced.total,
+      currency: 'KWD',
+      discountCode: priced.code,
+      methods: enabledPaymentMethods(),
+    };
+  }
+
+  async createCharge(
+    userId: string,
+    identityId: string,
+    planSlug: string,
+    appRedirectUrl: string,
+    sourceId?: string,
+    adsCount?: number | string,
+    options: CheckoutOptions = {},
+  ): Promise<ChargeResult> {
+    this.tap.assertConfigured();
+    const source = tapSourceFor(options.method, sourceId);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    const { plan, planPackage, amount, adsToGrant } = await this.resolve(
+      planSlug,
+      adsCount,
+    );
+    const priced = await this.discounts.price(
+      options.discountCode,
+      'PLAN',
+      amount,
+      user.id,
+    );
 
     const invoice = await this.prisma.invoice.create({
       data: {
         invoiceNo: newInvoiceNo(),
         planName: plan.name,
-        planDetails: `باقة ${plan.name} - ${adsToGrant === 1 ? 'إعلان واحد' : `${adsToGrant} إعلانات`}`,
-        amount,
+        planDetails: `باقة ${plan.name} - ${adsLabel(adsToGrant)}`,
+        ...invoiceAmountFields(priced),
         status: 'PENDING',
         userId: user.id,
         // The credits go to the persona that bought them
@@ -80,8 +137,8 @@ export class PlanCheckoutService {
       },
     });
 
-    // A free plan skips the payment gateway
-    if (amount === 0) {
+    // A free plan (or a code covering the whole price) skips the gateway
+    if (priced.total === 0) {
       await this.fulfillment.fulfill(invoice.id);
       return { checkoutUrl: null, invoiceId: invoice.id, status: 'PAID' };
     }
@@ -89,11 +146,11 @@ export class PlanCheckoutService {
     return this.tap.createCharge({
       user,
       invoice,
-      amount,
+      amount: priced.total,
       description: `اشتراك باقة ${plan.name} - Buyootna`,
       metadata: { planId: plan.id, planPackageId: planPackage?.id },
       appRedirectUrl,
-      sourceId,
+      sourceId: source,
     });
   }
 }

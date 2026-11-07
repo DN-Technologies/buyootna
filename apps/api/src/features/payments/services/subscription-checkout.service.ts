@@ -5,9 +5,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { ChargeResult, invoiceDueDate, newInvoiceNo } from '../payments.types';
+import { enabledPaymentMethods, tapSourceFor } from '../payment-methods';
+import {
+  ChargeResult,
+  CheckoutOptions,
+  CheckoutQuote,
+  invoiceDueDate,
+  newInvoiceNo,
+} from '../payments.types';
+import {
+  DiscountCodesService,
+  invoiceAmountFields,
+} from './discount-codes.service';
 import { PaymentFulfillmentService } from './payment-fulfillment.service';
 import { TapGatewayService } from './tap-gateway.service';
+
+const monthsLabel = (months: number) =>
+  `صالحة لمدة ${months === 1 ? 'شهر' : months === 2 ? 'شهرين' : `${months} أشهر`}`;
 
 /** A company paying for a subscription period (الباقات). */
 @Injectable()
@@ -16,26 +30,18 @@ export class SubscriptionCheckoutService {
     private readonly prisma: PrismaService,
     private readonly tap: TapGatewayService,
     private readonly fulfillment: PaymentFulfillmentService,
+    private readonly discounts: DiscountCodesService,
   ) {}
 
   /**
    * The price comes from the CompanyPlan row, never from the client, and
    * only a company persona can subscribe.
    */
-  async createCharge(
-    userId: string,
-    identityId: string,
-    companyPlanId: string,
-    appRedirectUrl: string,
-    sourceId = 'src_all',
-  ): Promise<ChargeResult> {
-    if (!companyPlanId || !appRedirectUrl) {
+  private async resolve(identityId: string, companyPlanId: string) {
+    if (!companyPlanId) {
       throw new BadRequestException('بيانات الطلب غير مكتملة');
     }
-    this.tap.assertConfigured();
-
-    const [user, identity, plan] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: userId } }),
+    const [identity, plan] = await Promise.all([
       this.prisma.identity.findUnique({
         where: { id: identityId },
         select: { type: true },
@@ -44,19 +50,68 @@ export class SubscriptionCheckoutService {
         where: { id: companyPlanId, isActive: true },
       }),
     ]);
-
-    if (!user) throw new NotFoundException('المستخدم غير موجود');
     if (identity?.type !== 'COMPANY') {
       throw new ForbiddenException('الاشتراكات متاحة لحسابات الشركات فقط');
     }
     if (!plan) throw new NotFoundException('الباقة غير موجودة أو غير نشطة');
+    return plan;
+  }
+
+  async quote(
+    userId: string,
+    identityId: string,
+    companyPlanId: string,
+    discountCode?: string,
+  ): Promise<CheckoutQuote> {
+    const plan = await this.resolve(identityId, companyPlanId);
+    const priced = await this.discounts.price(
+      discountCode,
+      'SUBSCRIPTION',
+      plan.price,
+      userId,
+    );
+    return {
+      title: plan.name,
+      subtitle: monthsLabel(plan.durationMonths),
+      price: priced.price,
+      discount: priced.discount,
+      total: priced.total,
+      currency: 'KWD',
+      discountCode: priced.code,
+      methods: enabledPaymentMethods(),
+    };
+  }
+
+  async createCharge(
+    userId: string,
+    identityId: string,
+    companyPlanId: string,
+    appRedirectUrl: string,
+    sourceId?: string,
+    options: CheckoutOptions = {},
+  ): Promise<ChargeResult> {
+    if (!companyPlanId || !appRedirectUrl) {
+      throw new BadRequestException('بيانات الطلب غير مكتملة');
+    }
+    this.tap.assertConfigured();
+    const source = tapSourceFor(options.method, sourceId);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('المستخدم غير موجود');
+    const plan = await this.resolve(identityId, companyPlanId);
+    const priced = await this.discounts.price(
+      options.discountCode,
+      'SUBSCRIPTION',
+      plan.price,
+      user.id,
+    );
 
     const invoice = await this.prisma.invoice.create({
       data: {
         invoiceNo: newInvoiceNo(),
         planName: 'اشتراك الشركات',
         planDetails: plan.name,
-        amount: plan.price,
+        ...invoiceAmountFields(priced),
         status: 'PENDING',
         userId: user.id,
         identityId,
@@ -65,7 +120,7 @@ export class SubscriptionCheckoutService {
       },
     });
 
-    if (plan.price === 0) {
+    if (priced.total === 0) {
       await this.fulfillment.fulfill(invoice.id);
       return { checkoutUrl: null, invoiceId: invoice.id, status: 'PAID' };
     }
@@ -73,11 +128,11 @@ export class SubscriptionCheckoutService {
     return this.tap.createCharge({
       user,
       invoice,
-      amount: plan.price,
+      amount: priced.total,
       description: `${plan.name} - Buyootna`,
       metadata: { companyPlanId: plan.id },
       appRedirectUrl,
-      sourceId,
+      sourceId: source,
       purpose: 'subscription',
     });
   }

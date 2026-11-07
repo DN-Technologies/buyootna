@@ -47,11 +47,16 @@ import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 import { AdminAuditLogService } from './services/audit/admin-audit-log.service';
+import { AdminDiscountCodesService } from './services/billing/admin-discount-codes.service';
 import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
 import {
   AdminCreateFeaturePackageDto,
   AdminUpdateFeaturePackageDto,
 } from './dto/admin-feature-package.dto';
+import {
+  AdminCreateDiscountCodeDto,
+  AdminUpdateDiscountCodeDto,
+} from './dto/admin-discount-code.dto';
 
 @Injectable()
 export class AdminService {
@@ -75,6 +80,7 @@ export class AdminService {
     private readonly adminNotesService: AdminNotesService,
     private readonly adminAuditLogService: AdminAuditLogService,
     private readonly adminFeaturePackagesService: AdminFeaturePackagesService,
+    private readonly adminDiscountCodesService: AdminDiscountCodesService,
   ) {}
 
   async getDashboard() {
@@ -311,6 +317,23 @@ export class AdminService {
     adminUserId: string,
   ) {
     return this.adminFeaturePackagesService.update(id, dto, adminUserId);
+  }
+
+  // --- DISCOUNT CODES (أكواد الخصم) ---
+  getDiscountCodes() {
+    return this.adminDiscountCodesService.list();
+  }
+
+  createDiscountCode(dto: AdminCreateDiscountCodeDto, adminUserId: string) {
+    return this.adminDiscountCodesService.create(dto, adminUserId);
+  }
+
+  updateDiscountCode(
+    id: string,
+    dto: AdminUpdateDiscountCodeDto,
+    adminUserId: string,
+  ) {
+    return this.adminDiscountCodesService.update(id, dto, adminUserId);
   }
 
   async getSubscriptions(filters: AdminSubscriptionsFilterDto) {

@@ -55,6 +55,7 @@ export class PaymentFulfillmentService {
 
     const fulfilled = await this.prisma.$transaction(async (tx) => {
       if (!(await this.markPaid(tx, invoice.id))) return false;
+      await this.redeemDiscount(tx, invoice);
 
       // Add the ads to the buying persona's wallet; the account's
       // activePlan stays as the admin's plan label
@@ -94,6 +95,7 @@ export class PaymentFulfillmentService {
     const days = invoice.featureDays ?? 0;
     const fulfilled = await this.prisma.$transaction(async (tx) => {
       if (!(await this.markPaid(tx, invoice.id))) return false;
+      await this.redeemDiscount(tx, invoice);
       // The ad was deleted after paying: the paid invoice stays as a record
       if (!invoice.propertyId || days <= 0) return true;
 
@@ -132,6 +134,7 @@ export class PaymentFulfillmentService {
 
     const fulfilled = await this.prisma.$transaction(async (tx) => {
       if (!(await this.markPaid(tx, invoice.id))) return false;
+      await this.redeemDiscount(tx, invoice);
       // The plan was deleted after paying: the paid invoice stays as a record
       if (!plan) return true;
 
@@ -161,6 +164,29 @@ export class PaymentFulfillmentService {
         `Payment Fulfilled: Invoice ${invoice.invoiceNo} subscribed company ${invoice.identityId} to ${plan?.name ?? invoice.planDetails}.`,
       );
     }
+  }
+
+  /**
+   * «كود الخصم»: its use is counted here, once the invoice is paid, so a
+   * failed or abandoned payment never uses a code up. Runs inside the
+   * transaction that marked the invoice PAID, which happens only once.
+   */
+  private async redeemDiscount(
+    tx: Prisma.TransactionClient,
+    invoice: Pick<Invoice, 'id' | 'userId' | 'discountCodeId'>,
+  ) {
+    if (!invoice.discountCodeId || !invoice.userId) return;
+    await tx.discountRedemption.create({
+      data: {
+        codeId: invoice.discountCodeId,
+        userId: invoice.userId,
+        invoiceId: invoice.id,
+      },
+    });
+    await tx.discountCode.update({
+      where: { id: invoice.discountCodeId },
+      data: { usedCount: { increment: 1 } },
+    });
   }
 
   /** Flips the invoice to PAID; false when another call already did. */

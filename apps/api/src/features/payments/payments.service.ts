@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { TapChargeResponse } from './payments.types';
+import {
+  CheckoutOptions,
+  CheckoutQuote,
+  TapChargeResponse,
+} from './payments.types';
 import { FeatureCheckoutService } from './services/feature-checkout.service';
 import { PaymentFulfillmentService } from './services/payment-fulfillment.service';
 import { PlanCheckoutService } from './services/plan-checkout.service';
@@ -36,6 +44,7 @@ export class PaymentsService {
     appRedirectUrl: string,
     sourceId?: string,
     adsCount?: number | string,
+    options?: CheckoutOptions,
   ) {
     return this.planCheckout.createCharge(
       userId,
@@ -44,7 +53,53 @@ export class PaymentsService {
       appRedirectUrl,
       sourceId,
       adsCount,
+      options,
     );
+  }
+
+  /** The payment screen's card and summary for any purchase, with a code. */
+  quote(
+    userId: string,
+    identityId: string,
+    body: {
+      purpose?: string;
+      planSlug?: string;
+      adsCount?: number | string;
+      companyPlanId?: string;
+      propertyId?: string;
+      featurePackageId?: string;
+      discountCode?: string;
+    },
+  ): Promise<CheckoutQuote> {
+    switch (body.purpose) {
+      case 'plan':
+        if (!body.planSlug) {
+          throw new BadRequestException('بيانات الطلب غير مكتملة');
+        }
+        return this.planCheckout.quote(
+          userId,
+          body.planSlug,
+          body.adsCount,
+          body.discountCode,
+        );
+      case 'subscription':
+        return this.subscriptionCheckout.quote(
+          userId,
+          identityId,
+          body.companyPlanId ?? '',
+          body.discountCode,
+        );
+      case 'feature':
+        return this.featureCheckout.quote(
+          userId,
+          identityId,
+          body.propertyId ?? '',
+          body.featurePackageId ?? '',
+          body.discountCode,
+        );
+      default:
+        throw new BadRequestException('نوع الشراء غير صالح');
+    }
   }
 
   getFeaturePackages() {
@@ -58,6 +113,7 @@ export class PaymentsService {
     featurePackageId: string,
     appRedirectUrl: string,
     sourceId?: string,
+    options?: CheckoutOptions,
   ) {
     return this.featureCheckout.createCharge(
       userId,
@@ -66,6 +122,7 @@ export class PaymentsService {
       featurePackageId,
       appRedirectUrl,
       sourceId,
+      options,
     );
   }
 
@@ -75,6 +132,7 @@ export class PaymentsService {
     companyPlanId: string,
     appRedirectUrl: string,
     sourceId?: string,
+    options?: CheckoutOptions,
   ) {
     return this.subscriptionCheckout.createCharge(
       userId,
@@ -82,6 +140,7 @@ export class PaymentsService {
       companyPlanId,
       appRedirectUrl,
       sourceId,
+      options,
     );
   }
 
@@ -133,12 +192,42 @@ export class PaymentsService {
     // while a payment is being confirmed)
     const invoice = await this.prisma.invoice.findFirst({
       where: { id: invoiceId, identity: { userId } },
+      select: {
+        status: true,
+        planName: true,
+        planDetails: true,
+        companyPlanId: true,
+        featurePackageId: true,
+        propertyId: true,
+        companySubscription: { select: { endsAt: true } },
+        property: { select: { featuredUntil: true } },
+      },
     });
 
     if (!invoice) {
       throw new NotFoundException('الفاتورة غير موجودة');
     }
 
-    return { status: invoice.status };
+    // What the success popup says: what was bought and, when it has one,
+    // when it ends (a subscription's period, a featured ad's end)
+    const purpose = invoice.companyPlanId
+      ? 'subscription'
+      : invoice.featurePackageId || invoice.propertyId
+        ? 'feature'
+        : 'plan';
+    const endsAt =
+      purpose === 'subscription'
+        ? (invoice.companySubscription?.endsAt ?? null)
+        : purpose === 'feature'
+          ? (invoice.property?.featuredUntil ?? null)
+          : null;
+
+    return {
+      status: invoice.status,
+      purpose,
+      planName: invoice.planName,
+      planDetails: invoice.planDetails,
+      endsAt,
+    };
   }
 }

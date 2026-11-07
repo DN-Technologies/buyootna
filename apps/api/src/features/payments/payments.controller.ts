@@ -27,6 +27,7 @@ import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import {
+  CheckoutQuoteResponseDto,
   CreateChargeResponseDto,
   FeaturePackageResponseDto,
   InvoiceStatusResponseDto,
@@ -57,6 +58,13 @@ export class PaymentsController {
         },
         appRedirectUrl: { type: 'string' },
         sourceId: { type: 'string' },
+        method: {
+          type: 'string',
+          enum: ['apple_pay', 'google_pay', 'card', 'knet'],
+          description:
+            "The payment screen's «طريقة الدفع»: opens Tap on that method",
+        },
+        discountCode: { type: 'string', description: '«كود الخصم»' },
       },
     },
   })
@@ -68,6 +76,8 @@ export class PaymentsController {
     @Body('appRedirectUrl') appRedirectUrl: string,
     @Body('sourceId') sourceId?: string,
     @Body('adsCount') adsCount?: number,
+    @Body('method') method?: string,
+    @Body('discountCode') discountCode?: string,
   ) {
     return this.paymentsService.createCharge(
       reqUser.userId,
@@ -76,7 +86,48 @@ export class PaymentsController {
       appRedirectUrl,
       sourceId,
       adsCount,
+      { method, discountCode },
     );
+  }
+
+  @Post('quote')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'The payment screen before paying: what is bought, its price, a discount code applied, the total and the payment methods offered. Writes nothing.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['purpose'],
+      properties: {
+        purpose: { type: 'string', enum: ['plan', 'subscription', 'feature'] },
+        planSlug: { type: 'string' },
+        adsCount: { type: 'integer' },
+        companyPlanId: { type: 'string' },
+        propertyId: { type: 'string' },
+        featurePackageId: { type: 'string' },
+        discountCode: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, type: CheckoutQuoteResponseDto })
+  @ApiCommonErrors()
+  quote(
+    @CurrentUser() reqUser: RequestUser,
+    @Body()
+    body: {
+      purpose?: string;
+      planSlug?: string;
+      adsCount?: number;
+      companyPlanId?: string;
+      propertyId?: string;
+      featurePackageId?: string;
+      discountCode?: string;
+    },
+  ) {
+    return this.paymentsService.quote(reqUser.userId, reqUser.identityId, body);
   }
 
   @Get('feature-packages')
@@ -107,6 +158,13 @@ export class PaymentsController {
         featurePackageId: { type: 'string' },
         appRedirectUrl: { type: 'string' },
         sourceId: { type: 'string' },
+        method: {
+          type: 'string',
+          enum: ['apple_pay', 'google_pay', 'card', 'knet'],
+          description:
+            "The payment screen's «طريقة الدفع»: opens Tap on that method",
+        },
+        discountCode: { type: 'string', description: '«كود الخصم»' },
       },
     },
   })
@@ -118,6 +176,8 @@ export class PaymentsController {
     @Body('featurePackageId') featurePackageId: string,
     @Body('appRedirectUrl') appRedirectUrl: string,
     @Body('sourceId') sourceId?: string,
+    @Body('method') method?: string,
+    @Body('discountCode') discountCode?: string,
   ) {
     return this.paymentsService.createFeatureCharge(
       reqUser.userId,
@@ -126,6 +186,7 @@ export class PaymentsController {
       featurePackageId,
       appRedirectUrl,
       sourceId,
+      { method, discountCode },
     );
   }
 
@@ -147,6 +208,13 @@ export class PaymentsController {
         },
         appRedirectUrl: { type: 'string' },
         sourceId: { type: 'string' },
+        method: {
+          type: 'string',
+          enum: ['apple_pay', 'google_pay', 'card', 'knet'],
+          description:
+            "The payment screen's «طريقة الدفع»: opens Tap on that method",
+        },
+        discountCode: { type: 'string', description: '«كود الخصم»' },
       },
     },
   })
@@ -157,6 +225,8 @@ export class PaymentsController {
     @Body('companyPlanId') companyPlanId: string,
     @Body('appRedirectUrl') appRedirectUrl: string,
     @Body('sourceId') sourceId?: string,
+    @Body('method') method?: string,
+    @Body('discountCode') discountCode?: string,
   ) {
     return this.paymentsService.createSubscriptionCharge(
       reqUser.userId,
@@ -164,6 +234,7 @@ export class PaymentsController {
       companyPlanId,
       appRedirectUrl,
       sourceId,
+      { method, discountCode },
     );
   }
 

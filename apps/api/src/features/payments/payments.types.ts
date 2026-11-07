@@ -23,6 +23,24 @@ export interface TapChargeResponse {
   };
 }
 
+/** «طريقة الدفع» and «كود الخصم» from the payment screen, on any charge. */
+export interface CheckoutOptions {
+  method?: string;
+  discountCode?: string;
+}
+
+/** What the payment screen shows before paying (POST /payments/quote). */
+export interface CheckoutQuote {
+  title: string;
+  subtitle: string;
+  price: number;
+  discount: number;
+  total: number;
+  currency: 'KWD';
+  discountCode: string | null;
+  methods: string[];
+}
+
 /** What POST /payments/charge and /payments/feature-charge return. */
 export interface ChargeResult {
   checkoutUrl: string | null | undefined;
