@@ -23,6 +23,7 @@ import { AdminBillingListService } from './services/billing/admin-billing-list.s
 import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { AdminNotesService } from './services/users/admin-notes.service';
 import { AdminAuditLogService } from './services/audit/admin-audit-log.service';
+import { AdminDiscountCodesService } from './services/billing/admin-discount-codes.service';
 import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
 import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
 
@@ -374,6 +375,10 @@ export function setupAdminService() {
         {
           provide: AdminFeaturePackagesService,
           useValue: adminFeaturePackagesService,
+        },
+        {
+          provide: AdminDiscountCodesService,
+          useValue: { list: jest.fn(), create: jest.fn(), update: jest.fn() },
         },
         {
           provide: AdminPlanCatalogService,

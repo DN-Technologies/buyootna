@@ -1,0 +1,139 @@
+// Accounts: the user, their sessions and one-time codes, settings and
+// notification preferences, and self-suspensions.
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  phone     String?  @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Account-level flags
+  isDisabled Boolean @default(false)
+  isBlocked  Boolean @default(false)
+  // Set only when the user suspends their own account (تعطيل مؤقت); they
+  // reactivate by signing in again. isDisabled without this is an admin
+  // disable, which signing in doesn't undo.
+  suspendedAt DateTime?
+  // Set when that self-suspension was for a fixed period (7/14/30 days);
+  // AccountStateService reactivates the account once it passes
+  suspendedUntil DateTime?
+  isAdmin    Boolean @default(false)
+
+  // The terms of use (EULA) this account last agreed to at sign-in or
+  // sign-up (Guideline 1.2), and when
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
+  // Set on every successful password change; JwtStrategy rejects legacy
+  // no-sid tokens issued before this moment.
+  passwordChangedAt DateTime?
+
+  // Set when the phone was proven by an SMS code (registration, or the
+  // Edit Profile phone check); a phone without it can't be the login method
+  phoneVerifiedAt DateTime?
+  // The one identifier password login accepts; null = email or phone
+  loginMethod LoginMethod?
+
+  // Relations
+  identities       Identity[]
+  otpCode          OtpCode?
+  settings         UserSettings?
+  notifPreferences NotificationPreferences?
+  notifications    Notification[]
+  sessions         Session[]
+  suspensions      AccountSuspension[]
+  savedLocations   SavedLocation[]
+  socialAccounts   SocialAccount[]
+  reportsFiled     Report[]                  @relation("ReporterReports")
+  reportsAgainst   Report[]                  @relation("TargetUserReports")
+  reportsResolved  Report[]                  @relation("ReportResolvedBy")
+  reportsAssigned  Report[]                  @relation("ReportAssignedAdmin")
+  adminActionLogsActed AdminActionLog[]      @relation("AdminActionLogActor")
+  adminActionLogsAbout AdminActionLog[]      @relation("AdminActionLogTarget")
+  adminNotesAuthored   AdminNote[]           @relation("AdminNoteAuthor")
+  adminNotesAbout      AdminNote[]           @relation("AdminNoteTarget")
+  blocksMade           UserBlock[]           @relation("UserBlocksMade")
+  blocksReceived       UserBlock[]           @relation("UserBlocksReceived")
+
+  // Legacy fields - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  role             Role?
+  freeAdsRemaining Int?    @default(1)
+  name             String?
+  whatsapp         String?
+  avatarUrl        String?
+  activePlanId     String?
+  activePlan       Plan?   @relation(fields: [activePlanId], references: [id])
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  deviceId    String?
+  // Expo push token registered by the app on this device, for security
+  // alerts such as a login from another device
+  pushToken   String?
+  platform    String?
+  deviceModel String?
+  deviceName  String
+  isActive    Boolean  @default(true)
+  lastActive  DateTime @default(now())
+  location    String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The persona this device is using: logging in again on the same device
+  // resumes it, and switching on one device leaves the others alone
+  activeIdentityId String?
+  activeIdentity   Identity? @relation(fields: [activeIdentityId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  code      String
+  expiresAt DateTime
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// One row per self-suspension: why they left (the sheet's reason ids, plus
+// the "أخرى" text) and when they came back
+model AccountSuspension {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reasons       String[]
+  note          String?
+  // End of a timed suspension; null for "until I come back"
+  until         DateTime?
+  createdAt     DateTime  @default(now())
+  reactivatedAt DateTime?
+
+  @@index([userId])
+}
+
+model UserSettings {
+  id            String  @id @default(uuid())
+  userId        String  @unique
+  showPhone     Boolean @default(true)
+  showWhatsapp  Boolean @default(true)
+  hideActivity  Boolean @default(false)
+  hideOfficeAds Boolean @default(false)
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotificationPreferences {
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  appEnabled   Boolean @default(true)
+  emailEnabled Boolean @default(false)
+  phoneEnabled Boolean @default(false)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

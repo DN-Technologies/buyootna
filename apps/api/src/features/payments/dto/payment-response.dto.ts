@@ -18,6 +18,51 @@ export class CreateChargeResponseDto {
 export class InvoiceStatusResponseDto {
   @ApiProperty({ enum: ['PAID', 'PENDING', 'OVERDUE', 'CANCELLED'] })
   status: string;
+
+  @ApiProperty({ enum: ['plan', 'subscription', 'feature'] })
+  purpose: string;
+
+  @ApiProperty({ example: 'العادية' })
+  planName: string;
+
+  @ApiProperty({ nullable: true })
+  planDetails: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    description:
+      "When what was bought ends: a subscription's period or a featured ad's end; null for ad packages",
+  })
+  endsAt: Date | null;
+}
+
+export class CheckoutQuoteResponseDto {
+  @ApiProperty({ example: 'الباقة العادية' })
+  title: string;
+
+  @ApiProperty({ example: '5 إعلانات' })
+  subtitle: string;
+
+  @ApiProperty({ example: 5 })
+  price: number;
+
+  @ApiProperty({ example: 2 })
+  discount: number;
+
+  @ApiProperty({ example: 3 })
+  total: number;
+
+  @ApiProperty({ example: 'KWD' })
+  currency: string;
+
+  @ApiProperty({ nullable: true, example: 'WELCOME' })
+  discountCode: string | null;
+
+  @ApiProperty({
+    example: ['apple_pay', 'google_pay', 'card', 'knet'],
+    description: 'The payment methods this server offers (TAP_SOURCES)',
+  })
+  methods: string[];
 }
 
 export class FeaturePackageResponseDto {

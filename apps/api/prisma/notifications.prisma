@@ -1,0 +1,38 @@
+// In-app notifications.
+
+enum NotificationType {
+  IDENTITY_APPROVED
+  IDENTITY_REJECTED
+  IDENTITY_EDIT_REQUESTED
+  ADMIN_CUSTOM_MESSAGE
+  ALERT_MATCH
+  REPORT_RESOLVED
+  REPORT_DISMISSED
+  NEW_DEVICE_LOGIN
+  SERVICE_INVOICE
+  SUBSCRIPTION_EXPIRING
+  // A company answered a quote request (الرد على العميل)
+  REQUEST_REPLY
+  // A client sent a company/office a quote request (طلب عرض سعر)
+  REQUEST_RECEIVED
+  // Someone commented on a company's or office's reel
+  REEL_COMMENT
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String
+  type       NotificationType
+  title      String
+  body       String
+  identityId String?
+  isRead     Boolean          @default(false)
+  // What the notification points at, e.g. { propertyId } for ALERT_MATCH,
+  // so tapping it can open the right screen
+  data       Json?
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}

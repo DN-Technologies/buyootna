@@ -9,6 +9,45 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-checkout-screen",
+      title: {
+        en: "«الدفع»: one checkout for packages, company plans and featuring an ad, with «كود الخصم»",
+        ar: "«الدفع»: شاشة دفع واحدة للباقات واشتراك الشركة وتمييز الإعلان، مع «كود الخصم»",
+      },
+      priority: "P1",
+      story: {
+        en: "Buying an ad package, a company plan or featuring an ad now opens «الدفع» (Figma 5557:142956) instead of going straight to Tap. It shows what is bought, «كود الخصم» (checked by the server; its reason shows under the field), «طريقة الدفع» (Apple Pay on iOS, Google Pay on Android, card, KNET — as the server offers), and «ملخص الدفع» (price, discount, total). «اتمام الدفع» stays grey until a method is chosen and opens Tap's page on that method. The outcome shows in the app: «تم الدفع بنجاح» with what was activated, or «تعذر إتمام الدفع» with «إعادة المحاولة» / «إغلاق». A code covering the whole price is paid without Tap.",
+        ar: "شراء باقة إعلانات أو اشتراك شركة أو تمييز إعلان يفتح الآن «الدفع» بدل الذهاب إلى Tap مباشرة. تعرض ما يُشترى و«كود الخصم» (يتحقق منه الخادم ويظهر سببه تحت الحقل) و«طريقة الدفع» (Apple Pay على iOS وGoogle Pay على أندرويد والبطاقة وكي نت حسب ما يتيحه الخادم) و«ملخص الدفع». «اتمام الدفع» رمادي حتى تُختار طريقة ويفتح صفحة Tap عليها. والنتيجة داخل التطبيق: «تم الدفع بنجاح» أو «تعذر إتمام الدفع» مع «إعادة المحاولة» و«إغلاق». والكود الذي يغطي السعر كاملاً يُدفع دون Tap.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Packages, company plans and featuring all open «الدفع».",
+          "A valid code shows the discount and the new total; an invalid one shows the server's reason.",
+          "«اتمام الدفع» is disabled until a method is chosen; Tap opens on that method.",
+          "Success and failure show the in-app popups; a 100% code pays without Tap.",
+        ],
+        ar: [
+          "الباقات واشتراك الشركة والتمييز كلها تفتح «الدفع».",
+          "الكود الصحيح يظهر الخصم والإجمالي الجديد؛ وغير الصحيح يظهر سبب الخادم.",
+          "«اتمام الدفع» معطل حتى تُختار طريقة؛ وتفتح Tap عليها.",
+          "النجاح والفشل يظهران داخل التطبيق؛ وكود 100% يدفع دون Tap.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual: الباقات → choose one → «الدفع»; apply SAVE25 (created in the admin): discount and total update; pay with KNET on Tap test keys → «تم الدفع بنجاح».",
+          "As a company: الباقات → a plan → «الدفع» → cancel on Tap → no charge, the screen stays.",
+          "Feature an ad → «الدفع» shows «ثمن التمييز».",
+        ],
+        ar: [
+          "كفرد: الباقات ← اختر باقة ← «الدفع»؛ طبّق SAVE25 (من لوحة الإدارة): يتغير الخصم والإجمالي؛ ادفع بكي نت بمفاتيح Tap التجريبية ← «تم الدفع بنجاح».",
+          "كشركة: الباقات ← خطة ← «الدفع» ← ألغِ في Tap ← لا خصم وتبقى الشاشة.",
+          "ميّز إعلاناً ← «الدفع» يعرض «ثمن التمييز».",
+        ],
+      },
+      updatedIn: "feat/checkout-screen-app",
+    },
+    {
       id: "mobile-block-company-office",
       title: {
         en: "Blocking a company or office closes its profile, hides it from the lists and refuses requests both ways",

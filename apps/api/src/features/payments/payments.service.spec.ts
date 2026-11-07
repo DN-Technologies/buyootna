@@ -11,6 +11,7 @@ import { PaymentFulfillmentService } from './services/payment-fulfillment.servic
 import { PlanCheckoutService } from './services/plan-checkout.service';
 import { SubscriptionCheckoutService } from './services/subscription-checkout.service';
 import { TapGatewayService } from './services/tap-gateway.service';
+import { DiscountCodesService } from './services/discount-codes.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -28,6 +29,8 @@ describe('PaymentsService', () => {
     user: { update: jest.fn() },
     property: { findUnique: jest.fn(), update: jest.fn() },
     companySubscription: { findFirst: jest.fn(), create: jest.fn() },
+    discountRedemption: { create: jest.fn() },
+    discountCode: { update: jest.fn() },
   };
 
   const prisma = {
@@ -39,6 +42,8 @@ describe('PaymentsService', () => {
     identity: { findUnique: jest.fn() },
     companyPlan: { findFirst: jest.fn(), findUnique: jest.fn() },
     invoice: { create: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
+    discountCode: { findUnique: jest.fn() },
+    discountRedemption: { count: jest.fn() },
     $transaction: jest.fn((fn: (t: typeof tx) => Promise<unknown>) => fn(tx)),
   };
 
@@ -105,6 +110,7 @@ describe('PaymentsService', () => {
         PlanCheckoutService,
         FeatureCheckoutService,
         SubscriptionCheckoutService,
+        DiscountCodesService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
@@ -765,6 +771,259 @@ describe('PaymentsService', () => {
       expect(url).toBe(
         'buyootna://payment-callback?status=success&invoiceId=inv-sub&purpose=subscription',
       );
+    });
+  });
+
+  // «الدفع» screen (Figma 5557:142956): «كود الخصم» and «طريقة الدفع»
+  describe('discount codes and payment methods', () => {
+    const save25 = {
+      id: 'code-1',
+      code: 'SAVE25',
+      type: 'PERCENT',
+      value: 25,
+      maxDiscount: null,
+      minAmount: null,
+      appliesTo: ['PLAN', 'SUBSCRIPTION', 'FEATURE'],
+      startsAt: null,
+      expiresAt: null,
+      maxUses: null,
+      usedCount: 0,
+      onePerAccount: true,
+      isActive: true,
+    };
+    const tapSource = () =>
+      (
+        JSON.parse(
+          (fetchMock.mock.calls[0] as [string, { body: string }])[1].body,
+        ) as { source: { id: string } }
+      ).source.id;
+
+    beforeEach(() => {
+      prisma.discountCode.findUnique.mockResolvedValue(null);
+      prisma.discountRedemption.count.mockResolvedValue(0);
+      delete process.env.TAP_SOURCES;
+    });
+
+    it('quotes the package with every method and no discount', async () => {
+      const quote = await service.quote('user-1', 'identity-1', {
+        purpose: 'plan',
+        planSlug: 'gold',
+      });
+      expect(quote).toMatchObject({
+        title: 'الباقة الذهبية',
+        subtitle: 'إعلان واحد',
+        price: 12,
+        discount: 0,
+        total: 12,
+        discountCode: null,
+        methods: ['apple_pay', 'google_pay', 'card', 'knet'],
+      });
+    });
+
+    it('takes a valid code off the quoted price (any case)', async () => {
+      prisma.discountCode.findUnique.mockResolvedValue(save25);
+      const quote = await service.quote('user-1', 'identity-1', {
+        purpose: 'plan',
+        planSlug: 'gold',
+        discountCode: ' save25 ',
+      });
+      expect(prisma.discountCode.findUnique).toHaveBeenCalledWith({
+        where: { code: 'SAVE25' },
+      });
+      expect(quote).toMatchObject({
+        discount: 3,
+        total: 9,
+        discountCode: 'SAVE25',
+      });
+    });
+
+    it('refuses an unknown code before any invoice is made', async () => {
+      await expect(
+        service.createCharge(
+          'user-1',
+          'identity-1',
+          'gold',
+          'app://cb',
+          undefined,
+          undefined,
+          {
+            discountCode: 'NOPE',
+          },
+        ),
+      ).rejects.toThrow('كود الخصم غير صحيح');
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a code this account already used', async () => {
+      prisma.discountCode.findUnique.mockResolvedValue(save25);
+      prisma.discountRedemption.count.mockResolvedValue(1);
+      await expect(
+        service.quote('user-1', 'identity-1', {
+          purpose: 'plan',
+          planSlug: 'gold',
+          discountCode: 'SAVE25',
+        }),
+      ).rejects.toThrow('سبق أن استخدمت كود الخصم هذا');
+    });
+
+    it('charges the discounted total and records the discount on the invoice', async () => {
+      prisma.discountCode.findUnique.mockResolvedValue(save25);
+      tapCreatesCharge();
+
+      await service.createCharge(
+        'user-1',
+        'identity-1',
+        'gold',
+        'app://cb',
+        undefined,
+        undefined,
+        {
+          discountCode: 'SAVE25',
+          method: 'knet',
+        },
+      );
+
+      expect(prisma.invoice.create).toHaveBeenCalledWith({
+        data: containing({
+          amount: 9,
+          originalAmount: 12,
+          discountAmount: 3,
+          discountCodeId: 'code-1',
+        }),
+      });
+      expect(tapBody().amount).toBe(9);
+      // K-net opens Tap's KNET page
+      expect(tapSource()).toBe('src_kw.knet');
+    });
+
+    it('opens Tap on the chosen method, and refuses one not offered', async () => {
+      tapCreatesCharge();
+      await service.createCharge(
+        'user-1',
+        'identity-1',
+        'gold',
+        'app://cb',
+        undefined,
+        undefined,
+        {
+          method: 'apple_pay',
+        },
+      );
+      expect(tapSource()).toBe('src_apple_pay');
+
+      process.env.TAP_SOURCES = 'card,knet';
+      await expect(
+        service.createCharge(
+          'user-1',
+          'identity-1',
+          'gold',
+          'app://cb',
+          undefined,
+          undefined,
+          {
+            method: 'apple_pay',
+          },
+        ),
+      ).rejects.toThrow('طريقة الدفع غير متاحة');
+      await expect(
+        service.createCharge(
+          'user-1',
+          'identity-1',
+          'gold',
+          'app://cb',
+          undefined,
+          undefined,
+          {
+            method: 'paypal',
+          },
+        ),
+      ).rejects.toThrow('طريقة الدفع غير متاحة');
+    });
+
+    it('a code covering the whole price skips Tap and counts the use', async () => {
+      prisma.discountCode.findUnique.mockResolvedValue({
+        ...save25,
+        type: 'FIXED',
+        value: 50,
+      });
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'inv-1',
+        invoiceNo: 'INV-1',
+        status: 'PENDING',
+        planName: 'الذهبية',
+        planId: 'plan-gold',
+        userId: 'user-1',
+        identityId: 'identity-1',
+        discountCodeId: 'code-1',
+        planPackage: null,
+      });
+
+      const result = await service.createCharge(
+        'user-1',
+        'identity-1',
+        'gold',
+        'app://cb',
+        undefined,
+        undefined,
+        {
+          discountCode: 'SAVE25',
+        },
+      );
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(result.status).toBe('PAID');
+      expect(tx.discountRedemption.create).toHaveBeenCalledWith({
+        data: { codeId: 'code-1', userId: 'user-1', invoiceId: 'inv-1' },
+      });
+      expect(tx.discountCode.update).toHaveBeenCalledWith({
+        where: { id: 'code-1' },
+        data: { usedCount: { increment: 1 } },
+      });
+    });
+
+    it('a use is not counted again when the invoice was already paid', async () => {
+      tx.invoice.updateMany.mockResolvedValue({ count: 0 });
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'inv-1',
+        invoiceNo: 'INV-1',
+        status: 'PENDING',
+        planName: 'الذهبية',
+        planId: 'plan-gold',
+        userId: 'user-1',
+        identityId: 'identity-1',
+        discountCodeId: 'code-1',
+        planPackage: null,
+      });
+      tapReportsCharge('CAPTURED', 'inv-1');
+
+      await service.handleWebhook({
+        id: 'chg_1',
+        reference: { transaction: 'inv-1' },
+      });
+      expect(tx.discountRedemption.create).not.toHaveBeenCalled();
+    });
+
+    it('status tells the success popup what was bought and when it ends', async () => {
+      const endsAt = new Date('2027-05-15T00:00:00.000Z');
+      prisma.invoice.findFirst.mockResolvedValue({
+        status: 'PAID',
+        planName: 'اشتراك الشركات',
+        planDetails: 'الفضية',
+        companyPlanId: 'cp-1',
+        featurePackageId: null,
+        propertyId: null,
+        companySubscription: { endsAt },
+        property: null,
+      });
+      await expect(
+        service.getInvoiceStatus('user-1', 'inv-1'),
+      ).resolves.toEqual({
+        status: 'PAID',
+        purpose: 'subscription',
+        planName: 'اشتراك الشركات',
+        planDetails: 'الفضية',
+        endsAt,
+      });
     });
   });
 });

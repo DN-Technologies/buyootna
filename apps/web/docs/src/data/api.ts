@@ -9,6 +9,47 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-payment-discount-codes",
+      title: {
+        en: "Payments: discount codes, the chosen Tap method, and a quote before paying",
+        ar: "المدفوعات: أكواد الخصم، وطريقة الدفع المختارة في Tap، وملخص قبل الدفع",
+      },
+      priority: "P1",
+      story: {
+        en: "For the app's new «الدفع» screen. POST /payments/quote (signed in) returns what is bought (title, subtitle), price, discount, total and the payment methods offered, for a plan package, a company subscription or featuring an ad, with an optional «كود الخصم»; it writes nothing. The three charge endpoints accept discountCode and method (apple_pay, google_pay, card, knet → Tap's src_apple_pay, src_google_pay, src_card, src_kw.knet; TAP_SOURCES lists those offered). A code is checked on the server (active, dates, uses, one per account, purchase type, minimum) and its discount stored on the invoice (originalAmount, discountAmount, discountCodeId); amount is what is charged. A total of 0 is fulfilled without Tap. A use is counted only once the invoice is paid, so a failed payment never uses a code up. GET /payments/status/:invoiceId also returns purpose, planName, planDetails and endsAt for the success popup. Admin: GET/POST/PATCH /admin/discount-codes.",
+        ar: "لشاشة «الدفع» الجديدة في التطبيق. يعيد POST /payments/quote (للمسجّل) ما يُشترى والسعر والخصم والإجمالي وطرق الدفع المتاحة، لباقة إعلانات أو اشتراك شركة أو تمييز إعلان، مع «كود الخصم» اختيارياً؛ دون أن يكتب شيئاً. وتقبل نقاط الدفع الثلاث discountCode وmethod (apple_pay وgoogle_pay وcard وknet ← مصادر Tap؛ وTAP_SOURCES يحدد المتاح). يُتحقق من الكود في الخادم (فعّال، التواريخ، الاستخدامات، مرة لكل حساب، نوع الشراء، الحد الأدنى) ويُحفظ الخصم في الفاتورة؛ وamount هو المبلغ المدفوع. الإجمالي 0 يُفعَّل دون Tap. ولا يُحسب الاستخدام إلا بعد دفع الفاتورة. ويعيد GET /payments/status/:invoiceId أيضاً purpose وplanName وplanDetails وendsAt لنافذة النجاح. وللإدارة: GET/POST/PATCH /admin/discount-codes.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Quote: price, discount 0 and total without a code; with a valid code the discount (percent, capped percent or fixed, in fils) and the total.",
+          "An unknown, inactive, expired, used-up, already-used-by-you, wrong-type or under-minimum code is refused with its Arabic reason, and no invoice is made.",
+          "A charge with a code stores originalAmount, discountAmount and discountCodeId and charges the total; method opens Tap on that method; an unknown or not offered method is refused.",
+          "A code covering the whole price: PAID without Tap, and the use counted once.",
+          "An unpaid (pending or failed) invoice does not count a use; a paid one counts it once, even when Tap's redirect and webhook both arrive.",
+        ],
+        ar: [
+          "الملخص: السعر والخصم 0 والإجمالي دون كود؛ ومع كود صحيح الخصم (نسبة أو نسبة بحد أعلى أو مبلغ ثابت، بالفلس) والإجمالي.",
+          "الكود غير الموجود أو غير الفعّال أو المنتهي أو المستنفد أو المستخدم من قبلك أو لغير هذا الشراء أو دون الحد الأدنى يُرفض مع السبب، ولا تُنشأ فاتورة.",
+          "الدفع مع كود يحفظ المبلغ الأصلي والخصم والكود ويدفع الإجمالي؛ وmethod يفتح Tap على تلك الطريقة؛ والطريقة غير المعروفة أو غير المتاحة تُرفض.",
+          "كود يغطي السعر كاملاً: مدفوعة دون Tap، ويُحسب الاستخدام مرة.",
+          "الفاتورة غير المدفوعة لا تحسب استخداماً؛ والمدفوعة تحسبه مرة واحدة حتى مع وصول redirect وwebhook من Tap.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create SAVE25 (25%, PLAN) in the admin; quote a 5 KWD package with it: discount 1.25, total 3.75.",
+          "Charge it with method knet on Tap test keys: Tap's page opens on KNET; the invoice shows 3.75 / 5 / 1.25; SAVE25 uses still 0 until paid.",
+          "A 100% code: PAID at once; quoting it again says «سبق أن استخدمت كود الخصم هذا».",
+        ],
+        ar: [
+          "أنشئ SAVE25 (25%، باقات) في لوحة الإدارة؛ واطلب ملخص باقة 5 د.ك به: الخصم 1.25 والإجمالي 3.75.",
+          "ادفع بطريقة knet بمفاتيح Tap التجريبية: تفتح صفحة Tap على كي نت؛ والفاتورة 3.75 / 5 / 1.25؛ واستخدامات SAVE25 تبقى 0 حتى الدفع.",
+          "كود 100%: مدفوعة فوراً؛ وطلبه مرة أخرى يعيد «سبق أن استخدمت كود الخصم هذا».",
+        ],
+      },
+      updatedIn: "feat/payment-discount-codes",
+    },
+    {
       id: "api-company-verification-request",
       title: {
         en: "Company verification requests: GET/POST/PATCH /identities/:id/verification",

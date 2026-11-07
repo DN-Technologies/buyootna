@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
+import { checkoutSession } from '@/features/checkout/checkoutSession';
 import { showAlert } from '@/shared/utils/alert';
 
 export default function PaymentCallbackScreen() {
@@ -15,6 +16,13 @@ export default function PaymentCallbackScreen() {
 
   useEffect(() => {
     WebBrowser.dismissBrowser();
+
+    // The «الدفع» screen is waiting on Tap and shows the outcome itself:
+    // step back to it rather than show a second message
+    if (checkoutSession.isOpen()) {
+      if (router.canGoBack()) router.back();
+      return;
+    }
 
     if (!status) return;
 

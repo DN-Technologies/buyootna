@@ -1,0 +1,51 @@
+// Reviews of companies and offices, and reactions to them.
+
+enum ReactionType {
+  LIKE
+  DISLIKE
+}
+
+model Review {
+  id        String           @id @default(uuid())
+  rating    Int              @default(5)
+  comment   String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  reactions ReviewReaction[]
+  reports   Report[]
+
+  // New identity-based relations
+  reviewerIdentityId String?
+  targetIdentityId   String?
+  reviewerIdentity   Identity? @relation("IdentityGivenReviews", fields: [reviewerIdentityId], references: [id], onDelete: Cascade)
+  targetIdentity     Identity? @relation("IdentityReceivedReviews", fields: [targetIdentityId], references: [id], onDelete: Cascade)
+
+  // Legacy user-based relations - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  reviewerId   String?
+  targetUserId String?
+
+  @@unique([reviewerIdentityId, targetIdentityId])
+  @@index([targetIdentityId])
+  @@index([reviewerIdentityId])
+}
+
+model ReviewReaction {
+  id        String       @id @default(uuid())
+  reviewId  String
+  type      ReactionType
+  createdAt DateTime     @default(now())
+  review    Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Owning persona
+  identityId String
+  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // Legacy user-based relation - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  userId String?
+
+  @@unique([reviewId, identityId])
+  @@index([reviewId])
+  @@index([identityId])
+}
