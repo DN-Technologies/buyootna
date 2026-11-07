@@ -16,7 +16,8 @@ schema, navigation structure, state management, or adds a new dependency.
   files by feature (e.g. `identity.prisma`, `properties.prisma`,
   `alerts.prisma`) and loaded together via `--schema=prisma` (the whole
   `prisma/` directory, not a single file) — every Prisma CLI command in
-  this repo passes that flag.
+  this repo passes that flag. `schema.prisma` holds only the generator and
+  datasource; add a model to the file for its area (or a new one), not there.
 - **Testing**: Jest v29 + `ts-jest`. Every constructor-injected dependency
   in a `.spec.ts` needs a matching mock provider — see
   [`testing-policy.md`](./testing-policy.md).

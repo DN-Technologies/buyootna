@@ -1,0 +1,83 @@
+// Profile data from before personas (identity.prisma). Still referenced, so
+// kept as is; new code uses Identity and its *IdentityData models.
+
+// Legacy profile models - kept for backward compatibility during migration
+// TODO: Remove after migration is complete
+model IndividualProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Note: User relation removed as User no longer has these fields
+}
+
+model CompanyProfile {
+  id              String          @id @default(uuid())
+  name            String
+  services        String?
+  hqLocation      String?
+  serviceAreas    String?
+  about           String?
+  licenseActivity String?
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+  latitude        Float?
+  longitude       Float?
+  userId          String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  isVerified      Boolean         @default(false)
+  specialty       String?
+  licenseNumber   String
+  status          ApprovalStatus  @default(PENDING)
+  reviewRequests  ReviewRequest[] @relation("LegacyCompanyReviewRequests")
+
+  @@index([latitude, longitude])
+}
+
+model OfficeProfile {
+  id              String          @id @default(uuid())
+  name            String
+  services        String?
+  hqLocation      String?
+  about           String?
+  licenseActivity String?
+  licenseNumber   String
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+  isVerified      Boolean         @default(false)
+  userId          String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  status          ApprovalStatus  @default(PENDING)
+  reviewRequests  ReviewRequest[] @relation("LegacyOfficeReviewRequests")
+}
+
+model ReviewRequest {
+  id        String         @id @default(uuid())
+  status    ApprovalStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // New identity-based relations
+  companyIdentityDataId String?
+  officeIdentityDataId  String?
+  companyIdentityData   CompanyIdentityData? @relation("CompanyReviewRequests", fields: [companyIdentityDataId], references: [id], onDelete: Cascade)
+  officeIdentityData    OfficeIdentityData?  @relation("OfficeReviewRequests", fields: [officeIdentityDataId], references: [id], onDelete: Cascade)
+
+  // Legacy relations - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  companyProfileId String?
+  officeProfileId  String?
+  companyProfile   CompanyProfile? @relation("LegacyCompanyReviewRequests", fields: [companyProfileId], references: [id], onDelete: Cascade)
+  officeProfile    OfficeProfile?  @relation("LegacyOfficeReviewRequests", fields: [officeProfileId], references: [id], onDelete: Cascade)
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

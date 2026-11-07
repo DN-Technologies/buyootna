@@ -12,7 +12,8 @@ Use this skill when developing, testing, or preparing production deployments for
 ## ⚡ Workflow Procedures
 
 ### 1. Database Schema Synchronization
-When modifying `apps/api/prisma/schema.prisma`:
+When modifying the schema (the `.prisma` files in `apps/api/prisma/`, one per
+area; `schema.prisma` holds only the generator and datasource):
 ```bash
 # Generate updated TypeScript Prisma Client
 pnpm --filter api exec prisma generate --schema=prisma
