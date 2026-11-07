@@ -136,6 +136,14 @@ describe('«الدفع»', () => {
       '-1.25 د.ك',
     );
     expect(getByTestId('checkout-summary-total')).toHaveTextContent('3.75 د.ك');
+    // Read left to right as in the design: «-1.25 د.ك», not «د.ك 1.25-»
+    for (const id of [
+      'checkout-purchase-price',
+      'checkout-summary-discount',
+      'checkout-summary-total',
+    ]) {
+      expect(getByTestId(id)).toHaveStyle({ writingDirection: 'ltr' });
+    }
   });
 
   it('pays on Tap with the chosen method and code, then shows success', async () => {
