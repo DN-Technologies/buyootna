@@ -29,8 +29,6 @@ export default function AddIdentityCompanyScreen() {
 
   const [logoFile, setLogoFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [licenseFile, setLicenseFile] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const pickLogo = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -42,42 +40,23 @@ export default function AddIdentityCompanyScreen() {
     }
   };
 
-  const pickLicense = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'application/pdf'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      setLicenseFile(result.assets[0]);
-    }
-  };
-
   const onSubmit = async (data: CompanySignupFormValues): Promise<boolean> => {
     setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('name', data.name);
-      formData.append('licenseNumber', data.licenseNumber);
+      // «التخصص»; the licence comes later with «طلب التوثيق»
+      formData.append('specialty', data.specialty || '');
       formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation || '');
       formData.append('serviceAreas', data.serviceAreas || '');
       formData.append('about', data.about || '');
-      formData.append('licenseActivity', data.licenseActivity || '');
-      formData.append('licenseExpiry', data.licenseExpiry || '');
 
       if (logoFile) {
         formData.append('logo', {
           uri: logoFile.uri,
           name: logoFile.name || 'logo.jpg',
           type: logoFile.mimeType || 'image/jpeg',
-        } as any);
-      }
-
-      if (licenseFile) {
-        formData.append('license', {
-          uri: licenseFile.uri,
-          name: licenseFile.name || 'license.jpg',
-          type: licenseFile.mimeType || 'image/jpeg',
         } as any);
       }
 
@@ -157,8 +136,6 @@ export default function AddIdentityCompanyScreen() {
             onSuccessDone={openCompanyHome}
             logoFile={logoFile}
             pickLogo={pickLogo}
-            licenseFile={licenseFile}
-            pickLicense={pickLicense}
             isLoading={isLoading}
             includeAccountFields={false}
           />

@@ -182,6 +182,7 @@ export default function CompanyProfileScreen() {
           companyLogoUrl={company?.logoUrl}
           services={services}
           servicesLoading={isLoading}
+          companySpecialty={company?.specialty}
           targetIdentityId={company?.id}
           reviewSort={reviewSort}
           onSelectSort={setReviewSort}

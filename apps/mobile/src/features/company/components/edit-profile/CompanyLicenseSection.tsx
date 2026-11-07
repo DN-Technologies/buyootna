@@ -7,7 +7,7 @@ import { CalendarClockIcon, FileUploadDropzoneIcon } from '@/assets/icons/more';
 import type { PickedFile } from './useCompanyEditProfile';
 
 interface CompanyLicenseSectionProps {
-  licenseActivity: string;
+  specialty: string;
   onOpenActivityModal: () => void;
   licenseNumber: string;
   setLicenseNumber: (val: string) => void;
@@ -21,7 +21,7 @@ interface CompanyLicenseSectionProps {
 }
 
 export default function CompanyLicenseSection({
-  licenseActivity,
+  specialty,
   onOpenActivityModal,
   licenseNumber,
   setLicenseNumber,
@@ -43,13 +43,13 @@ export default function CompanyLicenseSection({
       </Text>
 
       <View className="gap-4">
-        {/* Field: النشاط */}
+        {/* Field: التخصص (it can't change while services from it exist) */}
         <View>
           <Text
             className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
             style={{ writingDirection: 'rtl' }}
           >
-            النشاط
+            التخصص
           </Text>
           <TouchableOpacity
             activeOpacity={0.7}
@@ -58,10 +58,10 @@ export default function CompanyLicenseSection({
           >
             <Text
               numberOfLines={1}
-              className={`flex-1 font-cairo-regular text-[14px] ${licenseActivity ? 'text-[#111111]' : 'text-[#979797]'}`}
+              className={`flex-1 font-cairo-regular text-[14px] ${specialty ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl' }}
             >
-              {licenseActivity || 'اختر النشاط'}
+              {specialty || 'اختر التخصص'}
             </Text>
             <Feather name="chevron-down" size={16} color="#111111" />
           </TouchableOpacity>

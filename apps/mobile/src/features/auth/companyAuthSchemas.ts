@@ -56,21 +56,38 @@ export function createCompanySignupSchema(includeAccountFields: boolean) {
     about: z.string().max(ABOUT_MAX_LENGTH).optional(),
     logo: z.any().optional(),
 
-    // Step 3: Licensing
+    // Step 3. A company: «التخصص» (its licence comes with «طلب التوثيق»).
+    // An office: its licence, as before
+    specialty: z.string().optional(),
     licenseActivity: z.string().optional(),
-    licenseNumber: z
-      .string({ message: 'رقم الرخصة مطلوب' })
-      .min(1, 'رقم الرخصة مطلوب'),
+    licenseNumber: z.string().optional(),
     licenseExpiry: z.string().optional(),
     licenseFile: z.any().optional(),
   });
 
+  const byType = base.superRefine((data, ctx) => {
+    if (data.type === 'company' && !data.specialty?.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'التخصص مطلوب',
+        path: ['specialty'],
+      });
+    }
+    if (data.type === 'office' && !data.licenseNumber?.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'رقم الرخصة مطلوب',
+        path: ['licenseNumber'],
+      });
+    }
+  });
+
   return includeAccountFields
-    ? base.refine((data) => data.password === data.confirmPassword, {
+    ? byType.refine((data) => data.password === data.confirmPassword, {
         message: 'كلمات المرور غير متطابقة',
         path: ['confirmPassword'],
       })
-    : base;
+    : byType;
 }
 
 export const companySignupSchema = createCompanySignupSchema(true);

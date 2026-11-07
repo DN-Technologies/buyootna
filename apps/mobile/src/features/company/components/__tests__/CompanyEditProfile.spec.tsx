@@ -103,6 +103,7 @@ const mockCompanyIdentity = {
     about: 'نبذة تجريبية',
     services: 'من 9 صباحا حتى 5 مساءا',
     licenseActivity: 'تشطيبات',
+    specialty: 'مقاول عام',
     licenseNumber: '6743963845',
     licenseExpiry: '15 ابريل 2027',
     logoUrl: 'https://example.com/logo.jpg',
@@ -160,7 +161,7 @@ describe('CompanyEditProfile', () => {
     expect(getByText('مواعيد العمل')).toBeTruthy();
 
     // Section 2: الرخصة labels
-    expect(getByText('النشاط')).toBeTruthy();
+    expect(getByText('التخصص')).toBeTruthy();
     expect(getByText('رقم الرخصة')).toBeTruthy();
     expect(getByText('تاريخ انتهاء')).toBeTruthy();
     expect(getByText('الصورة')).toBeTruthy();
@@ -171,13 +172,14 @@ describe('CompanyEditProfile', () => {
     expect(getByText('حفظ التغييرات')).toBeTruthy();
   });
 
-  // QA: النشاط offered an old hard-coded list; it's the services
-  // catalogue's specialties now, as إضافة خدمة and طلب عرض سعر
-  it('النشاط offers the services catalogue specialties', async () => {
+  // «التخصص» (set at sign-up) replaces النشاط: the services catalogue's
+  // specialties, as إضافة خدمة and طلب عرض سعر
+  it('التخصص offers the services catalogue specialties', async () => {
     const { getByText, queryByText } = await render(<CompanyEditProfile />);
 
-    // The saved, older activity still shows until it's changed
-    await fireEvent.press(getByText('تشطيبات'));
+    // The saved specialty shows, not the older activity
+    expect(queryByText('تشطيبات')).toBeNull();
+    await fireEvent.press(getByText('مقاول عام'));
 
     expect(getByText('مكتب هندسي')).toBeTruthy();
     expect(queryByText('تشطيبات،بناء،ديكور،كهرباء')).toBeNull();

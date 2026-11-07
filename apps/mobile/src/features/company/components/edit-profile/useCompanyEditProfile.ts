@@ -45,6 +45,8 @@ export interface CompanyIdentityFields {
   // be typed into the `services` column, which also holds the company's
   // services list (search, cards), so it overwrote that.
   workingHours: string;
+  // «التخصص»: the services catalogue's مجال التخصص (sign-up sets it)
+  specialty: string;
   licenseActivity: string;
   licenseNumber: string;
   licenseExpiry: string;
@@ -57,6 +59,7 @@ export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   serviceAreas: '',
   about: '',
   workingHours: '',
+  specialty: '',
   licenseActivity: '',
   licenseNumber: '',
   licenseExpiry: '',
@@ -115,6 +118,7 @@ export function useCompanyEditProfile() {
       workingHours: companyData?.workingHours
         ? JSON.stringify(companyData.workingHours)
         : '',
+      specialty: companyData?.specialty || '',
       licenseActivity: companyData?.licenseActivity || '',
       licenseNumber: companyData?.licenseNumber || '',
       licenseExpiry: companyData?.licenseExpiry || '',

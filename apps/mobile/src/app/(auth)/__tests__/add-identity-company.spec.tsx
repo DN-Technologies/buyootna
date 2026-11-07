@@ -42,6 +42,7 @@ jest.mock('@/features/auth/components/company/CompanySignupForm', () => ({
 
 const formData = {
   name: 'شركة البناء',
+  specialty: 'مقاول عام',
   licenseNumber: '43424332',
   services: '',
   hqLocation: '',
@@ -87,5 +88,26 @@ describe('AddIdentityCompanyScreen › العودة الى الرئيسية', ()
 
     expect(resetToIdentityHome).toHaveBeenCalledWith(null);
     expect(resetToIdentityHome).not.toHaveBeenCalledWith('COMPANY');
+  });
+
+  // The licence comes later with «طلب التوثيق»: sign-up sends «التخصص»
+  it('sends the specialty and no licence fields', async () => {
+    (apiClient.post as jest.Mock).mockResolvedValueOnce({
+      data: { id: 'company-identity-1', type: 'COMPANY' },
+    });
+    await render(<AddIdentityCompanyScreen />);
+
+    await act(async () => {
+      await mockFormProps.onSubmit(formData);
+    });
+
+    const [url, body] = (apiClient.post as jest.Mock).mock.calls[0];
+    expect(url).toBe('/identities/company');
+    const sent = body as FormData;
+    expect(sent.get('specialty')).toBe('مقاول عام');
+    const keys = [...sent.keys()];
+    for (const key of ['licenseNumber', 'licenseExpiry', 'licenseActivity', 'license']) {
+      expect(keys).not.toContain(key);
+    }
   });
 });
