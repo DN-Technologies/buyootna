@@ -13,7 +13,9 @@ import VerificationRequestsCard from '@/components/dashboard/VerificationRequest
 import ReviewVerificationDrawer from '@/components/dashboard/ReviewVerificationDrawer'
 import ConfirmVerificationModal from '@/components/dashboard/ConfirmVerificationModal'
 import RejectVerificationModal from '@/components/dashboard/RejectVerificationModal'
-import RequestEditModal from '@/components/dashboard/RequestEditModal'
+import RequestEditModal, {
+  type RequestEditOptions,
+} from '@/components/dashboard/RequestEditModal'
 import VerificationSuccessToast from '@/components/dashboard/VerificationSuccessToast'
 import { useDashboardPage } from './useDashboardPage'
 import { getStoredUser } from '@/lib/auth'
@@ -193,11 +195,7 @@ export default function DashboardPage() {
     }
   }
 
-  const handleConfirmRequestEdit = async (options: {
-    notes: string
-    notifyEmail: boolean
-    notifyInApp: boolean
-  }) => {
+  const handleConfirmRequestEdit = async (options: RequestEditOptions) => {
     if (!selectedRequest) return
     setIsSubmittingDecision(true)
     try {
@@ -324,6 +322,8 @@ export default function DashboardPage() {
         onClose={() => setIsRequestEditModalOpen(false)}
         onConfirm={handleConfirmRequestEdit}
         isLoading={isSubmittingDecision}
+        // A company: per field, for its «استكمال البيانات» screen
+        withFields={selectedRequest?.type === 'شركة'}
       />
     </div>
   )

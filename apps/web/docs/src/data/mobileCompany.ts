@@ -9,6 +9,47 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-verification-request",
+      title: {
+        en: "«طلب التوثيق»: a company sends its licence for the «موثق» badge",
+        ar: "«طلب التوثيق»: الشركة ترسل رخصتها لشارة «موثق»",
+      },
+      priority: "P1",
+      story: {
+        en: "On المزيد the company card has a second button beside تعديل that follows its verification (Figma 10305:134994 – 10312:142425). «طلب توثيق» opens «تقديم طلب توثيق»: النشاط, رقم الرخصة (required), تاريخ انتهاء and the licence image (required, up to 10 MB); «ارسال الطلب» shows «تم إرسال طلبك بنجاح». The button then reads «طلبك قيد المراجعة» and opens «تفاصيل طلب التوثيق» with what was sent. If the admin sends fields back it reads «استكمال البيانات» and opens «استكمال بيانات طلب التوثيق»: each field sent back with the admin's reason and a way to fix it, the rest listed as accepted, and «اعادة ارسال الطلب». Once approved it reads «حساب موثق», the badge shows next to the name, and «حسابك موثق بنجاح» shows once. Company edit profile no longer edits the licence; it keeps «التخصص».",
+        ar: "في المزيد أصبح لبطاقة الشركة زر ثانٍ بجانب تعديل يتبع حالة التوثيق. «طلب توثيق» يفتح «تقديم طلب توثيق»: النشاط ورقم الرخصة (مطلوب) وتاريخ الانتهاء وصورة الرخصة (مطلوبة، حتى 10 ميجا)؛ و«ارسال الطلب» يظهر «تم إرسال طلبك بنجاح». ثم يصبح الزر «طلبك قيد المراجعة» ويفتح «تفاصيل طلب التوثيق». وإن أعاد المشرف حقولاً يصبح «استكمال البيانات» ويفتح «استكمال بيانات طلب التوثيق»: كل حقل مع سببه وطريقة تعديله، والباقي مقبول، ثم «اعادة ارسال الطلب». وعند الاعتماد يصبح «حساب موثق» وتظهر الشارة بجانب الاسم و«حسابك موثق بنجاح» مرة واحدة. ولم يعد تعديل الملف يعدّل الرخصة؛ يبقى فيه «التخصص».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The button shows the right state: طلب توثيق / طلبك قيد المراجعة / استكمال البيانات / حساب موثق.",
+          "The form can't be sent without the licence number and image.",
+          "«استكمال البيانات» asks only the fields sent back and sends only those.",
+          "«حسابك موثق بنجاح» shows once after approval.",
+          "Company edit profile has «التخصص» and no licence fields.",
+        ],
+        ar: [
+          "الزر يعرض الحالة الصحيحة: طلب توثيق / طلبك قيد المراجعة / استكمال البيانات / حساب موثق.",
+          "لا يُرسل النموذج دون رقم الرخصة وصورتها.",
+          "«استكمال البيانات» يطلب الحقول المعادة فقط ويرسلها فقط.",
+          "«حسابك موثق بنجاح» يظهر مرة واحدة بعد الاعتماد.",
+          "تعديل ملف الشركة فيه «التخصص» دون حقول الرخصة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "New company: المزيد → «طلب توثيق» → fill and send → «تم إرسال طلبك بنجاح»; the button reads «طلبك قيد المراجعة» and opens the details.",
+          "In the admin, request edits on رقم الرخصة only: the app shows «استكمال البيانات»; fix the number and resend.",
+          "Approve in the admin: «حساب موثق», the badge by the name, and «حسابك موثق بنجاح» once.",
+        ],
+        ar: [
+          "شركة جديدة: المزيد ← «طلب توثيق» ← املأ وأرسل ← «تم إرسال طلبك بنجاح»؛ ويصبح الزر «طلبك قيد المراجعة» ويفتح التفاصيل.",
+          "في لوحة الإدارة اطلب تعديل رقم الرخصة فقط: يظهر في التطبيق «استكمال البيانات»؛ عدّل الرقم وأعد الإرسال.",
+          "اعتمد في لوحة الإدارة: «حساب موثق» والشارة بجانب الاسم و«حسابك موثق بنجاح» مرة واحدة.",
+        ],
+      },
+      updatedIn: "feat/company-verification-request",
+    },
+    {
       id: "mobile-company-signup-specialty",
       title: {
         en: "Company sign-up asks «التخصص», not the licence; the quote sheet shows it fixed",

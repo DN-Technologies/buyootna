@@ -51,7 +51,7 @@ describe('CompanyEditProfileScreen', () => {
 
     const { getByText } = await render(<CompanyEditProfileScreen />);
     expect(getByText('عن الشركة')).toBeTruthy();
-    expect(getByText('الرخصة')).toBeTruthy();
+    expect(getByText('التخصص')).toBeTruthy();
     expect(getByText('حفظ التغييرات')).toBeTruthy();
   });
 });

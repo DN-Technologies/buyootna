@@ -34,7 +34,9 @@ model Identity {
   officeData     OfficeIdentityData?
 
   // Devices currently using this persona
-  activeOnSessions Session[]
+  activeOnSessions     Session[]
+  // A company's «طلب التوثيق» (licence review for the «موثق» badge)
+  verificationRequests CompanyVerificationRequest[]
 
   // Identity-scoped data
   properties           Property[]

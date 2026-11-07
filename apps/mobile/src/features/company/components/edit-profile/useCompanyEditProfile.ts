@@ -47,9 +47,7 @@ export interface CompanyIdentityFields {
   workingHours: string;
   // «التخصص»: the services catalogue's مجال التخصص (sign-up sets it)
   specialty: string;
-  licenseActivity: string;
-  licenseNumber: string;
-  licenseExpiry: string;
+  // The licence is sent with «طلب التوثيق», not edited here
 }
 
 export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
@@ -60,9 +58,6 @@ export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   about: '',
   workingHours: '',
   specialty: '',
-  licenseActivity: '',
-  licenseNumber: '',
-  licenseExpiry: '',
 };
 
 export const PHONE_REQUIRED_MESSAGE = 'رقم الهاتف مطلوب للتواصل معك.';
@@ -119,9 +114,6 @@ export function useCompanyEditProfile() {
         ? JSON.stringify(companyData.workingHours)
         : '',
       specialty: companyData?.specialty || '',
-      licenseActivity: companyData?.licenseActivity || '',
-      licenseNumber: companyData?.licenseNumber || '',
-      licenseExpiry: companyData?.licenseExpiry || '',
     }),
     [companyData],
   );
@@ -134,7 +126,6 @@ export function useCompanyEditProfile() {
 
   // --- Files ---
   const [logoFile, setLogoFile] = useState<PickedFile | null>(null);
-  const [licenseFile, setLicenseFile] = useState<PickedFile | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -142,21 +133,6 @@ export function useCompanyEditProfile() {
   const [activityModalVisible, setActivityModalVisible] = useState(false);
   const [serviceAreasModalVisible, setServiceAreasModalVisible] =
     useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const onDateChange = (_event: unknown, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setIdentityField(
-        'licenseExpiry',
-        selectedDate.toLocaleDateString('ar-KW-u-nu-latn', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
-      );
-    }
-  };
 
   // --- Verification state (phone by SMS, email by emailed code) ---
   const [phoneVerified, setPhoneVerified] = useState<boolean | null>(null);
@@ -247,7 +223,7 @@ export function useCompanyEditProfile() {
       // 2. Company/licence fields + picked files (multipart when files attached)
       const identityPatch = buildIdentityPatch();
       const hasIdentityPatch = Object.keys(identityPatch).length > 0;
-      if (hasIdentityPatch || logoFile || licenseFile) {
+      if (hasIdentityPatch || logoFile) {
         const formData = new FormData();
         Object.entries(identityPatch).forEach(([key, value]) => {
           if (value !== undefined) formData.append(key, value);
@@ -257,13 +233,6 @@ export function useCompanyEditProfile() {
             uri: logoFile.uri,
             name: logoFile.name || 'logo.jpg',
             type: logoFile.mimeType || 'image/jpeg',
-          } as unknown as Blob);
-        }
-        if (licenseFile) {
-          formData.append('license', {
-            uri: licenseFile.uri,
-            name: licenseFile.name || 'license.jpg',
-            type: licenseFile.mimeType || 'image/jpeg',
           } as unknown as Blob);
         }
         await apiClient.patch(`/identities/${activeIdentity.id}`, formData, {
@@ -326,7 +295,7 @@ export function useCompanyEditProfile() {
 
   const { isDirty } = form.formState;
   const canSubmit =
-    (isDirty || identityChanged || !!logoFile || !!licenseFile) &&
+    (isDirty || identityChanged || !!logoFile) &&
     !isSubmitting;
 
   const phoneChanged = isNewPhone(form.watch('phone') ?? '');
@@ -345,8 +314,6 @@ export function useCompanyEditProfile() {
     identityChanged,
     logoFile,
     setLogoFile,
-    licenseFile,
-    setLicenseFile,
     // Verification
     phoneRequired,
     phoneChanged,
@@ -366,8 +333,5 @@ export function useCompanyEditProfile() {
     setActivityModalVisible,
     serviceAreasModalVisible,
     setServiceAreasModalVisible,
-    showDatePicker,
-    setShowDatePicker,
-    onDateChange,
   };
 }

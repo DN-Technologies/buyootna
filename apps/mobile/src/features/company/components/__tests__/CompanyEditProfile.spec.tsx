@@ -147,7 +147,6 @@ describe('CompanyEditProfile', () => {
     // Header & Section titles
     expect(getByText('تعديل الملف الشخصي')).toBeTruthy();
     expect(getByText('عن الشركة')).toBeTruthy();
-    expect(getByText('الرخصة')).toBeTruthy();
 
     // Section 1: عن الشركة labels
     expect(getByText('الاسم')).toBeTruthy();
@@ -160,11 +159,11 @@ describe('CompanyEditProfile', () => {
     expect(getByText('نبذة عن الشركة')).toBeTruthy();
     expect(getByText('مواعيد العمل')).toBeTruthy();
 
-    // Section 2: الرخصة labels
+    // التخصص; the licence goes with «طلب التوثيق», not edited here
     expect(getByText('التخصص')).toBeTruthy();
-    expect(getByText('رقم الرخصة')).toBeTruthy();
-    expect(getByText('تاريخ انتهاء')).toBeTruthy();
-    expect(getByText('الصورة')).toBeTruthy();
+    expect(queryByText('رقم الرخصة')).toBeNull();
+    expect(queryByText('تاريخ انتهاء')).toBeNull();
+    expect(queryByText('الصورة')).toBeNull();
 
     // Input placeholders (neutral, per design typography)
     expect(getByPlaceholderText('أدخل اسم الشركة')).toBeTruthy();
@@ -216,18 +215,19 @@ describe('CompanyEditProfile', () => {
     expect(apiClient.patch).not.toHaveBeenCalled();
   });
 
-  it('sends user fields to /users/profile and licence fields to /identities/:id', async () => {
-    const { getByDisplayValue, getByTestId } = await render(
+  it('sends user fields to /users/profile and company fields to /identities/:id', async () => {
+    const { getByDisplayValue, getByTestId, getByText } = await render(
       <CompanyEditProfile />,
     );
 
-    // Modify the company name (a user field) and the licence number (an
+    // Modify the company name (a user field) and the specialty (an
     // identity field) in one save
     await fireEvent.changeText(
       getByDisplayValue('دار العقار الحديث'),
       'دار العقار الجديد',
     );
-    await fireEvent.changeText(getByDisplayValue('6743963845'), '1234567890');
+    await fireEvent.press(getByText('مقاول عام'));
+    await fireEvent.press(getByText('مكتب هندسي'));
 
     await waitFor(() => {
       expect(getByTestId('save-button').props.accessibilityState?.disabled).toBe(
@@ -252,7 +252,7 @@ describe('CompanyEditProfile', () => {
     expect(userCall.licenseActivity).toBeUndefined();
     expect(userCall.licenseExpiry).toBeUndefined();
 
-    // The licence change goes to the identities endpoint (multipart, since
+    // The specialty change goes to the identities endpoint (multipart, since
     // this screen always posts the identity save as a form)
     await waitFor(() =>
       expect(apiClient.patch).toHaveBeenCalledWith(

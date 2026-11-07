@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import type { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
@@ -17,6 +18,8 @@ export interface CompanyProfileCardProps {
   location?: string | null;
   onOpenAccountSelector: () => void;
   onEditPress: () => void;
+  // Beside تعديل: the «طلب التوثيق» button (Figma 10305:134994)
+  secondaryAction?: ReactNode;
 }
 
 export default function CompanyProfileCard({
@@ -28,6 +31,7 @@ export default function CompanyProfileCard({
   location,
   onOpenAccountSelector,
   onEditPress,
+  secondaryAction,
 }: CompanyProfileCardProps) {
   return (
     <View className="mx-4 mb-6 mt-4 overflow-hidden rounded-[8px] border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
@@ -112,17 +116,20 @@ export default function CompanyProfileCard({
           </View>
         ) : null}
 
-        {/* 4. Edit Button (single full-width primary action, per design) */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onEditPress}
-          className="mt-3.5 h-9 w-full flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#15304D]"
-        >
-          <EditPencilIcon size={16} color="#FFFFFF" />
-          <Text className="font-cairo-semibold text-[14px] tracking-[0.28px] text-white">
-            تعديل
-          </Text>
-        </TouchableOpacity>
+        {/* 4. تعديل on the right; the «طلب التوثيق» button, if any, on the left */}
+        <View className="mt-3.5 w-full flex-row items-center gap-2">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={onEditPress}
+            className="h-9 flex-1 flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#15304D] px-2"
+          >
+            <EditPencilIcon size={14} color="#FFFFFF" />
+            <Text className="font-cairo-semibold text-[14px] tracking-[0.28px] text-white">
+              تعديل
+            </Text>
+          </TouchableOpacity>
+          {secondaryAction}
+        </View>
       </View>
     </View>
   );
