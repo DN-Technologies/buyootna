@@ -16,8 +16,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "After closing the home «الفلتر» or the «+» sheet (swipe down or tap outside), the next tap did nothing and the one after opened it (QA, iOS). A bottom sheet unmounts itself from its close animation's callback; when that callback was missed the sheet stayed mounted but hidden, the next present() tried to reopen it and did nothing, and only the tap after mounted a fresh one. presentSheet() now clears such a leftover sheet first and retries once a tap that hasn't started opening the sheet. Used by the home filter and the «+» of individuals, companies and offices.",
-        ar: "بعد إغلاق «الفلتر» في الرئيسية أو قائمة «+» (بالسحب أو بالضغط خارجها) لم تكن الضغطة التالية تفعل شيئاً وتفتح التي بعدها. كانت القائمة تبقى مركّبة ومخفية عندما يفوت استدعاء نهاية حركة الإغلاق، فتحاول الضغطة التالية إعادة فتحها دون نتيجة. أصبح presentSheet() يزيل القائمة المتبقية أولاً ويعيد المحاولة مرة إن لم تبدأ بالفتح. يُستخدم في فلتر الرئيسية و«+» للأفراد والشركات والمكاتب.",
+        en: "After closing the home «الفلتر» or the «+» sheet (swipe down or tap outside), the next tap did nothing and the one after opened it (QA, iOS). A bottom sheet unmounts itself from its close animation's callback; when that callback was missed the sheet stayed mounted but hidden, the next present() tried to reopen it and did nothing, and only the tap after mounted a fresh one. presentSheet() now clears such a leftover sheet first and retries once a tap that hasn't started opening the sheet. Used by the home filter and the «+» of individuals, companies and offices, including a guest's «+» (the sign-in sheet) and the quota sheet.",
+        ar: "بعد إغلاق «الفلتر» في الرئيسية أو قائمة «+» (بالسحب أو بالضغط خارجها) لم تكن الضغطة التالية تفعل شيئاً وتفتح التي بعدها. كانت القائمة تبقى مركّبة ومخفية عندما يفوت استدعاء نهاية حركة الإغلاق، فتحاول الضغطة التالية إعادة فتحها دون نتيجة. أصبح presentSheet() يزيل القائمة المتبقية أولاً ويعيد المحاولة مرة إن لم تبدأ بالفتح. يُستخدم في فلتر الرئيسية و«+» للأفراد والشركات والمكاتب، ومنها «+» للزائر (نافذة تسجيل الدخول) ونافذة نفاد الرصيد.",
       },
       acceptanceCriteria: {
         en: [
@@ -39,7 +39,7 @@ export const mobileShared: DocSection = {
           "الرئيسية: اضغط الفلتر ثم اسحبه للأسفل؛ اضغط مرة أخرى؛ اضغط خارجه؛ اضغط مرة أخرى: يفتح في كل مرة. كرر مع «+».",
         ],
       },
-      updatedIn: "fix/sheet-dead-taps",
+      updatedIn: "fix/plus-guest-sheet",
     },
     {
       id: "mobile-delete-profile-leaves-its-screens",
