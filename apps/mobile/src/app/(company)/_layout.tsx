@@ -6,6 +6,7 @@ import CompanyActionsSheet from '@/features/company/components/CompanyActionsShe
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { presentSheet } from '@/shared/utils/presentSheet';
 
 export default function CompanyLayout() {
   const token = useAuthStore((state) => state.token);
@@ -17,7 +18,7 @@ export default function CompanyLayout() {
     if (!token) {
       authGuardSheetRef.current?.present();
     } else {
-      actionsSheetRef.current?.present();
+      presentSheet(actionsSheetRef);
     }
   };
 

@@ -7,6 +7,7 @@ import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedS
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { presentSheet } from '@/shared/utils/presentSheet';
 
 export default function MainLayout() {
   const token = useAuthStore((state) => state.token);
@@ -21,7 +22,7 @@ export default function MainLayout() {
     if (!token) {
       authGuardSheetRef.current?.present();
     } else {
-      plusSheetRef.current?.present();
+      presentSheet(plusSheetRef);
     }
   };
 
