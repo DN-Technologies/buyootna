@@ -8,6 +8,8 @@ export function usePropertyDetails(id?: string) {
     data: property,
     isLoading,
     isError,
+    error,
+    isFetching,
     refetch,
   } = useQuery<PropertyDetailsDto>({
     queryKey: ['property', id],
@@ -19,6 +21,9 @@ export function usePropertyDetails(id?: string) {
     property,
     isLoading,
     isError,
+    error,
+    // A retry after an error (the error state stays up meanwhile)
+    isRetrying: isError && isFetching,
     refetch,
   };
 }
