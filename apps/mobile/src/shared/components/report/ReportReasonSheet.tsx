@@ -6,6 +6,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface ReportReasonSheetProps {
@@ -89,7 +90,12 @@ const ReportReasonSheet = forwardRef<BottomSheetModal, ReportReasonSheetProps>(
             </TouchableOpacity>
           </View>
 
-          <Text className="mb-2 font-cairo-medium text-sm text-[#6B6A6A]">
+          <Text
+            testID="report-reason-label"
+            className="mb-2 font-cairo-medium text-sm text-[#6B6A6A]"
+            // Full-width labels: without it they lined up on the left (QA)
+            style={{ writingDirection: 'rtl' }}
+          >
             سبب البلاغ
           </Text>
 
@@ -120,7 +126,12 @@ const ReportReasonSheet = forwardRef<BottomSheetModal, ReportReasonSheetProps>(
             })}
           </View>
 
-          <Text className="mb-2 font-cairo-medium text-sm text-[#6B6A6A]">
+          <Text
+            testID="report-details-label"
+            className="mb-2 font-cairo-medium text-sm text-[#6B6A6A]"
+            // Full-width labels: without it they lined up on the left (QA)
+            style={{ writingDirection: 'rtl' }}
+          >
             تفاصيل إضافية (اختياري)
           </Text>
 
