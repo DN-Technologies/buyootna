@@ -9,6 +9,35 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-blocked-names-rtl",
+      title: {
+        en: "«المحظورون»: names start from the right, Latin company names too",
+        ar: "«المحظورون»: الأسماء تبدأ من اليمين ومنها أسماء الشركات اللاتينية",
+      },
+      priority: "P2",
+      story: {
+        en: "In the blocked list the name spans the row with no writing direction, so iOS aligned each name by its first letter: Latin or mixed company names lined up on the left (QA). Names now read right to left like the rest of the app.",
+        ar: "في قائمة المحظورين كان الاسم يمتد على السطر دون اتجاه كتابة، فيحاذيه iOS حسب أول حرف: أسماء الشركات اللاتينية أو المختلطة تظهر من اليسار. أصبحت الأسماء من اليمين كبقية التطبيق.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every name in «المحظورون» starts from the right, whatever its first letter.",
+        ],
+        ar: [
+          "كل اسم في «المحظورون» يبدأ من اليمين أياً كان أول حرف فيه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Block a company with a Latin name, open الإعدادات › المحظورون: its name sits on the right next to its logo.",
+        ],
+        ar: [
+          "احظر شركة باسم لاتيني ثم افتح الإعدادات ← المحظورون: يظهر اسمها على اليمين بجانب شعارها.",
+        ],
+      },
+      updatedIn: "fix/blocked-names-rtl",
+    },
+    {
       id: "mobile-sheets-open-every-tap",
       title: {
         en: "The home filter and «+» open on every tap, not every other one",

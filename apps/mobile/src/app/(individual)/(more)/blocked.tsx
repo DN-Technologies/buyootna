@@ -74,8 +74,12 @@ export default function BlockedAccountsScreen() {
                 )}
               </View>
               <Text
+                testID={`blocked-name-${item.userId}`}
                 numberOfLines={1}
                 className="flex-1 font-cairo-semibold text-[14px] text-[#111111]"
+                // A name starting with Latin letters (most company names)
+                // otherwise lines up on the left (QA)
+                style={{ writingDirection: 'rtl' }}
               >
                 {item.name}
               </Text>
