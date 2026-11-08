@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-sheets-open-every-tap",
+      title: {
+        en: "The home filter and «+» open on every tap, not every other one",
+        ar: "فلتر الرئيسية و«+» يفتحان مع كل ضغطة لا كل ضغطتين",
+      },
+      priority: "P1",
+      story: {
+        en: "After closing the home «الفلتر» or the «+» sheet (swipe down or tap outside), the next tap did nothing and the one after opened it (QA, iOS). A bottom sheet unmounts itself from its close animation's callback; when that callback was missed the sheet stayed mounted but hidden, the next present() tried to reopen it and did nothing, and only the tap after mounted a fresh one. presentSheet() now clears such a leftover sheet first and retries once a tap that hasn't started opening the sheet. Used by the home filter and the «+» of individuals, companies and offices.",
+        ar: "بعد إغلاق «الفلتر» في الرئيسية أو قائمة «+» (بالسحب أو بالضغط خارجها) لم تكن الضغطة التالية تفعل شيئاً وتفتح التي بعدها. كانت القائمة تبقى مركّبة ومخفية عندما يفوت استدعاء نهاية حركة الإغلاق، فتحاول الضغطة التالية إعادة فتحها دون نتيجة. أصبح presentSheet() يزيل القائمة المتبقية أولاً ويعيد المحاولة مرة إن لم تبدأ بالفتح. يُستخدم في فلتر الرئيسية و«+» للأفراد والشركات والمكاتب.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The home filter opens on every tap after closing it by swipe, outside tap or ✕.",
+          "«+» (individual, company, office) opens on every tap the same way.",
+          "An open sheet isn't re-animated by a tap.",
+        ],
+        ar: [
+          "يفتح فلتر الرئيسية مع كل ضغطة بعد إغلاقه بالسحب أو الضغط خارجه أو ✕.",
+          "«+» (فرد، شركة، مكتب) يفتح مع كل ضغطة بالطريقة نفسها.",
+          "لا تعيد الضغطة تحريك قائمة مفتوحة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Home: tap الفلتر, swipe it down; tap again; tap outside; tap again: it opens every time. Repeat with «+».",
+        ],
+        ar: [
+          "الرئيسية: اضغط الفلتر ثم اسحبه للأسفل؛ اضغط مرة أخرى؛ اضغط خارجه؛ اضغط مرة أخرى: يفتح في كل مرة. كرر مع «+».",
+        ],
+      },
+      updatedIn: "fix/sheet-dead-taps",
+    },
+    {
       id: "mobile-delete-profile-leaves-its-screens",
       title: {
         en: "Deleting the company (or office) profile leaves its screens at once, no restart",
