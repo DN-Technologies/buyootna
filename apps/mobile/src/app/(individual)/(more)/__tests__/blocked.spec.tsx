@@ -46,6 +46,15 @@ describe('Settings › المحظورون', () => {
     expect(mockAskToUnblock).toHaveBeenCalledWith('u3', 'أحمد');
   });
 
+  // QA: company names (often Latin) lined up on the left
+  it('names read right to left, Latin company names too', async () => {
+    mockBlocked = [{ userId: 'u4', name: 'Buyootna Co', avatarUrl: null }];
+    const { getByTestId } = await render(<BlockedAccountsScreen />);
+    expect(getByTestId('blocked-name-u4')).toHaveStyle({
+      writingDirection: 'rtl',
+    });
+  });
+
   it('says so when no one is blocked', async () => {
     const screen = await render(<BlockedAccountsScreen />);
     expect(screen.getByTestId('blocked-empty')).toBeTruthy();
