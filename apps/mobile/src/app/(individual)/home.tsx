@@ -48,6 +48,7 @@ import GoldSegment, {
 import { useBlocksVersion } from '@/shared/hooks/blocks/useBlocks';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { presentSheet } from '@/shared/utils/presentSheet';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'offices';
@@ -229,7 +230,7 @@ export default function HomeScreen() {
                     accessibilityLabel="تصفية البحث"
                     accessibilityState={{ selected: isFiltered }}
                     activeOpacity={0.7}
-                    onPress={() => filterSheetRef.current?.present()}
+                    onPress={() => presentSheet(filterSheetRef)}
                     className="size-[40px] shrink-0 items-center justify-center rounded-full"
                     style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
                   >
