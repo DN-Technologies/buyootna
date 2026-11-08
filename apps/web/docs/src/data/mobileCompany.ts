@@ -9,6 +9,39 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-request-back-to-list",
+      title: {
+        en: "Back from a public request returns to «الطلبات», not to a private request opened earlier",
+        ar: "الرجوع من طلب عام يعيد إلى «الطلبات» لا إلى طلب خاص فُتح قبله",
+      },
+      priority: "P1",
+      story: {
+        en: "A company's request details live in their own stack inside the tabs. It kept every request opened before: a private request opened from the home stayed underneath, so «رجوع» from a public request opened from «الطلبات» showed that private request (QA, iOS). The stack now starts from the request just opened on each visit and is forgotten when left (as the «المزيد» stacks already do); moving inside a request (انهاء الطلب › back) is unchanged.",
+        ar: "تفاصيل طلبات الشركة في مكدس خاص داخل التبويبات كان يحتفظ بكل طلب فُتح قبل: طلب خاص فُتح من الرئيسية يبقى تحته، فكان «رجوع» من طلب عام فُتح من «الطلبات» يعرض ذلك الطلب الخاص. أصبح المكدس يبدأ من الطلب المفتوح في كل زيارة ويُنسى عند المغادرة (كما في مكدسات «المزيد»)؛ والتنقل داخل الطلب (انهاء الطلب ← رجوع) كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Back from a request opened from «الطلبات» returns to that list, on the same tab (عامة / خاصة).",
+          "Back never shows another request opened earlier from the home.",
+          "From «انهاء الطلب», back returns to that request.",
+        ],
+        ar: [
+          "الرجوع من طلب فُتح من «الطلبات» يعيد إلى القائمة نفسها وعلى التبويب نفسه (عامة / خاصة).",
+          "لا يعرض الرجوع أبداً طلباً آخر فُتح قبل من الرئيسية.",
+          "من «انهاء الطلب» يعيد الرجوع إلى ذلك الطلب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: open a private request's «التفاصيل» from the home, back; then الطلبات › عامة › a request's «التفاصيل» › رجوع: the public list shows.",
+        ],
+        ar: [
+          "كشركة: افتح «التفاصيل» لطلب خاص من الرئيسية ثم ارجع؛ ثم الطلبات ← عامة ← «التفاصيل» لطلب ← رجوع: تظهر قائمة الطلبات العامة.",
+        ],
+      },
+      updatedIn: "fix/company-request-back-stale",
+    },
+    {
       id: "mobile-company-verification-request",
       title: {
         en: "«طلب التوثيق»: a company sends its licence for the «موثق» badge",
