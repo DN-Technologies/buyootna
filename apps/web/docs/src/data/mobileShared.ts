@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-ad-details-offline",
+      title: {
+        en: "Ad details offline say «لا يوجد اتصال بالإنترنت», with a retry",
+        ar: "تفاصيل الإعلان دون إنترنت تعرض «لا يوجد اتصال بالإنترنت» مع إعادة المحاولة",
+      },
+      priority: "P2",
+      story: {
+        en: "Any failure loading an ad showed «عذراً، حدث خطأ ما» and «هذا العقار غير موجود أو تم حذفه», even when the phone was just offline (QA). The ad screen now tells three cases apart: offline («لا يوجد اتصال بالإنترنت», with «إعادة المحاولة»), gone (a 404: «الإعلان غير متوفر»), and any other failure («تعذر تحميل الإعلان», with «إعادة المحاولة»). «الرجوع للخلف» stays in all three.",
+        ar: "كان أي فشل في تحميل إعلان يعرض «عذراً، حدث خطأ ما» و«هذا العقار غير موجود أو تم حذفه» حتى إن كان الجهاز دون إنترنت. أصبحت شاشة الإعلان تميّز ثلاث حالات: دون اتصال («لا يوجد اتصال بالإنترنت» مع «إعادة المحاولة»)، ومحذوف (404: «الإعلان غير متوفر»)، وأي فشل آخر («تعذر تحميل الإعلان» مع «إعادة المحاولة»). ويبقى «الرجوع للخلف» في الثلاث.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Offline: «لا يوجد اتصال بالإنترنت» with «إعادة المحاولة», which loads the ad once back online.",
+          "A deleted ad: «الإعلان غير متوفر», no retry.",
+          "A server error: «تعذر تحميل الإعلان» with «إعادة المحاولة».",
+        ],
+        ar: [
+          "دون اتصال: «لا يوجد اتصال بالإنترنت» مع «إعادة المحاولة» التي تحمّل الإعلان بعد عودة الاتصال.",
+          "إعلان محذوف: «الإعلان غير متوفر» دون إعادة محاولة.",
+          "خطأ في الخادم: «تعذر تحميل الإعلان» مع «إعادة المحاولة».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Turn on Airplane Mode, open an ad: «لا يوجد اتصال بالإنترنت»; turn it off and tap «إعادة المحاولة»: the ad shows.",
+        ],
+        ar: [
+          "فعّل وضع الطيران وافتح إعلاناً: «لا يوجد اتصال بالإنترنت»؛ أوقفه واضغط «إعادة المحاولة»: يظهر الإعلان.",
+        ],
+      },
+      updatedIn: "fix/ad-details-offline",
+    },
+    {
       id: "mobile-blocked-names-rtl",
       title: {
         en: "«المحظورون»: names start from the right, Latin company names too",
