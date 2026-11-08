@@ -1,7 +1,8 @@
-import { useRouter } from 'expo-router';
+import { useNavigationContainerRef, useRouter } from 'expo-router';
 
 import { settingsService } from '@/shared/api/settings.service';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import { resetToProfileHome } from '@/shared/navigation/resetToProfileHome';
 import { Identity, useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
@@ -26,6 +27,7 @@ export function profileLabel(identity: Identity): string {
  */
 export function useDeleteAccount() {
   const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
 
   const confirmWholeAccount = () => {
     showAlert(
@@ -74,7 +76,11 @@ export function useDeleteAccount() {
       return;
     }
     removeIdentity(profile.id);
-    resetToIdentityHome(next.type);
+    // Settings sits over the deleted profile's tabs: reset to the next
+    // profile's home in one step, leaving none of its screens behind
+    if (!resetToProfileHome(navigationRef, next.type)) {
+      resetToIdentityHome(next.type);
+    }
   };
 
   const confirmProfile = (profile: Identity, next: Identity) => {
