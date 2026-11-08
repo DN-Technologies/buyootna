@@ -17,8 +17,9 @@ import {
 } from '@/features/individual/components/more/edit-profile';
 import { LoginMethodToast } from '@/features/individual/components/settings/login-method';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
+import { useVisitKey } from '@/shared/navigation/useVisitKey';
 
-export default function EditProfileScreen() {
+function EditProfileContent() {
   const profile = useEditProfile();
   const {
     control,
@@ -145,4 +146,11 @@ export default function EditProfileScreen() {
       )}
     </SafeAreaView>
   );
+}
+
+// The screen stays mounted between visits (a tab of the individual group):
+// each visit renders a fresh copy, from the top with nothing in progress
+export default function EditProfileScreen() {
+  const visit = useVisitKey();
+  return <EditProfileContent key={visit} />;
 }
