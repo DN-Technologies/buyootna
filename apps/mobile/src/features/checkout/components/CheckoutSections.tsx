@@ -17,6 +17,10 @@ import { formatKwd, priceLabel } from '../checkoutText';
 
 const RTL = { writingDirection: 'rtl' as const };
 
+// Amounts read left to right as in the design: «5 د.ك», «-2 د.ك» (under
+// the app's RTL they came out «د.ك 5» and «د.ك 2-»)
+const AMOUNT = { writingDirection: 'ltr' as const };
+
 export function SectionTitle({ children }: { children: string }) {
   return (
     <Text
@@ -44,7 +48,9 @@ export function PurchaseCard({ quote }: { quote: CheckoutQuote }) {
           {quote.subtitle}
         </Text>
       </View>
-      <Text className="font-cairo-bold text-[15px] text-[#15A72B]">{formatKwd(quote.price)}</Text>
+      <Text testID="checkout-purchase-price" className="font-cairo-bold text-[15px] text-[#15A72B]" style={AMOUNT}>
+        {formatKwd(quote.price)}
+      </Text>
     </View>
   );
 }
@@ -228,7 +234,7 @@ function SummaryRow({ label, value, testID }: { label: string; value: string; te
       <Text className="flex-1 font-cairo text-[14px] leading-[21px] text-[#6B6A6A]" style={RTL}>
         {label}
       </Text>
-      <Text testID={testID} className="font-cairo-bold text-[14px] leading-[21px] text-[#111111]">
+      <Text testID={testID} className="font-cairo-bold text-[14px] leading-[21px] text-[#111111]" style={AMOUNT}>
         {value}
       </Text>
     </View>
