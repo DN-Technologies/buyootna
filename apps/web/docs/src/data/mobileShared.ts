@@ -9,6 +9,35 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-report-sheet-rtl",
+      title: {
+        en: "«الإبلاغ» sheet labels sit on the right",
+        ar: "عناوين نافذة «الإبلاغ» على اليمين",
+      },
+      priority: "P2",
+      story: {
+        en: "In the shared report sheet (offices, companies, ads, chats), «سبب البلاغ» and «تفاصيل إضافية (اختياري)» are full-width labels with no writing direction, so they lined up on the left (QA, reporting an office). They now read right to left like the title, reasons and the details box.",
+        ar: "في نافذة الإبلاغ المشتركة (المكاتب والشركات والإعلانات والمحادثات) كان «سبب البلاغ» و«تفاصيل إضافية (اختياري)» على اليسار لعدم تحديد اتجاه الكتابة. أصبحا من اليمين كالعنوان والأسباب وحقل التفاصيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every text in «الإبلاغ» starts from the right, wherever it's opened from.",
+        ],
+        ar: [
+          "كل نص في «الإبلاغ» يبدأ من اليمين أياً كان مكان فتحها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "An office's profile › ⋮ › إبلاغ عن المكتب: «سبب البلاغ» and «تفاصيل إضافية» are on the right.",
+        ],
+        ar: [
+          "ملف مكتب ← ⋮ ← إبلاغ عن المكتب: «سبب البلاغ» و«تفاصيل إضافية» على اليمين.",
+        ],
+      },
+      updatedIn: "fix/report-sheet-rtl",
+    },
+    {
       id: "mobile-ad-details-offline",
       title: {
         en: "Ad details offline say «لا يوجد اتصال بالإنترنت», with a retry",
