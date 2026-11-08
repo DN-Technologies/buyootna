@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-delete-profile-leaves-its-screens",
+      title: {
+        en: "Deleting the company (or office) profile leaves its screens at once, no restart",
+        ar: "حذف ملف الشركة (أو المكتب) يغلق شاشاتها فوراً دون إعادة تشغيل",
+      },
+      priority: "P1",
+      story: {
+        en: "«اعدادات الحساب» lives in the personal group, opened over the company's tabs. After «حذف هذا الملف فقط», going home dismissed that stack back to its first screen — the deleted company's tabs — so its screens and tab bar stayed until the app was restarted (QA, iOS). The stack holding the profiles is now reset in one step to the next profile's home: nothing of the deleted profile stays mounted, and back can't return to it.",
+        ar: "«اعدادات الحساب» ضمن مجموعة الملف الشخصي وتُفتح فوق تبويبات الشركة. بعد «حذف هذا الملف فقط» كان الرجوع للرئيسية يعيد ذلك المكدس إلى أول شاشة فيه، أي تبويبات الشركة المحذوفة، فتبقى شاشاتها وشريطها حتى إعادة تشغيل التطبيق. أصبح المكدس يُعاد ضبطه دفعة واحدة إلى رئيسية الملف التالي: لا يبقى شيء من الملف المحذوف ولا يمكن الرجوع إليه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After deleting the company from settings, the personal home and tab bar show at once.",
+          "No company screen or tab is reachable (swipe back, tabs) without restarting.",
+          "Deleting the whole account and switching profiles behave as before.",
+        ],
+        ar: [
+          "بعد حذف الشركة من الإعدادات تظهر رئيسية الملف الشخصي وشريطه فوراً.",
+          "لا يمكن الوصول إلى أي شاشة أو تبويب للشركة (السحب للخلف، التبويبات) دون إعادة تشغيل.",
+          "حذف الحساب بالكامل والتبديل بين الملفات كما كانا.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Account with a personal and a company profile, on the company: المزيد → اعدادات الحساب → حذف الحساب → حذف هذا الملف فقط → حذف: the personal home shows; swipe back and browse the tabs: no company screen.",
+        ],
+        ar: [
+          "حساب بملف شخصي وشركة، على الشركة: المزيد ← اعدادات الحساب ← حذف الحساب ← حذف هذا الملف فقط ← حذف: تظهر الرئيسية الشخصية؛ اسحب للخلف وتنقل بين التبويبات: لا تظهر شاشة للشركة.",
+        ],
+      },
+      updatedIn: "fix/delete-profile-stale-tabs",
+    },
+    {
       id: "mobile-checkout-screen",
       title: {
         en: "«الدفع»: one checkout for packages, company plans and featuring an ad, with «كود الخصم»",

@@ -2,13 +2,21 @@ import { renderHook } from '@testing-library/react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import { resetToProfileHome } from '@/shared/navigation/resetToProfileHome';
 import { Identity, useAuthStore } from '@/shared/store/useAuthStore';
 import { AlertButton, showAlert } from '@/shared/utils/alert';
 
 import { useDeleteAccount } from '../useDeleteAccount';
 
 const mockReplace = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace }) }));
+const mockNavigationRef = { isReady: jest.fn() };
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ replace: mockReplace }),
+  useNavigationContainerRef: () => mockNavigationRef,
+}));
+jest.mock('@/shared/navigation/resetToProfileHome', () => ({
+  resetToProfileHome: jest.fn(() => false),
+}));
 jest.mock('@/shared/api/settings.service', () => ({
   settingsService: { deleteAccount: jest.fn(), deleteIdentity: jest.fn() },
 }));
@@ -97,6 +105,9 @@ describe('useDeleteAccount', () => {
     expect(settingsService.deleteIdentity).toHaveBeenCalledWith('i-company');
     expect(store.removeIdentity).toHaveBeenCalledWith('i-company');
     expect(resetToIdentityHome).toHaveBeenCalledWith('INDIVIDUAL');
+    // QA: the company's tabs stayed until a restart; the groups stack is
+    // reset in one step (this mock falls back to resetToIdentityHome)
+    expect(resetToProfileHome).toHaveBeenCalledWith(mockNavigationRef, 'INDIVIDUAL');
     expect(settingsService.deleteAccount).not.toHaveBeenCalled();
     expect(store.logout).not.toHaveBeenCalled();
   });

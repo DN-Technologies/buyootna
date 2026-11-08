@@ -14,6 +14,8 @@ jest.mock('expo-router', () => ({
     push: mockPush,
     replace: jest.fn(),
   }),
+  // useDeleteAccount resets the root stack through it
+  useNavigationContainerRef: () => ({ isReady: () => false }),
 }));
 
 jest.mock('@/shared/api/settings.service', () => ({
