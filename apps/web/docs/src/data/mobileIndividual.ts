@@ -9,6 +9,37 @@ export const mobileIndividual: DocSection = {
   },
   stories: [
     {
+      id: "mobile-edit-profile-fresh-each-visit",
+      title: {
+        en: "«تعديل الحساب» opens fresh on every visit",
+        ar: "«تعديل الحساب» يفتح من جديد في كل زيارة",
+      },
+      priority: "P2",
+      story: {
+        en: "The individual «المزيد» screens are screens of the tabs, which stay mounted after their first visit: «تعديل الحساب» reopened where it was left — scrolled down, a field focused, an unsaved edit still typed (QA, iOS). Each visit now renders a fresh copy (useVisitKey): from the top, nothing focused, the form filled from the saved profile.",
+        ar: "شاشات «المزيد» للفرد من شاشات التبويبات وتبقى محمّلة بعد أول زيارة، فكان «تعديل الحساب» يفتح كما تُرك: نازلاً في الصفحة، أو حقل نشط، أو تعديل غير محفوظ. أصبحت كل زيارة نسخة جديدة: من أعلى الصفحة دون حقل نشط، والبيانات من الملف المحفوظ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Reopening «تعديل الحساب» starts at the top with no field focused.",
+          "An edit left unsaved isn't there on the next visit; the saved data is.",
+        ],
+        ar: [
+          "إعادة فتح «تعديل الحساب» تبدأ من الأعلى دون حقل نشط.",
+          "التعديل غير المحفوظ لا يظهر في الزيارة التالية، والبيانات المحفوظة تظهر.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "حسابي › تعديل الحساب: scroll down, edit the name without saving, go back; open it again: top of the page, the saved name.",
+        ],
+        ar: [
+          "حسابي ← تعديل الحساب: انزل في الصفحة وعدّل الاسم دون حفظ ثم ارجع؛ افتحها مرة أخرى: أعلى الصفحة والاسم المحفوظ.",
+        ],
+      },
+      updatedIn: "fix/edit-profile-fresh-visit",
+    },
+    {
       id: 'mobile-favorites',
       title: {
         en: 'Favorites for properties, companies and offices, with clear-all and undo',
