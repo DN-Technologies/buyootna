@@ -16,7 +16,7 @@ export default function CompanyLayout() {
 
   const handleOpenPlusSheet = () => {
     if (!token) {
-      authGuardSheetRef.current?.present();
+      presentSheet(authGuardSheetRef);
     } else {
       presentSheet(actionsSheetRef);
     }

@@ -20,14 +20,14 @@ export default function MainLayout() {
   // Function to trigger the sheet, which we pass down to the CustomTabBar
   const handleOpenPlusSheet = () => {
     if (!token) {
-      authGuardSheetRef.current?.present();
+      presentSheet(authGuardSheetRef);
     } else {
       presentSheet(plusSheetRef);
     }
   };
 
   const handleOpenQuotaSheet = () => {
-    quotaSheetRef.current?.present();
+    presentSheet(quotaSheetRef);
   };
 
   return (

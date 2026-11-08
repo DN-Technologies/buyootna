@@ -18,14 +18,14 @@ export default function OfficeLayout() {
 
   const handleOpenPlusSheet = () => {
     if (!token) {
-      authGuardSheetRef.current?.present();
+      presentSheet(authGuardSheetRef);
     } else {
       presentSheet(plusSheetRef);
     }
   };
 
   const handleOpenQuotaSheet = () => {
-    quotaSheetRef.current?.present();
+    presentSheet(quotaSheetRef);
   };
 
   return (
