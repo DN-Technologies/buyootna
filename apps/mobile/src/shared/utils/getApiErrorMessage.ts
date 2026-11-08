@@ -13,8 +13,13 @@ const NEST_DEFAULT_500 = 'Internal server error';
  * the caller passes (e.g. "invalid verification code"), which misleads the
  * user into thinking their input was wrong rather than their network.
  */
+/** The request never reached the server: offline, airplane mode, timeout. */
+export function isNetworkError(error: any): boolean {
+  return error?.message === 'Network Error' || !error?.response;
+}
+
 export function getApiErrorMessage(error: any, fallbackMessage: string): string {
-  if (error?.message === 'Network Error' || !error?.response) {
+  if (isNetworkError(error)) {
     return NETWORK_ERROR_MESSAGE;
   }
   const status: number | undefined = error.response?.status;

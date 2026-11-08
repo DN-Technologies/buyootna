@@ -15,7 +15,9 @@ import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ArchivedPropertyActionBar from '@/shared/components/property/ArchivedPropertyActionBar';
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import PropertyDetailsContent from '@/shared/components/property/PropertyDetailsContent';
-import PropertyErrorState from '@/shared/components/property/PropertyErrorState';
+import PropertyErrorState, {
+  propertyErrorKind,
+} from '@/shared/components/property/PropertyErrorState';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
@@ -40,7 +42,8 @@ export default function PropertyDetailsScreen() {
   const { guardAction, authSheetRef } = useAuthGuard();
   const { isFavorited, toggleFavorite } = useFavorites();
 
-  const { property, isLoading, isError } = usePropertyDetails(propertyId);
+  const { property, isLoading, isError, error, isRetrying, refetch } =
+    usePropertyDetails(propertyId);
   const { freeAdsRemaining, subscription } = useMyActivity();
   const isFavorite = isFavorited(propertyId);
 
@@ -138,9 +141,16 @@ export default function PropertyDetailsScreen() {
     return <PropertyDetailSkeleton />;
   }
 
-  // --- Error / Not Found State ---
+  // --- Error / Not Found State: offline, gone, or failed ---
   if (isError || !property) {
-    return <PropertyErrorState onBack={handleBack} />;
+    return (
+      <PropertyErrorState
+        kind={isError ? propertyErrorKind(error) : 'not-found'}
+        onBack={handleBack}
+        onRetry={() => void refetch()}
+        isRetrying={isRetrying}
+      />
+    );
   }
 
   return (

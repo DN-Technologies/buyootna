@@ -141,4 +141,55 @@ describe('PropertyDetailsScreen', () => {
 
     expect(getByTestId('archived-delete-btn')).toBeTruthy();
   });
+
+  // QA: offline showed «حدث خطأ ما» and «غير موجود أو تم حذفه»
+  describe('when the ad can\'t be loaded', () => {
+    const failWith = (error: unknown) => {
+      const refetch = jest.fn();
+      mockUseLocalSearchParams.mockReturnValue({ id: 'prop-123' });
+      mockUsePropertyDetails.mockReturnValue({
+        property: undefined,
+        isLoading: false,
+        isError: true,
+        error,
+        isRetrying: false,
+        refetch,
+      });
+      return refetch;
+    };
+
+    it('offline: says there is no connection, with a retry', async () => {
+      const refetch = failWith({ message: 'Network Error' });
+      const { getByTestId, getByText, queryByText } = await renderWithClient(
+        <PropertyDetailsScreen />,
+      );
+
+      expect(getByTestId('property-error-offline')).toBeTruthy();
+      expect(getByText('لا يوجد اتصال بالإنترنت')).toBeTruthy();
+      expect(queryByText('عذراً، هذا العقار غير موجود أو تم حذفه')).toBeNull();
+      await fireEvent.press(getByTestId('property-error-retry'));
+      expect(refetch).toHaveBeenCalled();
+    });
+
+    it('a 404: says the ad is gone, with no retry', async () => {
+      failWith({ response: { status: 404, data: {} } });
+      const { getByTestId, queryByTestId } = await renderWithClient(
+        <PropertyDetailsScreen />,
+      );
+
+      expect(getByTestId('property-error-not-found')).toBeTruthy();
+      expect(queryByTestId('property-error-retry')).toBeNull();
+    });
+
+    it('a server error: says it couldn\'t load, with a retry', async () => {
+      failWith({ response: { status: 500, data: {} } });
+      const { getByTestId, getByText } = await renderWithClient(
+        <PropertyDetailsScreen />,
+      );
+
+      expect(getByTestId('property-error-failed')).toBeTruthy();
+      expect(getByText('تعذر تحميل الإعلان')).toBeTruthy();
+      expect(getByTestId('property-error-retry')).toBeTruthy();
+    });
+  });
 });
