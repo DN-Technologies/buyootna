@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-notification-prompt-after-sign-in",
+      title: {
+        en: "The notification prompt waits until the user is in the app",
+        ar: "طلب إذن الإشعارات ينتظر حتى يدخل المستخدم التطبيق",
+      },
+      priority: "P2",
+      story: {
+        en: "iOS's «Would Like to Send You Notifications» opened over sign-up's «تم بنجاح» sheet (QA): push registration asked as soon as a session existed, while still on the sign-up screen. It now waits until the user is past sign-in / sign-up and the launch screen (any app screen, e.g. the home after «ابدأ الآن»). A signed-in user opening the app is asked once home opens; going into «إضافة حساب» and back doesn't register again.",
+        ar: "كانت نافذة iOS لطلب إذن الإشعارات تظهر فوق «تم بنجاح» في التسجيل لأن تسجيل الإشعارات كان يطلب الإذن فور وجود جلسة وما زال المستخدم في شاشة التسجيل. أصبح ينتظر حتى يتجاوز المستخدم شاشات الدخول والتسجيل وشاشة البدء (أي شاشة في التطبيق، كالرئيسية بعد «ابدأ الآن»). والمسجّل يُسأل عند فتح الرئيسية، والدخول إلى «إضافة حساب» والعودة لا يعيد التسجيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Fresh install, sign up: no notification prompt on the OTP step or over «تم بنجاح».",
+          "After «ابدأ الآن» (home): the prompt appears once; Allow registers the device for pushes.",
+          "Signing in (not up) behaves the same: asked on the home, not over the sign-in sheets.",
+        ],
+        ar: [
+          "تثبيت جديد ثم تسجيل: لا يظهر طلب الإذن في خطوة الرمز ولا فوق «تم بنجاح».",
+          "بعد «ابدأ الآن» (الرئيسية): يظهر الطلب مرة واحدة، والسماح يسجّل الجهاز للإشعارات.",
+          "تسجيل الدخول كذلك: يُسأل في الرئيسية لا فوق نوافذ الدخول.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Delete and reinstall the app; sign up as an individual: verify the code, see «تم بنجاح» with no prompt; tap «ابدأ الآن»: the prompt appears over the home.",
+        ],
+        ar: [
+          "احذف التطبيق وثبّته؛ سجّل كفرد: أدخل الرمز وتظهر «تم بنجاح» دون طلب إذن؛ اضغط «ابدأ الآن»: يظهر الطلب فوق الرئيسية.",
+        ],
+      },
+      updatedIn: "fix/notification-prompt-after-home",
+    },
+    {
       id: "mobile-search-filter-no-extra-screen",
       title: {
         en: "Applying the search filter shows the results without stacking another screen",

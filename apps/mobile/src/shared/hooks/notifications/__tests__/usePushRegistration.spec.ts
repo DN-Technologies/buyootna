@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { devicesService } from '@/shared/api/devices.service';
 
 import {
+  canAskForNotifications,
   finishLaunch,
   openPushRoute,
   resetLaunchForTests,
@@ -107,6 +108,40 @@ describe('usePushRegistration', () => {
     expect(devicesService.setPushToken).not.toHaveBeenCalled();
   });
 
+  // QA: the system prompt opened over sign-up's «تم بنجاح» sheet
+  it('waits until the user is in the app before asking', async () => {
+    N.getPermissionsAsync.mockResolvedValue({
+      status: 'undetermined',
+      canAskAgain: true,
+    } as any);
+    N.requestPermissionsAsync.mockResolvedValue({ status: 'granted' } as any);
+
+    // Signed up, still on the sign-up screen
+    const hook = await renderHook(
+      ({ canAsk }: { canAsk: boolean }) =>
+        usePushRegistration('auth-token', canAsk),
+      { initialProps: { canAsk: false } },
+    );
+    await waitFor(() =>
+      expect(N.addNotificationResponseReceivedListener).toHaveBeenCalled(),
+    );
+    expect(N.getPermissionsAsync).not.toHaveBeenCalled();
+    expect(N.requestPermissionsAsync).not.toHaveBeenCalled();
+
+    // «ابدأ الآن»: home
+    await hook.rerender({ canAsk: true });
+    await waitFor(() =>
+      expect(devicesService.setPushToken).toHaveBeenCalledWith(TOKEN),
+    );
+    expect(N.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+
+    // Into «إضافة حساب» and back: the token isn't sent again
+    await hook.rerender({ canAsk: false });
+    await hook.rerender({ canAsk: true });
+    await waitFor(() => expect(N.getPermissionsAsync).toHaveBeenCalledTimes(2));
+    expect(devicesService.setPushToken).toHaveBeenCalledTimes(1);
+  });
+
   it('does nothing while signed out', async () => {
     await renderHook(() => usePushRegistration(null));
 
@@ -168,5 +203,18 @@ describe('openPushRoute', () => {
     openPushRoute(null);
     finishLaunch();
     expect(router.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('canAskForNotifications', () => {
+  it.each([
+    [[], false, 'the launch screen'],
+    [['(auth)', 'individual-auth'], false, 'sign-in / sign-up'],
+    [['(auth)', 'add-identity'], false, '«إضافة حساب»'],
+    [['(individual)', 'home'], true, 'the home'],
+    [['(company)', 'home'], true, "a company's home"],
+    [['search'], true, 'any other screen in the app'],
+  ])('%j: %s (%s)', (segments, expected) => {
+    expect(canAskForNotifications(segments as string[])).toBe(expected);
   });
 });
