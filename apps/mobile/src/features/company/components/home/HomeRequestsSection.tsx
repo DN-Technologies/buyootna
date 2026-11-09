@@ -36,7 +36,13 @@ export default function HomeRequestsSection({
       <View className="px-4">
         <SectionHeader
           title={title}
-          onPressViewAll={() => router.push('/(company)/company-requests')}
+          // On this section's list: «طلبات عامة» opened on the private one (QA)
+          onPressViewAll={() =>
+            router.push({
+              pathname: '/(company)/company-requests',
+              params: { scope: variant },
+            })
+          }
         />
       </View>
       <FlatList
