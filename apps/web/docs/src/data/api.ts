@@ -9,6 +9,43 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-sms-own-code-and-test-numbers",
+      title: {
+        en: "Phone codes QA can see: our own SMS, and test numbers with no SMS",
+        ar: "رموز الهاتف ظاهرة لفريق الاختبار: رسائلنا الخاصة وأرقام اختبار بلا رسائل",
+      },
+      priority: "P2",
+      story: {
+        en: "Twilio Verify makes its own phone code unless custom codes are enabled on the account, so the testing portal's الرموز showed «can't be shown». Two server settings change that. TWILIO_SMS_FROM (a Messaging Service SID MG… or a registered sender): the server makes the code, sends «رمز التحقق في بيوتنا: …» as a plain SMS and checks it itself, so every phone code is on the portal, like email codes. TESTING_SMS_TEST_NUMBERS (E.164 prefixes such as +9655000): matching numbers get no SMS; the code is only on the portal, so QA can sign up with made-up numbers. Unset, both are off and Verify works as before. TESTING_SHOW_SMS_CODES=false turns both off; test numbers must be removed before launch.",
+        ar: "يصنع Twilio Verify رمز الهاتف بنفسه ما لم تُفعَّل الرموز المخصصة في الحساب، فكانت «الرموز» في بوابة الاختبار تقول إنه لا يمكن إظهاره. إعدادان في الخادم يغيّران ذلك: TWILIO_SMS_FROM (معرّف خدمة رسائل MG… أو مرسل مسجّل) فيصنع الخادم الرمز ويرسله رسالة عادية ويتحقق منه بنفسه، فتظهر كل رموز الهاتف في البوابة كرموز البريد؛ وTESTING_SMS_TEST_NUMBERS (بادئات مثل +9655000) فلا تُرسل رسالة للأرقام المطابقة ويظهر الرمز في البوابة فقط، ليسجّل فريق الاختبار بأرقام وهمية. دون ضبطهما يعمل Verify كما كان. وTESTING_SHOW_SMS_CODES=false يوقف الاثنين، ويجب حذف أرقام الاختبار قبل الإطلاق.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With TESTING_SMS_TEST_NUMBERS=+9655000: signing up with 5000xxxx sends no SMS; the code is on الرموز and works once.",
+          "Other numbers are unaffected by the test prefixes.",
+          "With TWILIO_SMS_FROM set: the phone gets «رمز التحقق في بيوتنا: ……», the same code is on الرموز and works once; a newer code replaces the older one.",
+          "A prefix shorter than the country code plus 4 digits is ignored.",
+          "Neither set: Verify as before; the health card says which way codes go.",
+        ],
+        ar: [
+          "مع TESTING_SMS_TEST_NUMBERS=+9655000: التسجيل برقم 5000xxxx لا يرسل رسالة، ويظهر الرمز في «الرموز» ويعمل مرة واحدة.",
+          "الأرقام الأخرى لا تتأثر ببادئات الاختبار.",
+          "مع ضبط TWILIO_SMS_FROM: تصل الرسالة «رمز التحقق في بيوتنا: ……» ويظهر الرمز نفسه في «الرموز» ويعمل مرة واحدة، والرمز الأحدث يلغي الأقدم.",
+          "البادئة الأقصر من رمز الدولة وأربعة أرقام تُتجاهل.",
+          "دون ضبطهما يعمل Verify كما كان، وبطاقة الحالة تبيّن طريقة الإرسال.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Set TESTING_SMS_TEST_NUMBERS=+9655000 on the server; in the app sign up with 50001234; open the testing portal › الرموز: the code is there; enter it: the account is created.",
+        ],
+        ar: [
+          "اضبط TESTING_SMS_TEST_NUMBERS=+9655000 في الخادم؛ سجّل في التطبيق بالرقم 50001234؛ افتح بوابة الاختبار ← الرموز: يظهر الرمز؛ أدخله: يُنشأ الحساب.",
+        ],
+      },
+      updatedIn: "feat/sms-own-code",
+    },
+    {
       id: "api-add-persona-requires-terms",
       title: {
         en: "Adding a company or office requires the terms, recorded on the new profile",
