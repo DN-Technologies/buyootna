@@ -9,6 +9,35 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-undo-toast-safe-area",
+      title: {
+        en: "The «تراجع» success toast shows below the status bar",
+        ar: "رسالة النجاح مع «تراجع» تظهر أسفل شريط الحالة",
+      },
+      priority: "P2",
+      story: {
+        en: "The success toast with «تراجع» (hiding a service or a project) is absolutely placed at the top; the screen's safe-area padding doesn't move such a view, so on iPhones with a notch or Dynamic Island it sat under the clock and battery (QA). It is now offset by the safe-area top inset, on «الخدمات» and «معرض الأعمال».",
+        ar: "رسالة النجاح مع «تراجع» (إخفاء خدمة أو مشروع) موضوعة أعلى الشاشة بموضع مطلق لا تحركه الهوامش الآمنة، فكانت على أجهزة النوتش والجزيرة الديناميكية تحت الساعة والبطارية. أصبحت تنزل بمقدار الهامش الآمن في «الخدمات» و«معرض الأعمال».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On a notch or Dynamic Island iPhone, the toast is fully visible below the status bar.",
+        ],
+        ar: [
+          "على أجهزة النوتش أو الجزيرة الديناميكية تظهر الرسالة كاملة أسفل شريط الحالة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: الخدمات › hide a service: «تم إخفاء الخدمة بنجاح» shows below the clock. Same for hiding a project in معرض الأعمال.",
+        ],
+        ar: [
+          "كشركة: الخدمات ← أخفِ خدمة: تظهر «تم إخفاء الخدمة بنجاح» أسفل الساعة. وكذلك إخفاء مشروع في معرض الأعمال.",
+        ],
+      },
+      updatedIn: "fix/undo-toast-safe-area",
+    },
+    {
       id: "mobile-company-request-back-to-list",
       title: {
         en: "Back from a public request returns to «الطلبات», not to a private request opened earlier",
