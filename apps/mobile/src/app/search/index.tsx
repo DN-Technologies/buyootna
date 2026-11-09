@@ -25,10 +25,12 @@ export default function SearchScreen() {
 
   const filterSheetRef = useRef<BottomSheetModal>(null);
 
-  // Navigate to results screen with advanced filter payload
+  // The results take this screen's place: results filter and search in
+  // place themselves, so back from them returns where search was opened.
+  // A push left this screen under them, one more back to get out (QA)
   const handleAdvancedSearch = useCallback(
     (data: { tab: string; filters: any }) => {
-      router.push({
+      router.replace({
         pathname: '/search/results',
         params: {
           tab: data.tab,
@@ -98,8 +100,8 @@ export default function SearchScreen() {
 
   const handleSelectSearch = (term: string) => {
     setSearchText(term);
-    // Redirect cleanly to the results screen layout passing parameters
-    router.push({
+    // In this screen's place, as the filter does
+    router.replace({
       pathname: '/search/results',
       params: { query: term },
     });
