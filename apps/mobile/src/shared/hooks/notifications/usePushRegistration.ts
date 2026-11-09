@@ -110,11 +110,25 @@ async function getPushToken(): Promise<string | null> {
 }
 
 /**
+ * The app's screens, past sign-in: the system's notification prompt waits
+ * for them. Not the launch screen (no segment) nor the sign-in / sign-up
+ * screens, where it opened over «تم بنجاح» as the account was created (QA).
+ */
+export function canAskForNotifications(segments: readonly string[]): boolean {
+  const first = segments[0];
+  return !!first && first !== '(auth)';
+}
+
+/**
  * While signed in, registers this device's Expo push token on its session
  * so the backend can push security alerts (e.g. a login from another
- * device), and opens the right screen when a push is tapped.
+ * device), and opens the right screen when a push is tapped. `canAsk`
+ * holds it (and so the permission prompt) until the user is in the app.
  */
-export function usePushRegistration(authToken: string | null) {
+export function usePushRegistration(
+  authToken: string | null,
+  canAsk = true,
+) {
   const sentTokenRef = useRef<string | null>(null);
 
   // Register (once per sign-in) and keep the token current
@@ -123,6 +137,8 @@ export function usePushRegistration(authToken: string | null) {
       sentTokenRef.current = null;
       return;
     }
+    // Signed in, not in the app yet (sign-up's last sheet, launch): later
+    if (!canAsk) return;
 
     let cancelled = false;
     const send = async (pushToken: string | null) => {
@@ -147,7 +163,7 @@ export function usePushRegistration(authToken: string | null) {
       cancelled = true;
       subscription.remove();
     };
-  }, [authToken]);
+  }, [authToken, canAsk]);
 
   // Tapping a push: while running, and the one that cold-started the app
   useEffect(() => {

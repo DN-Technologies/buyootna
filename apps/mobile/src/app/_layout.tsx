@@ -17,7 +17,12 @@ import {
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router';
+import {
+  SplashScreen,
+  Stack,
+  useNavigationContainerRef,
+  useSegments,
+} from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Component, ReactNode, useEffect } from 'react';
 import { Text, View } from 'react-native';
@@ -29,16 +34,19 @@ import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
 import LaunchOverlay from '@/shared/components/launch/LaunchOverlay';
 import { useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
-import { usePushRegistration } from '@/shared/hooks/notifications/usePushRegistration';
+import {
+  canAskForNotifications,
+  usePushRegistration,
+} from '@/shared/hooks/notifications/usePushRegistration';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/properties/useFavorites';
 import {
   installNavigationDebounce,
   onNavigationStateChange,
 } from '@/shared/navigation/installNavigationDebounce';
+import { setRootNavigationRef } from '@/shared/navigation/rootNavigation';
 import { useLateIdentityRedirect } from '@/shared/navigation/useLateIdentityRedirect';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ensureRtlDirection } from '@/shared/utils/rtl';
-import { setRootNavigationRef } from '@/shared/navigation/rootNavigation';
 
 // Guards every push/navigate/replace call in the app (both `router.push(...)`
 // and `useRouter().push(...)` resolve to the same expo-router singleton this
@@ -121,8 +129,10 @@ function RootLayout() {
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
-  // Push token for security alerts (e.g. a login from another device)
-  usePushRegistration(token);
+  // Push token for security alerts (e.g. a login from another device),
+  // asked for once the user is in the app, not over sign-in / sign-up
+  const segments = useSegments();
+  usePushRegistration(token, canAskForNotifications(segments));
   // The unread number on the app icon
   useAppBadge(token);
   // A business profile that loaded after launch fell back to individual
