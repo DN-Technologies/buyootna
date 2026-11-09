@@ -172,7 +172,11 @@ export function useIndividualAuth() {
     }
   };
 
+  // Leaves the finished sign-up once, however the success sheet closed
+  const leftSignupRef = useRef(false);
   const handleSuccessClose = () => {
+    if (leftSignupRef.current) return;
+    leftSignupRef.current = true;
     successSheetRef.current?.dismiss();
     resetToIdentityHome('INDIVIDUAL');
   };
