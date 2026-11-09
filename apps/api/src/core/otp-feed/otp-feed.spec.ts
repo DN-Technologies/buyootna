@@ -128,6 +128,7 @@ describe('OTP senders feed the feed', () => {
     delete process.env.TWILIO_ACCOUNT_SID;
     delete process.env.TWILIO_AUTH_TOKEN;
     delete process.env.TWILIO_VERIFY_SERVICE_SID;
+    delete process.env.TWILIO_SMS_FROM;
     const feed = new OtpFeedService();
     const twilio = new TwilioService(feed);
 

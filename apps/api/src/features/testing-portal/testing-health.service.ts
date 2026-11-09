@@ -201,7 +201,10 @@ export class TestingHealthService implements OnModuleInit {
           key: 'sms',
           label: 'الرسائل النصية (Twilio)',
           status: 'ok',
-          detail: 'مُعدّ ويرسل',
+          // Which way codes go: only our own SMS shows every code on الرموز
+          detail: this.twilio.sendsOwnSms
+            ? 'مُعدّ ويرسل رسائل بيوتنا (الرموز ظاهرة)'
+            : 'مُعدّ ويرسل عبر Twilio Verify',
         }
       : {
           key: 'sms',

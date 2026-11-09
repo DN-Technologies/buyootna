@@ -197,7 +197,7 @@ describe('TwilioService with Twilio Verify', () => {
     const create = jest.fn().mockResolvedValue({ status: 'pending' });
     const { service, feed } = withVerify(create);
 
-    await service.sendVerification('96111111', 'SIGNUP' as never);
+    await service.sendVerification('96111111', 'SIGNUP');
 
     const sent = create.mock.calls[0][0];
     expect(sent).toMatchObject({ to: '+96596111111', channel: 'sms' });
@@ -234,7 +234,9 @@ describe('TwilioService with Twilio Verify', () => {
   it('still fails on other Twilio errors', async () => {
     const create = jest
       .fn()
-      .mockRejectedValue(Object.assign(new Error('Too many requests'), { code: 20429 }));
+      .mockRejectedValue(
+        Object.assign(new Error('Too many requests'), { code: 20429 }),
+      );
     const { service, feed } = withVerify(create);
 
     await expect(service.sendVerification('96111111')).rejects.toThrow(
@@ -245,7 +247,9 @@ describe('TwilioService with Twilio Verify', () => {
   });
 
   it('checks its own code here and reports it approved to Twilio', async () => {
-    const create = jest.fn().mockResolvedValue({ sid: 'VE1', status: 'pending' });
+    const create = jest
+      .fn()
+      .mockResolvedValue({ sid: 'VE1', status: 'pending' });
     const { service, feed, update, checks, verifications } = withVerify(create);
     await service.sendVerification('96111111');
     const code = create.mock.calls[0][0].customCode;
@@ -253,18 +257,22 @@ describe('TwilioService with Twilio Verify', () => {
     await expect(service.checkVerification('96111111', '000000')).resolves.toBe(
       code === '000000',
     );
-    await expect(service.checkVerification('96111111', code)).resolves.toBe(true);
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(
+      true,
+    );
 
     expect(checks).not.toHaveBeenCalled();
     expect(verifications).toHaveBeenCalledWith('VE1');
     expect(update).toHaveBeenCalledWith({ status: 'approved' });
     expect(feed.recordPhoneUsed).toHaveBeenCalledWith('+96596111111');
     // Used once
-    await expect(service.checkVerification('96111111', code)).resolves.toBe(true);
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(
+      true,
+    );
     expect(checks).toHaveBeenCalledTimes(1);
   });
 
-  it("asks Twilio to check its own code when it made it (custom codes off)", async () => {
+  it('asks Twilio to check its own code when it made it (custom codes off)', async () => {
     const create = jest
       .fn()
       .mockRejectedValueOnce(
@@ -284,7 +292,9 @@ describe('TwilioService with Twilio Verify', () => {
   it('with TESTING_SHOW_SMS_CODES=false, Twilio makes the code again', async () => {
     process.env.TESTING_SHOW_SMS_CODES = 'false';
     try {
-      const create = jest.fn().mockResolvedValue({ sid: 'VE3', status: 'pending' });
+      const create = jest
+        .fn()
+        .mockResolvedValue({ sid: 'VE3', status: 'pending' });
       const { service, feed } = withVerify(create);
 
       await service.sendVerification('96111111');
@@ -296,5 +306,267 @@ describe('TwilioService with Twilio Verify', () => {
     } finally {
       delete process.env.TESTING_SHOW_SMS_CODES;
     }
+  });
+});
+
+interface SentSms {
+  to: string;
+  body: string;
+  from?: string;
+  messagingServiceSid?: string;
+}
+
+type Feed = { recordSent: jest.Mock; recordPhoneUsed: jest.Mock };
+
+// A service on fake Twilio clients, built from the env the test sets
+function serviceWith(env: Record<string, string | undefined>) {
+  for (const [key, value] of Object.entries(env)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  const feed: Feed = { recordSent: jest.fn(), recordPhoneUsed: jest.fn() };
+  const service = new TwilioService(feed as never);
+  const sms = jest
+    .fn<Promise<{ sid: string; status: string }>, [SentSms]>()
+    .mockResolvedValue({ sid: 'SM1', status: 'queued' });
+  const verifyCreate = jest.fn();
+  const checks = jest.fn();
+  if ((service as unknown as { twilioClient: unknown }).twilioClient) {
+    Object.assign(service as unknown as Record<string, unknown>, {
+      twilioClient: {
+        messages: { create: sms },
+        verify: {
+          v2: {
+            services: () => ({
+              verifications: { create: verifyCreate },
+              verificationChecks: { create: checks },
+            }),
+          },
+        },
+      },
+    });
+  }
+  const sent = (i: number): SentSms => sms.mock.calls[i][0];
+  const codeIn = (i: number): string => /(\d{6})/.exec(sent(i).body)![1];
+  const feedCode = (i: number): string | null =>
+    (feed.recordSent.mock.calls[i] as [{ code: string | null }])[0].code;
+  return { service, feed, sms, verifyCreate, checks, sent, codeIn, feedCode };
+}
+
+const twilioEnv = {
+  TWILIO_ACCOUNT_SID: 'AC' + '0'.repeat(32),
+  TWILIO_AUTH_TOKEN: 'token',
+};
+
+// TWILIO_SMS_FROM: the code goes as our own SMS, the way email codes do, so
+// the testing portal shows it without Verify's custom-code permission
+describe('TwilioService with its own SMS (TWILIO_SMS_FROM)', () => {
+  const env = { ...process.env };
+  afterEach(() => {
+    process.env = { ...env };
+  });
+
+  const ownSms = (sender: string, verify?: string) =>
+    serviceWith({
+      ...twilioEnv,
+      TWILIO_SMS_FROM: sender,
+      TWILIO_VERIFY_SERVICE_SID: verify,
+    });
+
+  it('is configured with a sender and no Verify service', () => {
+    const { service } = ownSms('Buyootna');
+    expect(service.isConfigured).toBe(true);
+    expect(service.sendsOwnSms).toBe(true);
+  });
+
+  it('sends its own 6-digit code by SMS, not Verify, and lists it on the feed', async () => {
+    const { service, feed, verifyCreate, sent, codeIn } = ownSms(
+      'Buyootna',
+      'VA123',
+    );
+
+    await service.sendVerification('96111111', 'SIGNUP');
+
+    expect(verifyCreate).not.toHaveBeenCalled();
+    expect(sent(0)).toMatchObject({ to: '+96596111111', from: 'Buyootna' });
+    expect(sent(0).body).toContain('رمز التحقق في بيوتنا');
+    expect(feed.recordSent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel: 'SMS',
+        purpose: 'SIGNUP',
+        recipient: '+96596111111',
+        code: codeIn(0),
+        provider: 'twilio',
+      }),
+    );
+  });
+
+  it('sends through a Messaging Service when given its SID', async () => {
+    const mg = 'MG' + 'a'.repeat(32);
+    const { service, sent } = ownSms(mg);
+
+    await service.sendVerification('96111111');
+
+    expect(sent(0).messagingServiceSid).toBe(mg);
+    expect(sent(0).from).toBeUndefined();
+  });
+
+  it('checks the code itself: once, the latest only, and never asks Twilio', async () => {
+    const { service, feed, checks, codeIn } = ownSms('Buyootna', 'VA123');
+    await service.sendVerification('96111111');
+    await service.sendVerification('96111111');
+    const [first, code] = [codeIn(0), codeIn(1)];
+
+    if (first !== code) {
+      await expect(service.checkVerification('96111111', first)).resolves.toBe(
+        false,
+      );
+    }
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(
+      true,
+    );
+    expect(feed.recordPhoneUsed).toHaveBeenCalledWith('+96596111111');
+    // Used once
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(
+      false,
+    );
+    expect(checks).not.toHaveBeenCalled();
+  });
+
+  it('refuses an expired code', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, codeIn } = ownSms('Buyootna');
+      await service.sendVerification('96111111');
+
+      jest.advanceTimersByTime(24 * 60 * 60 * 1000);
+      await expect(
+        service.checkVerification('96111111', codeIn(0)),
+      ).resolves.toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('a failed send keeps nothing and lists nothing', async () => {
+    const { service, feed, sms } = ownSms('Buyootna');
+    sms.mockRejectedValueOnce(new Error('Unregistered sender'));
+
+    await expect(service.sendVerification('96111111')).rejects.toThrow(
+      'Unregistered sender',
+    );
+    expect(feed.recordSent).not.toHaveBeenCalled();
+    await expect(service.checkVerification('96111111', '123456')).resolves.toBe(
+      false,
+    );
+  });
+
+  it('with TESTING_SHOW_SMS_CODES=false, the code works but the portal gets none', async () => {
+    const { service, codeIn, feedCode } = ownSms('Buyootna');
+    process.env.TESTING_SHOW_SMS_CODES = 'false';
+
+    await service.sendVerification('96111111');
+
+    expect(feedCode(0)).toBeNull();
+    await expect(
+      service.checkVerification('96111111', codeIn(0)),
+    ).resolves.toBe(true);
+  });
+});
+
+// TESTING_SMS_TEST_NUMBERS: QA types a made-up number with a test prefix;
+// no SMS goes out and the code is on the testing portal only
+describe('TwilioService QA test numbers (TESTING_SMS_TEST_NUMBERS)', () => {
+  const env = { ...process.env };
+  afterEach(() => {
+    process.env = { ...env };
+  });
+
+  it('sends nothing, by SMS or Verify, and puts the code on the portal', async () => {
+    const { service, sms, verifyCreate, feed, feedCode } = serviceWith({
+      ...twilioEnv,
+      TWILIO_SMS_FROM: 'Buyootna',
+      TWILIO_VERIFY_SERVICE_SID: 'VA123',
+      TESTING_SMS_TEST_NUMBERS: '+9655000, +9655111',
+    });
+
+    await service.sendVerification('50001234', 'SIGNUP');
+
+    expect(sms).not.toHaveBeenCalled();
+    expect(verifyCreate).not.toHaveBeenCalled();
+    expect(feed.recordSent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipient: '+96550001234',
+        purpose: 'SIGNUP',
+        provider: 'mock-sms',
+      }),
+    );
+    const code = feedCode(0)!;
+    expect(code).toMatch(/^\d{6}$/);
+    await expect(service.checkVerification('50001234', '000000')).resolves.toBe(
+      code === '000000',
+    );
+    await expect(service.checkVerification('50001234', code)).resolves.toBe(
+      true,
+    );
+    // Used once
+    await expect(service.checkVerification('50001234', code)).resolves.toBe(
+      false,
+    );
+  });
+
+  it('works in production with no Twilio set up at all', async () => {
+    const { service, feedCode } = serviceWith({
+      NODE_ENV: 'production',
+      ALLOW_MOCK_SMS: undefined,
+      TWILIO_ACCOUNT_SID: undefined,
+      TWILIO_SMS_FROM: undefined,
+      TWILIO_VERIFY_SERVICE_SID: undefined,
+      TESTING_SMS_TEST_NUMBERS: '+9655000',
+    });
+
+    await service.sendVerification('+96550009999');
+    await expect(
+      service.checkVerification('+96550009999', feedCode(0)!),
+    ).resolves.toBe(true);
+    // Any other number still can't get a code
+    await expect(service.sendVerification('+96599999999')).rejects.toThrow();
+  });
+
+  it('other numbers still get a real SMS', async () => {
+    const { service, sms } = serviceWith({
+      ...twilioEnv,
+      TWILIO_SMS_FROM: 'Buyootna',
+      TESTING_SMS_TEST_NUMBERS: '+9655000',
+    });
+
+    await service.sendVerification('99998888');
+
+    expect(sms).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a prefix too short to be safe ("+965" would be every number)', async () => {
+    const { service, sms } = serviceWith({
+      ...twilioEnv,
+      TWILIO_SMS_FROM: 'Buyootna',
+      TESTING_SMS_TEST_NUMBERS: '+965, 9655000, +96550',
+    });
+
+    await service.sendVerification('50001234');
+
+    expect(sms).toHaveBeenCalledTimes(1);
+  });
+
+  it('is off with TESTING_SHOW_SMS_CODES=false', async () => {
+    const { service, sms } = serviceWith({
+      ...twilioEnv,
+      TWILIO_SMS_FROM: 'Buyootna',
+      TESTING_SMS_TEST_NUMBERS: '+9655000',
+      TESTING_SHOW_SMS_CODES: 'false',
+    });
+
+    await service.sendVerification('50001234');
+
+    expect(sms).toHaveBeenCalledTimes(1);
   });
 });
