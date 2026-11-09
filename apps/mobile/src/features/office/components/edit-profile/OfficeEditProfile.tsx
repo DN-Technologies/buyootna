@@ -17,6 +17,7 @@ import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { readableLocation } from '@/shared/utils/location';
+import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 
 import OfficeGeneralInfoSection from './OfficeGeneralInfoSection';
 import OfficeLicenseSection from './OfficeLicenseSection';
@@ -87,8 +88,7 @@ export default function OfficeEditProfile() {
   );
 
   // File states
-  const [logoFile, setLogoFile] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [logoFile, setLogoFile] = useState<PickedImage | null>(null);
   const [licenseFile, setLicenseFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
@@ -128,14 +128,11 @@ export default function OfficeEditProfile() {
   ]);
 
   // Document Pickers
+  // The camera or the photo library, square-cropped: it opened the Files
+  // app, where people don't keep their photos (QA)
   const pickLogo = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setLogoFile(result.assets[0]);
-    }
+    const picked = await pickSquareImage();
+    if (picked) setLogoFile(picked);
   };
 
   const pickLicense = async () => {

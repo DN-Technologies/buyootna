@@ -11,6 +11,7 @@ import apiClient from '@/shared/api/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 import { AccountType } from '@/types';
 
 import { requireTermsAccepted } from '../terms';
@@ -33,8 +34,7 @@ export function useBusinessAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const [logoFile, setLogoFile] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [logoFile, setLogoFile] = useState<PickedImage | null>(null);
   const [licenseFile, setLicenseFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
@@ -42,14 +42,11 @@ export function useBusinessAuth() {
   const accountTypeSheetRef = useRef<BottomSheetModal>(null);
   const profileSheetRef = useRef<BottomSheetModal>(null);
 
+  // The camera or the photo library, square-cropped: it opened the Files
+  // app, where people don't keep their photos (QA)
   const pickLogo = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      setLogoFile(result.assets[0]);
-    }
+    const picked = await pickSquareImage();
+    if (picked) setLogoFile(picked);
   };
 
   const pickLicense = async () => {

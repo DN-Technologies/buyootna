@@ -7,6 +7,7 @@ import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import FormInput from '@/shared/components/ui/FormInput';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
+import type { PickedImage } from '@/shared/utils/pickImage';
 
 interface StepProps {
   control: Control<CompanySignupFormValues>;
@@ -75,7 +76,7 @@ export const SignupStep1: React.FC<Step1Props> = ({
 };
 
 interface Step2Props extends StepProps {
-  logoFile: DocumentPicker.DocumentPickerAsset | null;
+  logoFile: PickedImage | null;
   pickLogo: () => void;
   onOpenServiceAreasSheet?: () => void;
   onOpenLocationSheet?: () => void;
