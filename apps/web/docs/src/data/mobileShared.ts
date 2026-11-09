@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-search-filter-no-extra-screen",
+      title: {
+        en: "Applying the search filter shows the results without stacking another screen",
+        ar: "تطبيق فلتر البحث يعرض النتائج دون تكديس شاشة أخرى",
+      },
+      priority: "P2",
+      story: {
+        en: "On «بحث», applying the filter (or tapping a recent search) opened the results on top of the search screen, so leaving took an extra back (QA). The results now take the search screen's place; filtering again on the results updates them in place, as before, and one back returns where search was opened. A suggestion still opens its item on top. Home, companies, requests and office/profile filters already update their own list.",
+        ar: "في «بحث» كان تطبيق الفلتر (أو الضغط على بحث سابق) يفتح النتائج فوق شاشة البحث، فيحتاج الخروج رجوعاً إضافياً. أصبحت النتائج تحل محل شاشة البحث، والفلترة مجدداً داخل النتائج تحدّثها في مكانها كما كان، ورجوع واحد يعيد إلى حيث فُتح البحث. والاقتراح ما زال يفتح عنصره فوقها. وفلاتر الرئيسية والشركات والطلبات وصفحات المكاتب والملفات تحدّث قائمتها أصلاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«بحث» › filter › «عرض النتائج»: the results show; one back returns to the screen search was opened from.",
+          "On the results, the filter updates them in place (no new screen).",
+          "Tapping a recent search behaves the same.",
+        ],
+        ar: [
+          "«بحث» ← الفلتر ← «عرض النتائج»: تظهر النتائج؛ رجوع واحد يعيد إلى الشاشة التي فُتح منها البحث.",
+          "في النتائج يحدّثها الفلتر في مكانها دون شاشة جديدة.",
+          "الضغط على بحث سابق بالطريقة نفسها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Office home › بحث › filter › pick options › «عرض النتائج»; apply another filter on the results; press back once: the office home.",
+        ],
+        ar: [
+          "رئيسية المكتب ← بحث ← الفلتر ← اختر ← «عرض النتائج»؛ طبّق فلتراً آخر في النتائج؛ اضغط رجوع مرة: رئيسية المكتب.",
+        ],
+      },
+      updatedIn: "fix/filter-updates-in-place",
+    },
+    {
       id: "mobile-property-sheet-scrolls",
       title: {
         en: "The ad details sheet scrolls to the end of a long ad",
