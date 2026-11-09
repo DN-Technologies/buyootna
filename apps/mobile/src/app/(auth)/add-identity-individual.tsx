@@ -17,8 +17,10 @@ import { z } from 'zod';
 
 import apiClient from '@/shared/api/api';
 import FormInput from '@/shared/components/ui/FormInput';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 const individualIdentitySchema = z.object({
   name: z.string().min(2, 'الاسم يجب أن يكون أكثر من حرفين'),
@@ -30,6 +32,20 @@ type IndividualIdentityValues = z.infer<typeof individualIdentitySchema>;
 export default function AddIdentityIndividualScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
+  const switchIdentity = useAuthStore((state) => state.switchIdentity);
+
+  const openIndividualHome = async (identityId?: string) => {
+    try {
+      if (identityId) await switchIdentity(identityId);
+      resetToIdentityHome('INDIVIDUAL');
+    } catch (error) {
+      showAlert(
+        'خطأ',
+        getApiErrorMessage(error, 'تعذر فتح الحساب الفردي، بدّل إليه من المزيد'),
+      );
+      resetToIdentityHome(useAuthStore.getState().activeIdentity?.type);
+    }
+  };
 
   const { control, handleSubmit } = useForm<IndividualIdentityValues>({
     resolver: zodResolver(individualIdentitySchema),
@@ -43,18 +59,21 @@ export default function AddIdentityIndividualScreen() {
   const onSubmit = async (data: IndividualIdentityValues) => {
     setIsLoading(true);
     try {
-      await apiClient.post('/identities/individual', {
+      const response = await apiClient.post('/identities/individual', {
         name: data.name,
         whatsapp: data.whatsapp || undefined,
       });
+      const identityId: string | undefined = response.data?.id;
 
       // Refresh store to include the new identity
       await refreshProfile();
 
+      // Switch to it and open its home: it went to the individual «المزيد»
+      // still as the company, under the company's tabs (QA)
       showAlert('تم بنجاح', 'تم إضافة الهوية الفردية بنجاح', [
         {
           text: 'حسناً',
-          onPress: () => router.replace('/(individual)/more'),
+          onPress: () => void openIndividualHome(identityId),
         },
       ]);
     } catch (error: any) {

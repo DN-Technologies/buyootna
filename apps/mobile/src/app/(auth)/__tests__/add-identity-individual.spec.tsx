@@ -15,20 +15,32 @@ jest.mock('@/shared/api/api', () => ({
 }));
 
 jest.mock('@/shared/store/useAuthStore', () => ({
-  useAuthStore: jest.fn(),
+  useAuthStore: Object.assign(jest.fn(), {
+    getState: () => ({ activeIdentity: { type: 'COMPANY' } }),
+  }),
+}));
+jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
+  resetToIdentityHome: jest.fn(),
 }));
 
 const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 const mockRefreshProfile = jest.fn();
+const mockSwitchIdentity = jest.fn();
+const { resetToIdentityHome } = jest.requireMock(
+  '@/shared/navigation/getIdentityHomeRoute',
+);
 
 describe('AddIdentityIndividualScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRefreshProfile.mockResolvedValue(undefined);
     mockUseAuthStore.mockImplementation(
-      (selector?: (s: { refreshProfile: jest.Mock }) => unknown) => {
-        const state = { refreshProfile: mockRefreshProfile };
+      (selector?: (s: object) => unknown) => {
+        const state = {
+          refreshProfile: mockRefreshProfile,
+          switchIdentity: mockSwitchIdentity,
+        };
         return selector ? selector(state) : state;
       },
     );
@@ -69,7 +81,10 @@ describe('AddIdentityIndividualScreen', () => {
     expect(mockApiClient.post).not.toHaveBeenCalled();
   });
 
-  it('creates the identity, refreshes the profile, and navigates on success', async () => {
+  // QA: it opened the individual «المزيد» still as the company, under the
+  // company's tabs; it now switches to the new profile and opens its home
+  it('creates the identity, switches to it and opens the personal home', async () => {
+    mockSwitchIdentity.mockResolvedValue(undefined);
     mockApiClient.post.mockResolvedValue({ data: { id: 'identity-1' } });
     const { getByPlaceholderText, getByText } = await render(
       <AddIdentityIndividualScreen />,
@@ -94,7 +109,9 @@ describe('AddIdentityIndividualScreen', () => {
     expect(alertCall).toBeDefined();
     const okButton = alertCall![2].find((b: any) => b.text === 'حسناً');
     await act(async () => okButton.onPress());
-    expect(router.replace).toHaveBeenCalledWith('/(individual)/more');
+    expect(mockSwitchIdentity).toHaveBeenCalledWith('identity-1');
+    expect(resetToIdentityHome).toHaveBeenCalledWith('INDIVIDUAL');
+    expect(router.replace).not.toHaveBeenCalledWith('/(individual)/more');
   });
 
   it('shows an alert with the backend message and does not navigate on failure', async () => {
