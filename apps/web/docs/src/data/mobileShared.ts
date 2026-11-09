@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-property-sheet-scrolls",
+      title: {
+        en: "The ad details sheet scrolls to the end of a long ad",
+        ar: "نافذة تفاصيل الإعلان تتمرر حتى نهاية الإعلان الطويل",
+      },
+      priority: "P1",
+      story: {
+        en: "Tapping an ad on the home feed or its sliders opens its details sheet. With a long description the sheet didn't scroll: the rest of the text, the contact buttons and «عرض العقار» were cut off below it (QA). The sheet was sized to its content (a BottomSheetView around the scroll view, with the library's dynamic sizing), so the scroll view was as tall as the whole ad. It is now a fixed 85% sheet whose body scrolls, clear of the home indicator.",
+        ar: "الضغط على إعلان في الرئيسية أو شرائحها يفتح نافذة تفاصيله. ومع وصف طويل لم تكن النافذة تتمرر، فيُقطع باقي النص وأزرار التواصل و«عرض العقار». كانت النافذة تأخذ ارتفاع محتواها كله فلا يبقى للتمرير شيء. أصبحت بارتفاع ثابت 85% ويتمرر محتواها، بعيداً عن مؤشر الشاشة الرئيسية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On an ad with a long description, swiping up scrolls the sheet's content down to «عرض العقار».",
+          "The sheet stays at 85% of the screen; the header (close, favourite, share) stays in place.",
+          "A short ad looks as before.",
+        ],
+        ar: [
+          "في إعلان بوصف طويل، السحب لأعلى يمرر محتوى النافذة حتى «عرض العقار».",
+          "تبقى النافذة بارتفاع 85% من الشاشة، ويبقى رأسها (إغلاق، مفضلة، مشاركة) في مكانه.",
+          "الإعلان القصير يظهر كما كان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Home: tap an ad with a long description; swipe up in the sheet: the full text, the contact buttons and «عرض العقار» come into view; tap «عرض العقار»: the ad's page opens.",
+        ],
+        ar: [
+          "الرئيسية: اضغط إعلاناً بوصف طويل؛ اسحب لأعلى داخل النافذة: يظهر النص كاملاً وأزرار التواصل و«عرض العقار»؛ اضغط «عرض العقار»: تفتح صفحة الإعلان.",
+        ],
+      },
+      updatedIn: "fix/property-sheet-scrolls",
+    },
+    {
       id: "mobile-add-company-requires-terms",
       title: {
         en: "Adding a company or office requires agreeing to the terms",
