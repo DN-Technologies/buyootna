@@ -48,6 +48,8 @@ export default function AddIdentityOfficeScreen() {
     setIsLoading(true);
     try {
       const formData = new FormData();
+      // The form only submits once ticked; the API requires and records it
+      formData.append('acceptTerms', 'true');
       formData.append('name', data.name);
       formData.append('licenseNumber', data.licenseNumber || '');
       formData.append('services', data.services || '');

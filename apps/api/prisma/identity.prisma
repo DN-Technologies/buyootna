@@ -25,6 +25,10 @@ model Identity {
   useAccountPhone        Boolean      @default(true)
   contactPhone           String?
   contactPhoneVerifiedAt DateTime?
+  // «شروط الاستخدام و سياسة الخصوصية» agreed to when this persona was added
+  // to the account (company/office); null for older personas
+  termsAcceptedAt        DateTime?
+  termsVersion           String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

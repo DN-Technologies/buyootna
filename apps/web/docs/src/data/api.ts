@@ -9,6 +9,39 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-add-persona-requires-terms",
+      title: {
+        en: "Adding a company or office requires the terms, recorded on the new profile",
+        ar: "إضافة شركة أو مكتب تتطلب الموافقة على الشروط وتُسجَّل على الملف الجديد",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /identities/company and POST /identities/office (adding a profile to a signed-in account) now require acceptTerms: true (the string 'true' from multipart, or true in JSON) and refuse anything else with 400 «يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة». The new profile stores termsAcceptedAt and termsVersion (Identity, nullable: older profiles have none). Sign-up's POST /users/register/company|office is unchanged.",
+        ar: "أصبح POST /identities/company وPOST /identities/office (إضافة ملف لحساب مسجّل) يتطلبان acceptTerms: true (النص 'true' في multipart أو true في JSON) ويرفضان غيره بخطأ 400 «يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة». ويخزن الملف الجديد termsAcceptedAt وtermsVersion (فارغان للملفات الأقدم). ولم يتغير تسجيل POST /users/register/company|office.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Without acceptTerms, or with false, 'false' or any other value: 400 with the message; nothing is created or uploaded.",
+          "With acceptTerms 'true': the company or office is created as before, and its Identity row has termsAcceptedAt (now) and termsVersion (the current TERMS_VERSION).",
+          "Existing profiles keep null in both.",
+        ],
+        ar: [
+          "دون acceptTerms أو بقيمة false أو 'false' أو غيرها: 400 مع الرسالة، ولا يُنشأ أو يُرفع شيء.",
+          "مع acceptTerms 'true': تُنشأ الشركة أو المكتب كما كان، وفي سجل Identity قيمة termsAcceptedAt (الآن) وtermsVersion (نسخة الشروط الحالية).",
+          "الملفات الموجودة تبقى قيمتاها فارغتين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual, POST /identities/company (multipart: name, specialty) without acceptTerms: 400; add acceptTerms=true: 201, and the Identity row has termsAcceptedAt and termsVersion.",
+        ],
+        ar: [
+          "كفرد، أرسل POST /identities/company (multipart: name وspecialty) دون acceptTerms: ‏400؛ أضف acceptTerms=true: ‏201، وفي سجل Identity قيمتا termsAcceptedAt وtermsVersion.",
+        ],
+      },
+      updatedIn: "fix/add-company-requires-terms",
+    },
+    {
       id: "api-payment-discount-codes",
       title: {
         en: "Payments: discount codes, the chosen Tap method, and a quote before paying",

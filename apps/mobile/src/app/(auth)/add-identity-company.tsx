@@ -41,6 +41,8 @@ export default function AddIdentityCompanyScreen() {
     setIsLoading(true);
     try {
       const formData = new FormData();
+      // The form only submits once ticked; the API requires and records it
+      formData.append('acceptTerms', 'true');
       formData.append('name', data.name);
       // «التخصص»; the licence comes later with «طلب التوثيق»
       formData.append('specialty', data.specialty || '');

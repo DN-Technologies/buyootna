@@ -1,7 +1,12 @@
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
+import { RequireTermsAccepted } from '../../auth/dto/terms-acceptance.dto';
 
 export class CreateOfficeIdentityDto {
+  // Agreed on the form's last step; recorded on the profile
+  @RequireTermsAccepted()
+  acceptTerms: boolean;
+
   @IsNotEmpty()
   @IsString()
   name: string;

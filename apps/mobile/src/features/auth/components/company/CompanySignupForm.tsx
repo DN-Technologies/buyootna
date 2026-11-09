@@ -12,6 +12,7 @@ import {
   STEP_2_FIELDS,
 } from '@/features/auth/companyAuthSchemas';
 import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
+import { requireTermsAccepted, useTermsAgreement } from '@/features/auth/terms';
 import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSheet';
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
@@ -107,7 +108,16 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
     }
   };
 
+  // A company or office is agreed to here, on its own: the box starts
+  // unticked, whatever was ticked earlier in the session
+  useEffect(() => {
+    useTermsAgreement.getState().setAccepted(false);
+  }, []);
+
   const handleFinalSubmit = async (data: CompanySignupFormValues) => {
+    // Every flow using this form, not only sign-up: «إضافة حساب» › شركة /
+    // مكتب showed the box but created the profile unticked (QA)
+    if (!requireTermsAccepted()) return;
     const success = await onSubmit(data);
     if (success) {
       successSheetRef.current?.present();
