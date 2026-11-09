@@ -43,6 +43,10 @@ export const IndividualAuthBottomSheets: React.FC<
         description="تم تفعيل حسابك وتسجيل الدخول بنجاح"
         buttonText="ابدأ الآن"
         onPress={onSuccessClose}
+        // Signed up: only «ابدأ الآن» closes it, and any close still leaves
+        // the sign-up (a tap outside left the user stuck on it)
+        dismissible={false}
+        onDismiss={onSuccessClose}
       />
     </>
   );

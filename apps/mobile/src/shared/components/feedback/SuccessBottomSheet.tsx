@@ -21,6 +21,13 @@ interface SuccessBottomSheetProps {
   onSecondaryPress?: () => void;
   /** Visual style of the optional secondary button. Defaults to 'gold'. */
   secondaryButtonVariant?: 'gold' | 'neutral';
+  /**
+   * false: only the button closes it (no tap outside, no swipe down), for a
+   * sheet whose button must run (e.g. leaving a finished sign-up)
+   */
+  dismissible?: boolean;
+  /** Runs whenever the sheet closes, however it was closed */
+  onDismiss?: () => void;
 }
 
 const SuccessBottomSheet = forwardRef<
@@ -38,6 +45,8 @@ const SuccessBottomSheet = forwardRef<
       secondaryButtonText,
       onSecondaryPress,
       secondaryButtonVariant = 'gold',
+      dismissible = true,
+      onDismiss,
     },
     ref,
   ) => {
@@ -58,9 +67,10 @@ const SuccessBottomSheet = forwardRef<
           disappearsOnIndex={-1}
           appearsOnIndex={0}
           opacity={0.5}
+          pressBehavior={dismissible ? 'close' : 'none'}
         />
       ),
-      [],
+      [dismissible],
     );
 
     return (
@@ -69,6 +79,8 @@ const SuccessBottomSheet = forwardRef<
         index={0}
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
+        enablePanDownToClose={dismissible}
+        onDismiss={onDismiss}
         handleIndicatorStyle={{
           backgroundColor: '#111111',
           width: 40,
