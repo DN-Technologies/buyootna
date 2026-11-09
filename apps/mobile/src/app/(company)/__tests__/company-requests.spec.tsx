@@ -189,6 +189,33 @@ describe('CompanyRequestsScreen (real data)', () => {
     );
   });
 
+  // QA: home's «طلبات عامة» › «عرض الكل» opened on the private list
+  it("opens on the list home's «عرض الكل» came from, then forgets the param", async () => {
+    mockParams = { scope: 'public' };
+    await renderScreen();
+
+    expect(mockUseCompanyRequests).toHaveBeenLastCalledWith(
+      'public',
+      'all',
+      '',
+      {},
+    );
+    // Cleared, so switching tabs by hand afterwards isn't undone
+    expect(mockSetParams).toHaveBeenCalledWith({ scope: undefined });
+  });
+
+  it('ignores an unknown scope and opens on the company list', async () => {
+    mockParams = { scope: 'mine' };
+    await renderScreen();
+
+    expect(mockUseCompanyRequests).toHaveBeenLastCalledWith(
+      'company',
+      'all',
+      '',
+      {},
+    );
+  });
+
   it('re-queries the hook with the selected status filter', async () => {
     const { getByTestId } = await renderScreen();
 

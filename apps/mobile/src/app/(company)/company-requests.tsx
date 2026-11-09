@@ -35,7 +35,11 @@ export default function CompanyRequestsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   // Back from انهاء الطلب: say it worked
-  const { ended } = useLocalSearchParams<{ ended?: string }>();
+  // scope: the list to show, from home's «عرض الكل» (company or public)
+  const { ended, scope } = useLocalSearchParams<{
+    ended?: string;
+    scope?: string;
+  }>();
   const { showToast, toastMessage, toastSubtitle, fadeAnim, slideAnim, triggerToast } =
     useActivityToast();
   const removeSheetRef = useRef<BottomSheetModal>(null);
@@ -70,6 +74,14 @@ export default function CompanyRequestsScreen() {
     setReplyTo(request);
     replySheetRef.current?.present();
   };
+
+  // A tab, kept between visits: each «عرض الكل» picks its list, then the
+  // param goes so the user's own switch isn't undone
+  useEffect(() => {
+    if (scope !== 'company' && scope !== 'public') return;
+    setActiveScope(scope);
+    router.setParams({ scope: undefined });
+  }, [scope, router]);
 
   useEffect(() => {
     if (ended !== '1') return;
