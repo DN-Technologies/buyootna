@@ -7,6 +7,7 @@ import { handleSubscriptionRequired } from '@/features/company/utils/subscriptio
 import { companyService, type MyCompanyService } from '@/shared/api/company.service';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { dismissSheet, presentSheet } from '@/shared/utils/presentSheet';
 
 import { useServicesActions } from './useServicesActions';
 
@@ -35,7 +36,7 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
 
   const open = () => {
     reset();
-    sheetRef.current?.present();
+    presentSheet(sheetRef);
   };
 
   const submit = async () => {
@@ -48,8 +49,9 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
         title: selection.hasOther ? serviceTitle.trim() : undefined,
       });
       await refresh();
-      pickerRef.current?.dismiss();
-      sheetRef.current?.dismiss();
+      // Only what's open: the picker isn't, when adding from the sheet
+      dismissSheet(pickerRef);
+      dismissSheet(sheetRef);
       reset();
     } catch (error) {
       if (handleSubscriptionRequired(error, router)) return;
@@ -67,7 +69,7 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
   // title (back to the sheet)
   const addFromPicker = () => {
     if (selection.hasOther) {
-      pickerRef.current?.dismiss();
+      dismissSheet(pickerRef);
       return;
     }
     void submit();
