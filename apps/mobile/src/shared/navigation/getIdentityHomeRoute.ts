@@ -3,6 +3,9 @@ import { router } from 'expo-router';
 
 import type { IdentityType } from '@/shared/store/useAuthStore';
 
+import { resetToProfileHome } from './resetToProfileHome';
+import { getRootNavigationRef } from './rootNavigation';
+
 /**
  * Single source of truth for "which route group is home for this identity".
  * Guests and unrecognized/null identity types fall back to individual.
@@ -38,6 +41,14 @@ export function getIdentityPlansRoute(
  * mounted underneath.
  */
 export function resetToIdentityHome(type: IdentityType | null | undefined) {
+  // The profile's home alone on the stack holding the profile groups, in one
+  // step. dismissAll() only cleared the nearest stack: from a screen pushed
+  // over another profile's tabs (settings, «إضافة حساب», the profile
+  // switcher's flows) it fell back to those tabs, and the old profile's
+  // layout stayed until a restart (QA)
+  const rootRef = getRootNavigationRef();
+  if (rootRef && resetToProfileHome(rootRef, type ?? 'INDIVIDUAL')) return;
+
   if (typeof router.canDismiss === 'function' && router.canDismiss()) {
     router.dismissAll();
   }

@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-switch-to-individual-rebuilds-ui",
+      title: {
+        en: "Switching from the company to the personal profile rebuilds the layout at once",
+        ar: "التحويل من الشركة إلى الملف الشخصي يعيد بناء الواجهة فوراً",
+      },
+      priority: "P1",
+      story: {
+        en: "After «إضافة حساب» › فرد the app went to the personal «المزيد» without switching to the new profile, under the company's tabs: the company layout stayed until a restart (QA). It now switches to the new profile and opens its home. And every profile change (resetToIdentityHome) now resets the stack holding the profile groups in one step — only the new profile's home remains — instead of clearing only the nearest stack, which from a screen pushed over another profile's tabs fell back to those tabs.",
+        ar: "بعد «إضافة حساب» ← فرد كان التطبيق يفتح «المزيد» الشخصي دون التحويل إلى الملف الجديد وتحت تبويبات الشركة، فتبقى واجهة الشركة حتى إعادة التشغيل. أصبح يحوّل إلى الملف الجديد ويفتح رئيسيته. وكل تغيير ملف أصبح يعيد ضبط مكدس الملفات دفعة واحدة فلا تبقى إلا رئيسية الملف الجديد.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "As a company, «إضافة حساب» › فرد › حسناً: the personal home and tabs show, and the active profile is the new one.",
+          "Switching profiles from the switcher shows only the new profile's layout; back can't return to the old one.",
+          "No company tab or screen is reachable after switching, without a restart.",
+        ],
+        ar: [
+          "كشركة، «إضافة حساب» ← فرد ← حسناً: تظهر الرئيسية والتبويبات الشخصية والملف النشط هو الجديد.",
+          "التبديل من مبدّل الملفات يعرض واجهة الملف الجديد فقط ولا يعيد الرجوع إلى القديم.",
+          "لا يمكن الوصول إلى تبويب أو شاشة للشركة بعد التبديل دون إعادة تشغيل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Company › المزيد › الحساب › إضافة حساب › فرد › fill › حسناً: the personal home; swipe back and browse the tabs: no company screen.",
+        ],
+        ar: [
+          "شركة ← المزيد ← الحساب ← إضافة حساب ← فرد ← املأ ← حسناً: الرئيسية الشخصية؛ اسحب للخلف وتنقل بين التبويبات: لا شاشة للشركة.",
+        ],
+      },
+      updatedIn: "fix/profile-switch-rebuilds-ui",
+    },
+    {
       id: "mobile-signup-success-sheet-modal",
       title: {
         en: "The sign-up success sheet can't be dismissed into a dead screen",

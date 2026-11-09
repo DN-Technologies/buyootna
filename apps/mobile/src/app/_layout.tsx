@@ -38,6 +38,7 @@ import {
 import { useLateIdentityRedirect } from '@/shared/navigation/useLateIdentityRedirect';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ensureRtlDirection } from '@/shared/utils/rtl';
+import { setRootNavigationRef } from '@/shared/navigation/rootNavigation';
 
 // Guards every push/navigate/replace call in the app (both `router.push(...)`
 // and `useRouter().push(...)` resolve to the same expo-router singleton this
@@ -127,6 +128,11 @@ function RootLayout() {
   // A business profile that loaded after launch fell back to individual
   useLateIdentityRedirect();
   const navigationRef = useNavigationContainerRef();
+  // For resetToIdentityHome, which runs outside components
+  useEffect(() => {
+    setRootNavigationRef(navigationRef);
+    return () => setRootNavigationRef(null);
+  }, [navigationRef]);
   // Tells the tap debounce which screen is showing, so a screen left by any
   // means (a swipe back too) can be opened again
   useEffect(
