@@ -157,6 +157,23 @@ describe('CompanyHomeScreen', () => {
     expect(queryByText('الخدمات')).toBeNull();
   });
 
+  // QA: «طلبات عامة» › «عرض الكل» opened الطلبات on the private list
+  it('each «عرض الكل» opens الطلبات on its own list', async () => {
+    const { getAllByText } = await setup();
+    const [privateViewAll, publicViewAll] = getAllByText('عرض الكل');
+
+    await fireEvent.press(publicViewAll);
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: '/(company)/company-requests',
+      params: { scope: 'public' },
+    });
+    await fireEvent.press(privateViewAll);
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: '/(company)/company-requests',
+      params: { scope: 'company' },
+    });
+  });
+
   it('tags each card: status and "الرد" for private, "مناسبة لك" and "ارسال عرض" for public', async () => {
     const { getByTestId, getByText } = await setup();
 

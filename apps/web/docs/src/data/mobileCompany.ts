@@ -9,6 +9,39 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-home-view-all-opens-its-list",
+      title: {
+        en: "Home's «عرض الكل» opens الطلبات on that section's list",
+        ar: "«عرض الكل» في الرئيسية يفتح الطلبات على قائمة القسم نفسه",
+      },
+      priority: "P2",
+      story: {
+        en: "On a company's home, «عرض الكل» next to «طلبات عامة» opened الطلبات on the private list (QA): the screen always started on خاصة بالشركة. Each section's «عرض الكل» now passes its list, and الطلبات switches to it on every visit (it stays mounted as a tab), then drops the param so a later switch by hand isn't undone.",
+        ar: "في رئيسية الشركة كان «عرض الكل» بجانب «طلبات عامة» يفتح الطلبات على القائمة الخاصة لأن الشاشة تبدأ دائماً على «خاصة بالشركة». أصبح «عرض الكل» في كل قسم يمرر قائمته، وتنتقل الطلبات إليها في كل زيارة (فهي تبويب يبقى مفتوحاً)، ثم يُحذف المعامل حتى لا يُلغى تبديل المستخدم لاحقاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«طلبات عامة» › «عرض الكل»: الطلبات opens on عامة.",
+          "«طلبات خاصة بالشركة» › «عرض الكل»: on خاصة بالشركة.",
+          "Again from home after switching tabs by hand: still the section's own list.",
+        ],
+        ar: [
+          "«طلبات عامة» ← «عرض الكل»: تفتح الطلبات على «عامة».",
+          "«طلبات خاصة بالشركة» ← «عرض الكل»: على «خاصة بالشركة».",
+          "من الرئيسية مجدداً بعد التبديل يدوياً: ما زالت قائمة القسم نفسه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Company home: «طلبات عامة» › «عرض الكل» → عامة; switch to خاصة, back to home, «طلبات عامة» › «عرض الكل» again → عامة.",
+        ],
+        ar: [
+          "رئيسية الشركة: «طلبات عامة» ← «عرض الكل» ← عامة؛ بدّل إلى خاصة وارجع للرئيسية ثم «طلبات عامة» ← «عرض الكل» مجدداً ← عامة.",
+        ],
+      },
+      updatedIn: "fix/public-requests-view-all-tab",
+    },
+    {
       id: "mobile-company-forms-dismiss-keyboard",
       title: {
         en: "Company forms close the keyboard when their button is pressed",
