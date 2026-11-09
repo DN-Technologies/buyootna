@@ -17,24 +17,21 @@ import { CompanySignupForm } from '@/features/auth/components/company/CompanySig
 import apiClient from '@/shared/api/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 
 export default function AddIdentityOfficeScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
 
-  const [logoFile, setLogoFile] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [logoFile, setLogoFile] = useState<PickedImage | null>(null);
   const [licenseFile, setLicenseFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
+  // The camera or the photo library, square-cropped: it opened the Files
+  // app, where people don't keep their photos (QA)
   const pickLogo = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      setLogoFile(result.assets[0]);
-    }
+    const picked = await pickSquareImage();
+    if (picked) setLogoFile(picked);
   };
 
   const pickLicense = async () => {
