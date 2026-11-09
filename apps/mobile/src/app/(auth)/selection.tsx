@@ -21,7 +21,8 @@ export default function AccountTypeSelectionScreen() {
     } else if (selectedType === 'company') {
       router.push({
         pathname: '/(auth)/business-auth',
-        params: { type: 'company' },
+        // A new company: the sign-up, not تسجيل الدخول (QA)
+        params: { type: 'company', mode: 'signup' },
       } as any);
     }
   };
