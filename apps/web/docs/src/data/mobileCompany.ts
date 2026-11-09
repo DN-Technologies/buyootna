@@ -9,6 +9,39 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-forms-dismiss-keyboard",
+      title: {
+        en: "Company forms close the keyboard when their button is pressed",
+        ar: "نماذج الشركة تغلق لوحة المفاتيح عند الضغط على زرها",
+      },
+      priority: "P2",
+      story: {
+        en: "Pressing «ارسال الفاتورة», «إضافة المشروع» or «إضافة الخدمة» with the keyboard up left it on screen, and what came next (the success sheet, an error, the subscription prompt) opened underneath it (QA). Each now closes the keyboard first, before anything is sent. (إضافة خدمة no longer has a success sheet: it returns to الخدمات.)",
+        ar: "كان الضغط على «ارسال الفاتورة» أو «إضافة المشروع» أو «إضافة الخدمة» ولوحة المفاتيح ظاهرة يتركها على الشاشة، فيُفتح ما بعدها (نافذة النجاح أو الخطأ أو طلب الاشتراك) تحتها. أصبح كل منها يغلق لوحة المفاتيح أولاً قبل الإرسال. (إضافة خدمة لم يعد لها نافذة نجاح: تعود إلى الخدمات.)",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the keyboard up, pressing the form's button closes it at once.",
+          "The success sheet after an invoice or a project opens fully in view.",
+          "An error after a failed save is in view, not under the keyboard.",
+        ],
+        ar: [
+          "ولوحة المفاتيح ظاهرة، الضغط على زر النموذج يغلقها فوراً.",
+          "نافذة النجاح بعد الفاتورة أو المشروع تظهر كاملة.",
+          "الخطأ بعد فشل الحفظ ظاهر وليس تحت لوحة المفاتيح.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "معرض الأعمال › إضافة مشروع: type the description and, keyboard still up, press «إضافة المشروع»: the keyboard closes and the success sheet is fully visible.",
+        ],
+        ar: [
+          "معرض الأعمال ← إضافة مشروع: اكتب الوصف واضغط «إضافة المشروع» ولوحة المفاتيح ظاهرة: تُغلق اللوحة وتظهر نافذة النجاح كاملة.",
+        ],
+      },
+      updatedIn: "fix/forms-dismiss-keyboard-on-submit",
+    },
+    {
       id: "mobile-company-phone-field-width",
       title: {
         en: "The company's edit profile shows the whole phone number",

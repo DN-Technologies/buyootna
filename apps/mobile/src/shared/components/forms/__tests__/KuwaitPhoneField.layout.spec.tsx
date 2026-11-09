@@ -5,12 +5,15 @@ import { render } from '@testing-library/react-native';
 import { useForm } from 'react-hook-form';
 
 import KuwaitPhoneField from '../KuwaitPhoneField';
+import type { ProfileFormData } from '../types';
 
 function Field({ inputClassName }: { inputClassName?: string }) {
   const {
     control,
     formState: { errors },
-  } = useForm<{ phone: string }>({ defaultValues: { phone: '99998888' } });
+  } = useForm<ProfileFormData>({
+    defaultValues: { phone: '99998888' } as ProfileFormData,
+  });
   return (
     <KuwaitPhoneField
       control={control}
