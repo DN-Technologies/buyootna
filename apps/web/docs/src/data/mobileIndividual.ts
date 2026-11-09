@@ -9,6 +9,39 @@ export const mobileIndividual: DocSection = {
   },
   stories: [
     {
+      id: "mobile-home-view-mode-remembered",
+      title: {
+        en: "Home remembers the list or photos view across launches",
+        ar: "الرئيسية تتذكر طريقة العرض (قائمة أو صور) بعد إعادة فتح التطبيق",
+      },
+      priority: "P2",
+      story: {
+        en: "The switch above home's عقارات list («عرض سريع» / photos) reset to the quick list every time the app opened (QA). The choice is now saved on the device (guest or signed in) and shown on the next launch; within a session home shows it at once. If storage fails, home opens on the quick list as before.",
+        ar: "كان المفتاح فوق قائمة العقارات في الرئيسية («عرض سريع» / الصور) يعود للقائمة السريعة في كل فتح للتطبيق. أصبح الاختيار يُحفظ على الجهاز (زائراً أو مسجّلاً) ويظهر في الفتح التالي، وداخل الجلسة يظهر فوراً. وإن تعذّر الحفظ تفتح الرئيسية على القائمة السريعة كما كان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Switch to the photos view, close the app from the app switcher, reopen: home shows the photos view.",
+          "Switch back to the list and reopen: the list.",
+          "Works as a guest and signed in; the first launch opens on the quick list.",
+        ],
+        ar: [
+          "بدّل إلى عرض الصور، أغلق التطبيق من مبدّل التطبيقات، وافتحه: تظهر الرئيسية بعرض الصور.",
+          "بدّل إلى القائمة وأعد الفتح: القائمة.",
+          "يعمل للزائر والمسجّل، وأول فتح يكون على القائمة السريعة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Home › عقارات: switch to the photos view; force-close the app and reopen: photos view; switch to the list, go to another tab and back: the list.",
+        ],
+        ar: [
+          "الرئيسية ← عقارات: بدّل إلى عرض الصور؛ أغلق التطبيق بالكامل وافتحه: عرض الصور؛ بدّل إلى القائمة واذهب لتبويب آخر ثم ارجع: القائمة.",
+        ],
+      },
+      updatedIn: "fix/home-view-mode-remembered",
+    },
+    {
       id: "mobile-edit-profile-fresh-each-visit",
       title: {
         en: "«تعديل الحساب» opens fresh on every visit",

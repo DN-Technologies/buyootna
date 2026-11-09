@@ -35,6 +35,7 @@ import HomeProperties from '@/features/individual/components/home/sections/HomeP
 import type { HomeMode } from '@/features/individual/components/home/topbar/HomeModeSwitch';
 import HomeTopBar from '@/features/individual/components/home/topbar/HomeTopBar';
 import { useCollapsibleHeader } from '@/features/individual/components/home/useCollapsibleHeader';
+import { useHomeViewMode } from '@/features/individual/hooks/useHomeViewMode';
 import { feedService } from '@/features/individual/services/feed.service';
 import StoriesList from '@/features/stories/components/StoriesList';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
@@ -73,8 +74,8 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
     useState<PropertyFilter>('sale');
-  // The design opens on the quick list (عرض سريع)
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  // The quick list (عرض سريع) or photos, remembered on the device
+  const [viewMode, setViewMode] = useHomeViewMode();
   // «الرئيسية» or «القصص» (the top bar's switch)
   const [mode, setMode] = useState<HomeMode>('home');
   const authSheetRef = useRef<BottomSheetModal>(null);
