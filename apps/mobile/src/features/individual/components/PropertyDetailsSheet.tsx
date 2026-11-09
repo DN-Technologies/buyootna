@@ -5,6 +5,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import PropertyAdditionalDetails from '@/features/individual/components/property-details-sheet/PropertyAdditionalDetails';
 import PropertyContactActionsBar from '@/features/individual/components/property-details-sheet/PropertyContactActionsBar';
@@ -15,7 +16,6 @@ import PropertyPriceViewsRow from '@/features/individual/components/property-det
 import PropertySpecsRow from '@/features/individual/components/property-details-sheet/PropertySpecsRow';
 import { usePropertyContactActions } from '@/features/individual/components/property-details-sheet/usePropertyContactActions';
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
-import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -57,6 +57,7 @@ const PropertyDetailsSheet = forwardRef<
     ref,
   ) => {
     const snapPoints = useMemo(() => ['85%'], []);
+    const insets = useSafeAreaInsets();
 
     const { canWhatsApp, handleWhatsApp, handleCall, handleChat } =
       usePropertyContactActions({
@@ -93,6 +94,12 @@ const PropertyDetailsSheet = forwardRef<
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        // A fixed 85% sheet whose body scrolls. Sized to its content (v5's
+        // default), with the scroll view inside a BottomSheetView, the sheet
+        // measured the whole ad: the scroll view was as tall as its content,
+        // so it never scrolled and a long description and «عرض العقار» were
+        // cut off below the sheet (QA)
+        enableDynamicSizing={false}
         // A horizontal swipe on the photo carousel must not drag the sheet
         activeOffsetY={[-12, 12]}
         failOffsetX={[-12, 12]}
@@ -100,7 +107,7 @@ const PropertyDetailsSheet = forwardRef<
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <SafeBottomSheetView className="flex-1">
+        <View className="flex-1">
           <PropertyDetailsSheetHeader
             title={displayTitle}
             showActions={Boolean(property)}
@@ -120,7 +127,9 @@ const PropertyDetailsSheet = forwardRef<
           ) : (
             <BottomSheetScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 50 }}
+              // Clear of the home indicator (SafeBottomSheetView's spacer did
+              // this, outside the scroll)
+              contentContainerStyle={{ paddingBottom: 50 + insets.bottom }}
             >
               <View className="p-5">
                 <PropertyImageCarousel
@@ -180,7 +189,7 @@ const PropertyDetailsSheet = forwardRef<
               </View>
             </BottomSheetScrollView>
           )}
-        </SafeBottomSheetView>
+        </View>
       </BottomSheetModal>
     );
   },
