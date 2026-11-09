@@ -2,7 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { Share } from 'react-native';
+import { Keyboard, Share } from 'react-native';
 
 import type { InvoiceItem } from '@/features/company/components/invoice/InvoiceItemsStep';
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
@@ -92,6 +92,9 @@ export function useCreateInvoice() {
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
+    // The keyboard closes as the button is pressed: what follows (the
+    // success sheet, an error, the subscription prompt) opened under it (QA)
+    Keyboard.dismiss();
     setIsSubmitting(true);
     try {
       const response = await companyService.createInvoice({

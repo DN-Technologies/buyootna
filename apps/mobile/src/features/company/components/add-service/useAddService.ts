@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Keyboard } from 'react-native';
 
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
@@ -80,6 +81,9 @@ export function useAddService() {
 
   const submit = async () => {
     if (!isValid || isSubmitting) return;
+    // The keyboard closes as the button is pressed: what follows (the
+    // success sheet, an error, the subscription prompt) opened under it (QA)
+    Keyboard.dismiss();
     setIsSubmitting(true);
     try {
       await companyService.createService({
