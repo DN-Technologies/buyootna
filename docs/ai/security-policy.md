@@ -113,6 +113,19 @@ after the risk was explained, and break the rules above on purpose:
    the QA phase: `TESTING_SHOW_SMS_CODES=false` in the server's
    `apps/api/.env` turns it off (Verify makes the code again, unseen). If the Twilio account has custom codes disabled,
    Verify makes the code and that one can't be shown.
+   - **Own SMS** (2026-11-09, owner's request): with `TWILIO_SMS_FROM` set
+     (a Messaging Service SID `MG…` or a registered sender), codes skip
+     Verify: the server makes the code, sends it as a plain SMS through
+     Twilio Messaging and checks it itself (in memory, like the custom-code
+     path), so the portal shows every phone code with no Twilio permission.
+     `TESTING_SHOW_SMS_CODES=false` still hides them from the portal.
+   - **QA test numbers** (2026-11-09, owner's request):
+     `TESTING_SMS_TEST_NUMBERS` (comma-separated E.164 prefixes, each at
+     least the country code and 4 more digits, e.g. `+9655000`) sends no
+     SMS to matching numbers; the code is only on the portal. Anyone with
+     the portal password can verify such a number without the phone, so
+     the variable must be removed (or `TESTING_SHOW_SMS_CODES=false`,
+     which also turns it off) before launch.
 2. **Wiping the production database** from the portal: typed confirmation
    («buyootna-production»), the separate DANGER password, a 10-second
    countdown, and a `pg_dump` to S3 first — no backup, no wipe. The backup
