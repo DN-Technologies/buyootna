@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-signup-success-sheet-modal",
+      title: {
+        en: "The sign-up success sheet can't be dismissed into a dead screen",
+        ar: "نافذة نجاح التسجيل لا تُغلق إلى شاشة بلا مخرج",
+      },
+      priority: "P1",
+      story: {
+        en: "After creating a company, a tap outside its success sheet closed it without «العودة الى الرئيسية», leaving the user on the finished sign-up with no way forward (QA). The sheet is now modal: only its button closes it (no tap outside, no swipe down), and any close still leaves the sign-up. Same for the individual sign-up's «ابدأ الآن». SuccessBottomSheet gains dismissible and onDismiss for this.",
+        ar: "بعد إنشاء شركة كان الضغط خارج نافذة النجاح يغلقها دون «العودة الى الرئيسية»، فيبقى المستخدم على التسجيل المنتهي بلا مخرج. أصبحت النافذة لا تُغلق إلا بزرها (لا ضغط خارجها ولا سحب)، وأي إغلاق يغادر التسجيل. وكذلك «ابدأ الآن» في تسجيل الفرد.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After company (or office) sign-up, tapping outside or swiping the success sheet does nothing.",
+          "«العودة الى الرئيسية» opens the new account's home.",
+          "The individual sign-up's «ابدأ الآن» sheet behaves the same.",
+        ],
+        ar: [
+          "بعد تسجيل شركة أو مكتب لا يفعل الضغط خارج نافذة النجاح أو سحبها شيئاً.",
+          "«العودة الى الرئيسية» يفتح رئيسية الحساب الجديد.",
+          "نافذة «ابدأ الآن» في تسجيل الفرد بالطريقة نفسها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create a company; on the success sheet tap the dark area, then swipe it down: it stays; tap «العودة الى الرئيسية»: the company home opens.",
+        ],
+        ar: [
+          "أنشئ شركة؛ على نافذة النجاح اضغط المنطقة الداكنة ثم اسحبها للأسفل: تبقى؛ اضغط «العودة الى الرئيسية»: تفتح رئيسية الشركة.",
+        ],
+      },
+      updatedIn: "fix/signup-success-sheet-trap",
+    },
+    {
       id: "mobile-logo-camera-or-gallery",
       title: {
         en: "Adding a logo offers the camera or the photo library, not the Files app",

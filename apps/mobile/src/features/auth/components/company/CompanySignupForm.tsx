@@ -114,10 +114,19 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
     }
   };
 
-  const closeSuccessModal = () => {
-    successSheetRef.current?.dismiss();
+  // Leaves the finished sign-up once, however the sheet was closed: it was
+  // dismissible by a tap outside, which skipped this and left the user on a
+  // screen with no way forward (QA)
+  const leftRef = useRef(false);
+  const leaveSignup = () => {
+    if (leftRef.current) return;
+    leftRef.current = true;
     if (onSuccessDone) onSuccessDone();
     else resetToIdentityHome(null);
+  };
+  const closeSuccessModal = () => {
+    successSheetRef.current?.dismiss();
+    leaveSignup();
   };
 
   const successMessage =
@@ -273,6 +282,9 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         description={successMessage}
         buttonText="العودة الى الرئيسية"
         onPress={closeSuccessModal}
+        // Only «العودة الى الرئيسية» closes it, and any close still leaves
+        dismissible={false}
+        onDismiss={leaveSignup}
         iconType={type === 'office' ? 'document-search' : 'check'}
         footerText={type === 'office' ? 'مدة المراجعة المتوقعة: خلال 24 ساعة' : undefined}
       />
