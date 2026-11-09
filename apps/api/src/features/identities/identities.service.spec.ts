@@ -4,12 +4,15 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { IdentityType, Prisma } from '@prisma/client';
+import { TERMS_VERSION } from '../auth/dto/terms-acceptance.dto';
 
 interface IdentityCreateArgs {
   data: {
     userId: string;
     type: IdentityType;
     isActive: boolean;
+    termsAcceptedAt?: Date;
+    termsVersion?: string;
     individualData?: {
       create: { name?: string; whatsapp?: string; avatarUrl?: string };
     };
@@ -149,6 +152,7 @@ describe('IdentitiesService', () => {
 
   describe('createCompany / createOffice', () => {
     const companyDto = {
+      acceptTerms: true,
       name: 'شركة',
       licenseNumber: ' ١٢٣ ٤٥ ',
       specialty: 'مكتب هندسي',
@@ -190,6 +194,7 @@ describe('IdentitiesService', () => {
     // The licence comes with «طلب التوثيق»; sign-up asks «التخصص»
     it('creates a company without a licence, with its specialty', async () => {
       await service.createCompany('user-1', {
+        acceptTerms: true,
         name: 'شركة',
         specialty: 'مكتب هندسي',
       });
@@ -202,8 +207,20 @@ describe('IdentitiesService', () => {
       expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(1);
     });
 
+    // QA: «إضافة حساب» › شركة created the profile with the terms unticked
+    it('records the terms agreed to on the new company and office', async () => {
+      await service.createCompany('user-1', companyDto);
+      await service.createOffice('user-1', companyDto);
+
+      for (const [args] of createCalls()) {
+        expect(args.data.termsAcceptedAt).toBeInstanceOf(Date);
+        expect(args.data.termsVersion).toBe(TERMS_VERSION);
+      }
+    });
+
     it("takes an older app build's النشاط as the specialty", async () => {
       await service.createCompany('user-1', {
+        acceptTerms: true,
         name: 'شركة',
         licenseActivity: 'مقاولات عامة',
       });
@@ -214,7 +231,7 @@ describe('IdentitiesService', () => {
 
     it('refuses a company with no specialty', async () => {
       await expect(
-        service.createCompany('user-1', { name: 'شركة' }),
+        service.createCompany('user-1', { acceptTerms: true, name: 'شركة' }),
       ).rejects.toThrow('التخصص مطلوب');
       expect(mockPrismaService.identity.create).not.toHaveBeenCalled();
     });

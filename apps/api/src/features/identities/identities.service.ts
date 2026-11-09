@@ -26,6 +26,7 @@ import {
 } from './persona-rules';
 import { ABOUT_MAX_LENGTH } from '../../common/utils/location.util';
 import { parseWorkingHours } from '../../common/utils/working-hours.util';
+import { TERMS_VERSION } from '../auth/dto/terms-acceptance.dto';
 
 type ProviderType = Extract<IdentityType, 'COMPANY' | 'OFFICE'>;
 
@@ -256,7 +257,8 @@ export class IdentitiesService {
           type,
           userId,
           { ...dto, ...pickDefined(uploaded) },
-          { isActive: isFirstIdentity },
+          // The DTO only lets it through when ticked
+          { isActive: isFirstIdentity, termsAccepted: true },
         );
       });
     } catch (error) {
@@ -306,7 +308,8 @@ export class IdentitiesService {
     type: ProviderType,
     userId: string,
     data: ProviderPersonaData,
-    options: { isActive: boolean },
+    // termsAccepted: the terms were ticked for this profile; recorded on it
+    options: { isActive: boolean; termsAccepted?: boolean },
   ) {
     const licenseNumber = data.licenseNumber?.trim()
       ? normalizeLicenseNumber(data.licenseNumber)
@@ -347,6 +350,9 @@ export class IdentitiesService {
         userId,
         type,
         isActive: options.isActive,
+        ...(options.termsAccepted
+          ? { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION }
+          : {}),
         ...(type === IdentityType.COMPANY
           ? {
               companyData: {

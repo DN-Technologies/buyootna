@@ -105,6 +105,8 @@ describe('AddIdentityCompanyScreen › العودة الى الرئيسية', ()
     expect(url).toBe('/identities/company');
     const sent = body as FormData;
     expect(sent.get('specialty')).toBe('مقاول عام');
+    // The API refuses a company without it (the form checked the box)
+    expect(sent.get('acceptTerms')).toBe('true');
     const keys = [...sent.keys()];
     for (const key of ['licenseNumber', 'licenseExpiry', 'licenseActivity', 'license']) {
       expect(keys).not.toContain(key);

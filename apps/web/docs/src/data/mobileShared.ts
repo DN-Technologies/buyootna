@@ -16,7 +16,7 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "«إضافة حساب» › شركة / مكتب showed «شروط الاستخدام و سياسة الخصوصية» but created the profile with the box unticked (QA): only sign-up checked it. The shared company form now checks it before sending, in every flow, and the box starts unticked each time the form opens, whatever was ticked earlier in the session.",
+        en: "«إضافة حساب» › شركة / مكتب showed «شروط الاستخدام و سياسة الخصوصية» but created the profile with the box unticked (QA): only sign-up checked it. The shared company form now checks it before sending, in every flow, and the box starts unticked each time the form opens, whatever was ticked earlier in the session. The app sends acceptTerms, which the API now requires and records on the new profile (api-add-persona-requires-terms).",
         ar: "كانت «إضافة حساب» ← شركة / مكتب تعرض «شروط الاستخدام و سياسة الخصوصية» لكنها تنشئ الملف دون التأشير عليها؛ كان التسجيل وحده يتحقق منها. أصبح نموذج الشركة يتحقق منها قبل الإرسال في كل المسارات، ويبدأ المربع غير مؤشَّر في كل مرة يُفتح فيها النموذج.",
       },
       acceptanceCriteria: {
