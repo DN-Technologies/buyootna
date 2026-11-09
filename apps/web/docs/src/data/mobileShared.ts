@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-logo-camera-or-gallery",
+      title: {
+        en: "Adding a logo offers the camera or the photo library, not the Files app",
+        ar: "إضافة الشعار تعرض الكاميرا أو معرض الصور لا تطبيق الملفات",
+      },
+      priority: "P2",
+      story: {
+        en: "The logo on company sign-up, «إضافة حساب» › شركة/مكتب and office edit profile opened the iOS Files app, where people don't keep their photos (QA). It now asks «التقاط صورة» or «اختيار من المعرض» (asking for the matching permission) and crops the image square, as company edit profile already did.",
+        ar: "كان الشعار في تسجيل الشركة و«إضافة حساب» ← شركة/مكتب وتعديل ملف المكتب يفتح تطبيق الملفات حيث لا يحفظ الناس صورهم. أصبح يسأل «التقاط صورة» أو «اختيار من المعرض» (مع الإذن المناسب) ويقص الصورة مربعة، كما في تعديل ملف الشركة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping the logo shows «التقاط صورة» / «اختيار من المعرض» / «إلغاء».",
+          "Each opens the camera or the photo library with a square crop; the chosen logo shows and is uploaded.",
+          "A refused permission explains why, and nothing is picked.",
+        ],
+        ar: [
+          "الضغط على الشعار يعرض «التقاط صورة» / «اختيار من المعرض» / «إلغاء».",
+          "كل منهما يفتح الكاميرا أو المعرض مع قص مربع؛ ويظهر الشعار المختار ويُرفع.",
+          "رفض الإذن يعرض السبب ولا يُختار شيء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "إنشاء حساب › شركة › step 2: tap the logo, «اختيار من المعرض», pick a photo: it shows as the logo; finish sign-up: the company has that logo.",
+        ],
+        ar: [
+          "إنشاء حساب ← شركة ← الخطوة الثانية: اضغط الشعار، «اختيار من المعرض»، اختر صورة: تظهر شعاراً؛ أكمل التسجيل: تظهر الشركة بذلك الشعار.",
+        ],
+      },
+      updatedIn: "fix/logo-photo-picker",
+    },
+    {
       id: "mobile-create-account-company-signup",
       title: {
         en: "«إنشاء حساب» › شركة opens the company sign-up, not تسجيل الدخول",

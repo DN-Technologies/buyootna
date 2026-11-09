@@ -19,6 +19,7 @@ import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 
 export default function AddIdentityCompanyScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,17 +28,13 @@ export default function AddIdentityCompanyScreen() {
   // The company just created, opened by the success sheet's button
   const createdIdentityId = useRef<string | null>(null);
 
-  const [logoFile, setLogoFile] =
-    useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [logoFile, setLogoFile] = useState<PickedImage | null>(null);
 
+  // The camera or the photo library, square-cropped: it opened the Files
+  // app, where people don't keep their photos (QA)
   const pickLogo = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets.length > 0) {
-      setLogoFile(result.assets[0]);
-    }
+    const picked = await pickSquareImage();
+    if (picked) setLogoFile(picked);
   };
 
   const onSubmit = async (data: CompanySignupFormValues): Promise<boolean> => {

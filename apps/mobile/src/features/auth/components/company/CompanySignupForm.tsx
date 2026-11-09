@@ -18,6 +18,7 @@ import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { isCoordinates } from '@/shared/utils/location';
+import type { PickedImage } from '@/shared/utils/pickImage';
 
 import { CompanySignupProgress } from './CompanySignupProgress';
 import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
@@ -25,7 +26,7 @@ import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
 interface CompanySignupFormProps {
   type: 'company' | 'office';
   onSubmit: (data: CompanySignupFormValues) => Promise<boolean>;
-  logoFile: DocumentPicker.DocumentPickerAsset | null;
+  logoFile: PickedImage | null;
   pickLogo: () => void;
   // An office's licence image; a company sends its licence later
   licenseFile?: DocumentPicker.DocumentPickerAsset | null;
