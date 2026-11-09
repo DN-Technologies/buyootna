@@ -20,10 +20,16 @@ export type BusinessAuthMode = 'login' | 'signup';
 export type AuthMode = BusinessAuthMode;
 
 export function useBusinessAuth() {
-  const params = useLocalSearchParams<{ type?: 'company' | 'office' }>();
+  const params = useLocalSearchParams<{
+    type?: 'company' | 'office';
+    mode?: string;
+  }>();
   const type = params.type || 'company';
 
-  const [mode, setMode] = useState<AuthMode>('login');
+  // «إنشاء حساب» › شركة opens the sign-up; it opened on تسجيل الدخول (QA)
+  const [mode, setMode] = useState<AuthMode>(
+    params.mode === 'signup' ? 'signup' : 'login',
+  );
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 

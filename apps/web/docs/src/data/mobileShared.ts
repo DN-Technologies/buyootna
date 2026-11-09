@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-create-account-company-signup",
+      title: {
+        en: "«إنشاء حساب» › شركة opens the company sign-up, not تسجيل الدخول",
+        ar: "«إنشاء حساب» ← شركة يفتح تسجيل الشركة لا تسجيل الدخول",
+      },
+      priority: "P1",
+      story: {
+        en: "The account type screen opened the company screen with only its type, and that screen always started on تسجيل الدخول, so a new company landed on the login (QA). It now opens on the sign-up when asked to («إنشاء حساب» › شركة passes mode=signup), and switching to شركة/مكتب from the individual sign-up keeps signing up. Opened without it, it still starts on تسجيل الدخول.",
+        ar: "كانت شاشة نوع الحساب تفتح شاشة الشركة بنوعها فقط، وتلك الشاشة تبدأ دائماً بتسجيل الدخول، فتصل الشركة الجديدة إلى تسجيل الدخول. أصبحت تفتح على التسجيل عند طلبه («إنشاء حساب» ← شركة)، والتحويل إلى شركة أو مكتب من تسجيل الفرد يبقى تسجيلاً. ودون ذلك تبدأ بتسجيل الدخول كما كانت.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«إنشاء حساب» › شركة › بدء التسجيل opens the company sign-up form.",
+          "From the individual sign-up, switching to شركة or مكتب stays on sign-up.",
+          "Company/office login entry points still open تسجيل الدخول.",
+        ],
+        ar: [
+          "«إنشاء حساب» ← شركة ← بدء التسجيل يفتح نموذج تسجيل الشركة.",
+          "من تسجيل الفرد، التحويل إلى شركة أو مكتب يبقى على التسجيل.",
+          "مداخل تسجيل دخول الشركة والمكتب تفتح تسجيل الدخول كما هي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a guest: المزيد › إنشاء حساب › شركة › بدء التسجيل: the company sign-up (name, logo, terms) shows.",
+        ],
+        ar: [
+          "كزائر: المزيد ← إنشاء حساب ← شركة ← بدء التسجيل: يظهر تسجيل الشركة (الاسم والشعار والشروط).",
+        ],
+      },
+      updatedIn: "fix/company-signup-route",
+    },
+    {
       id: "mobile-report-sheet-rtl",
       title: {
         en: "«الإبلاغ» sheet labels sit on the right",

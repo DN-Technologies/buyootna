@@ -100,4 +100,18 @@ describe('useBusinessAuth › login opens the persona picked on the screen', () 
       expect(resetToIdentityHome).toHaveBeenCalledWith(identityType);
     },
   );
+
+  // QA: «إنشاء حساب» › شركة opened تسجيل الدخول
+  it('opens on the sign-up when asked to, otherwise on تسجيل الدخول', async () => {
+    (useLocalSearchParams as jest.Mock).mockReturnValue({
+      type: 'company',
+      mode: 'signup',
+    });
+    const signup = await renderHook(() => useBusinessAuth());
+    expect(signup.result.current.mode).toBe('signup');
+
+    (useLocalSearchParams as jest.Mock).mockReturnValue({ type: 'company' });
+    const login = await renderHook(() => useBusinessAuth());
+    expect(login.result.current.mode).toBe('login');
+  });
 });

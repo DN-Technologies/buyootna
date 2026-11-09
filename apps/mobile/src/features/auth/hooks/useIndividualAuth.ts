@@ -166,7 +166,8 @@ export function useIndividualAuth() {
     if (type === 'company' || type === 'office') {
       router.replace({
         pathname: '/(auth)/business-auth',
-        params: { type },
+        // Signing up stays signing up for a company or office too
+        params: { type, mode },
       } as any);
     }
   };
