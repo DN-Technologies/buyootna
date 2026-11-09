@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
+import { Keyboard } from 'react-native';
 
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { companyService } from '@/shared/api/company.service';
@@ -74,6 +75,9 @@ export function useAddProject() {
 
   const submit = async () => {
     if (!isValid || isSubmitting) return;
+    // The keyboard closes as the button is pressed: what follows (the
+    // success sheet, an error, the subscription prompt) opened under it (QA)
+    Keyboard.dismiss();
     setIsSubmitting(true);
     try {
       const urls = await propertiesService.uploadImages(images);
