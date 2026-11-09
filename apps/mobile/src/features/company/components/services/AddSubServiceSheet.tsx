@@ -10,6 +10,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import FieldLabel from '@/features/company/components/invoice/FieldLabel';
+import { presentSheet } from '@/shared/utils/presentSheet';
 
 import SubServicePickerSheet from './SubServicePickerSheet';
 import type { AddSubService } from './useAddSubService';
@@ -64,7 +65,7 @@ export default function AddSubServiceSheet({ add }: { add: AddSubService }) {
               <TouchableOpacity
                 testID="add-sub-service-types"
                 activeOpacity={0.7}
-                onPress={() => add.pickerRef.current?.present()}
+                onPress={() => presentSheet(add.pickerRef)}
                 className="h-[46px] w-full flex-row items-center justify-between gap-2 rounded-[6px] border border-[#ECECEC] bg-white px-3"
               >
                 <Text

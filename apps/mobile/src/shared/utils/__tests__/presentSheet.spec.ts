@@ -1,4 +1,8 @@
-import { PRESENT_CHECK_MS, presentSheet } from '../presentSheet';
+import {
+  dismissSheet,
+  PRESENT_CHECK_MS,
+  presentSheet,
+} from '../presentSheet';
 
 type FakeSheet = {
   status: { current: number };
@@ -77,5 +81,24 @@ describe('presentSheet', () => {
 
   it('does nothing without a sheet', () => {
     expect(() => presentSheet(refOf(null))).not.toThrow();
+  });
+});
+
+// QA: «اضافة خدمة فرعية» did nothing after adding one: the add closed the
+// type picker too, which wasn't open, and the closed picker / sheet then
+// ignored their next present()
+describe('dismissSheet', () => {
+  it('closes an open sheet', () => {
+    const s = sheet(PRESENTED);
+    dismissSheet(refOf(s));
+    expect(s.dismiss).toHaveBeenCalled();
+  });
+
+  it('leaves a sheet that isn\'t open alone', () => {
+    for (const status of [INITIAL, MINIMIZED]) {
+      const s = sheet(status);
+      dismissSheet(refOf(s));
+      expect(s.dismiss).not.toHaveBeenCalled();
+    }
   });
 });
