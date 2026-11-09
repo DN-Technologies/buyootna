@@ -68,3 +68,16 @@ export function presentSheet(ref: Ref) {
     else presentFresh(ref);
   }, PRESENT_CHECK_MS);
 }
+
+/**
+ * Closes a sheet only if it's open. dismiss() on a sheet that isn't shown
+ * leaves it marked as closing, and it then ignores its next present() (QA:
+ * «اضافة خدمة فرعية» did nothing after the first one was added).
+ */
+export function dismissSheet(ref: Ref) {
+  if (!ref.current) return;
+  const status = statusOf(ref);
+  if (status === undefined || OPENING.includes(status)) {
+    ref.current.dismiss();
+  }
+}

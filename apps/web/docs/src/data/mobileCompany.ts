@@ -9,6 +9,37 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-add-sub-service-again",
+      title: {
+        en: "«اضافة خدمة فرعية» opens again after adding one",
+        ar: "«اضافة خدمة فرعية» يفتح مرة أخرى بعد إضافة خدمة",
+      },
+      priority: "P1",
+      story: {
+        en: "After a sub-service was added, the button did nothing until the screen was left (QA). The add closed both the add sheet and the type picker, and the picker isn't open when adding from the sheet: dismiss() on a sheet that isn't shown leaves it marked as closing, so it ignores its next present(). Only an open sheet is closed now (dismissSheet), and the sheet and the picker open through presentSheet(), which clears a sheet left in that state.",
+        ar: "بعد إضافة خدمة فرعية لم يكن الزر يستجيب حتى مغادرة الشاشة. كانت الإضافة تغلق نافذة الإضافة ونافذة الأنواع معاً، ونافذة الأنواع ليست مفتوحة عند الإضافة من النافذة نفسها، وإغلاق نافذة غير ظاهرة يتركها في حالة إغلاق فتتجاهل فتحها التالي. أصبحت تُغلق النافذة المفتوحة فقط، وتُفتح النافذتان عبر presentSheet() التي تعالج هذه الحالة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After adding a sub-service, «اضافة خدمة فرعية» opens its sheet again at once, as many times as needed.",
+          "Adding from the type picker (its «اضافة») works the same.",
+        ],
+        ar: [
+          "بعد إضافة خدمة فرعية يفتح «اضافة خدمة فرعية» نافذته فوراً مرة بعد مرة.",
+          "الإضافة من نافذة الأنواع («اضافة») تعمل بالطريقة نفسها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company with a specialty: الخدمات › اضافة خدمة فرعية › pick a type › add; tap اضافة خدمة فرعية again: the sheet opens; add a second one.",
+        ],
+        ar: [
+          "كشركة لها تخصص: الخدمات ← اضافة خدمة فرعية ← اختر نوعاً ← أضف؛ اضغط اضافة خدمة فرعية مرة أخرى: تفتح النافذة؛ أضف ثانية.",
+        ],
+      },
+      updatedIn: "fix/add-sub-service-dead-tap",
+    },
+    {
       id: "mobile-undo-toast-safe-area",
       title: {
         en: "The «تراجع» success toast shows below the status bar",
