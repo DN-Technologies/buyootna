@@ -63,12 +63,15 @@ export default function KuwaitPhoneField({
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               testID={`${String(name)}-input`}
-              className={
+              // flex-1 whatever the look: the number takes the row beside
+              // «+965». A screen's own classes (company edit profile) left it
+              // out, and the box shrank to a sliver with the number unseen (QA)
+              className={`flex-1 ${
                 inputClassName ??
-                `flex-1 border ${
+                `border ${
                   errors[name] ? 'border-red-500' : 'border-gray-200'
                 } rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`
-              }
+              }`}
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}

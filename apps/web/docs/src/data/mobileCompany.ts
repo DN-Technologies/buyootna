@@ -9,6 +9,37 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-phone-field-width",
+      title: {
+        en: "The company's edit profile shows the whole phone number",
+        ar: "تعديل ملف الشركة يعرض رقم الهاتف كاملاً",
+      },
+      priority: "P2",
+      story: {
+        en: "On a company's تعديل الملف الشخصي, the رقم الهاتف box shrank to a sliver beside «+965» and the number couldn't be seen (QA). The screen gives the shared phone field its own input look, which replaced the field's classes and dropped flex-1. The number box now always fills the row beside «+965», whatever look a screen gives it.",
+        ar: "في «تعديل الملف الشخصي» للشركة كان مربع «رقم الهاتف» ينكمش إلى شريط ضيق بجانب «+965» فلا يظهر الرقم. كانت الشاشة تعطي حقل الهاتف المشترك شكلها الخاص فيستبدل أصنافه ويسقط flex-1. أصبح مربع الرقم يملأ الصف بجانب «+965» دائماً مهما كان شكل الشاشة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company › المزيد › تعديل الملف الشخصي: رقم الهاتف shows the full number in a box filling the row beside «+965».",
+          "The number can be edited; the individual's تعديل الحساب looks as before.",
+        ],
+        ar: [
+          "شركة ← المزيد ← تعديل الملف الشخصي: يظهر رقم الهاتف كاملاً في مربع يملأ الصف بجانب «+965».",
+          "يمكن تعديل الرقم، و«تعديل الحساب» للفرد كما كان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company with a phone: open تعديل الملف الشخصي; the number is fully visible; change a digit and save.",
+        ],
+        ar: [
+          "كشركة لها رقم هاتف: افتح «تعديل الملف الشخصي»؛ الرقم ظاهر كاملاً؛ غيّر رقماً واحفظ.",
+        ],
+      },
+      updatedIn: "fix/company-phone-field-width",
+    },
+    {
       id: "mobile-add-sub-service-again",
       title: {
         en: "«اضافة خدمة فرعية» opens again after adding one",
