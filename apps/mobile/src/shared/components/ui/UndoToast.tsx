@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { Animated, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface UndoToastProps {
   visible: boolean;
@@ -25,6 +26,7 @@ export default function UndoToast({
   testID = 'undo-toast',
 }: UndoToastProps) {
   const fade = useRef(new Animated.Value(0)).current;
+  const { top } = useSafeAreaInsets();
 
   useEffect(() => {
     if (!visible) {
@@ -47,13 +49,17 @@ export default function UndoToast({
       testID={testID}
       style={{
         opacity: fade,
+        // Below the status bar / Dynamic Island: an absolute child is placed
+        // from its parent's edge, the screen's safe-area padding doesn't
+        // move it (QA: «تم إخفاء الخدمة بنجاح» sat under the clock)
+        top: top + 8,
         elevation: 4,
         shadowColor: '#212529',
         shadowOpacity: 0.08,
         shadowRadius: 2,
         shadowOffset: { width: 0, height: 2 },
       }}
-      className="absolute left-4 right-4 top-2 z-50 flex-row items-center gap-2 rounded-[8px] border border-[#15A72B] bg-white px-4 py-[10px]"
+      className="absolute left-4 right-4 z-50 flex-row items-center gap-2 rounded-[8px] border border-[#15A72B] bg-white px-4 py-[10px]"
     >
       {/* Under RTL the first child sits on the right */}
       <View className="flex-1 flex-row items-center gap-2 py-2">
