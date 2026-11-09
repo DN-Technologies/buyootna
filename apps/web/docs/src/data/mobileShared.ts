@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-add-company-requires-terms",
+      title: {
+        en: "Adding a company or office requires agreeing to the terms",
+        ar: "إضافة شركة أو مكتب تتطلب الموافقة على الشروط",
+      },
+      priority: "P1",
+      story: {
+        en: "«إضافة حساب» › شركة / مكتب showed «شروط الاستخدام و سياسة الخصوصية» but created the profile with the box unticked (QA): only sign-up checked it. The shared company form now checks it before sending, in every flow, and the box starts unticked each time the form opens, whatever was ticked earlier in the session.",
+        ar: "كانت «إضافة حساب» ← شركة / مكتب تعرض «شروط الاستخدام و سياسة الخصوصية» لكنها تنشئ الملف دون التأشير عليها؛ كان التسجيل وحده يتحقق منها. أصبح نموذج الشركة يتحقق منها قبل الإرسال في كل المسارات، ويبدأ المربع غير مؤشَّر في كل مرة يُفتح فيها النموذج.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the box unticked, «إضافة الهوية» / «إنشاء حساب» sends nothing and shows «يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة».",
+          "Once ticked, the company or office is created as before.",
+          "The box is unticked whenever the form opens.",
+        ],
+        ar: [
+          "والمربع غير مؤشَّر لا يرسل «إضافة الهوية» / «إنشاء حساب» شيئاً ويعرض «يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة».",
+          "بعد التأشير تُنشأ الشركة أو المكتب كما كان.",
+          "المربع غير مؤشَّر كلما فُتح النموذج.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual: المزيد › إضافة حساب › شركة; fill the three steps, leave the box unticked, tap «إضافة الهوية»: the alert shows and no company is created; tick it and tap again: the company is created.",
+        ],
+        ar: [
+          "كفرد: المزيد ← إضافة حساب ← شركة؛ املأ الخطوات الثلاث واترك المربع دون تأشير واضغط «إضافة الهوية»: يظهر التنبيه ولا تُنشأ شركة؛ أشّر واضغط مجدداً: تُنشأ الشركة.",
+        ],
+      },
+      updatedIn: "fix/add-company-requires-terms",
+    },
+    {
       id: "mobile-switch-to-individual-rebuilds-ui",
       title: {
         en: "Switching from the company to the personal profile rebuilds the layout at once",
