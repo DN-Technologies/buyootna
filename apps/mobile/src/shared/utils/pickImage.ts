@@ -1,6 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 
 import { showAlert } from '@/shared/utils/alert';
+import { showPermissionDenied } from '@/shared/utils/permissionDenied';
 
 /** A picked image, ready for a multipart upload. */
 export interface PickedImage {
@@ -32,21 +33,16 @@ const toPicked = (
 async function fromCamera(name: string): Promise<PickedImage | null> {
   const { status } = await ImagePicker.requestCameraPermissionsAsync();
   if (status !== 'granted') {
-    showAlert('صلاحية مطلوبة', 'عذراً، نحتاج إلى إذن لاستخدام الكاميرا.');
+    // iOS asks once: after a refusal only Settings can turn it on
+    showPermissionDenied('camera');
     return null;
   }
   return toPicked(await ImagePicker.launchCameraAsync(PICK_OPTIONS), name);
 }
 
 async function fromLibrary(name: string): Promise<PickedImage | null> {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') {
-    showAlert(
-      'صلاحية مطلوبة',
-      'عذراً، نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك.',
-    );
-    return null;
-  }
+  // The system photo picker needs no permission (iOS 11+, Android): asking
+  // for one left a denied user stuck with no way on (QA)
   return toPicked(
     await ImagePicker.launchImageLibraryAsync(PICK_OPTIONS),
     name,

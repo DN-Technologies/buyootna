@@ -273,9 +273,12 @@ describe('useRequestQuoteForm', () => {
     expect(hookRef.current.attachments).toContain('file:///photo.jpg');
   });
 
-  it('alerts when media library permission is not granted', async () => {
-    (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValueOnce({
-      status: 'denied',
+  // QA: a refused photo permission left people stuck. The system picker
+  // needs none (iOS 11+, Android), so it isn't asked for at all
+  it('opens the photo picker without asking for a permission', async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: 'file:///a.jpg' }],
     });
 
     await setup();
@@ -284,12 +287,9 @@ describe('useRequestQuoteForm', () => {
       await hookRef.current.handlePickAttachments();
     });
 
-    expect(showAlert).toHaveBeenCalledWith(
-      'إذن مطلوب',
-      'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!',
-      [{ text: 'حسناً' }],
-    );
-    expect(hookRef.current.attachments).toHaveLength(0);
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
+    expect(showAlert).not.toHaveBeenCalled();
+    expect(hookRef.current.attachments).toHaveLength(1);
   });
 
   it('removes attachment by index', async () => {

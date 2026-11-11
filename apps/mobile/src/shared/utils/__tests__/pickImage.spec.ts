@@ -46,8 +46,9 @@ describe('pickSquareImage', () => {
     ]);
   });
 
-  it('picks a square-cropped photo from the library', async () => {
-    picker.requestMediaLibraryPermissionsAsync.mockResolvedValue({ status: 'granted' });
+  // QA: a refused photo permission left people stuck; the system picker
+  // needs none, so it isn't asked for
+  it('picks a square-cropped photo from the library, asking no permission', async () => {
     picker.launchImageLibraryAsync.mockResolvedValue(asset);
     const picked = pickSquareImage();
     press('اختيار من المعرض');
@@ -60,6 +61,7 @@ describe('pickSquareImage', () => {
     expect(picker.launchImageLibraryAsync).toHaveBeenCalledWith(
       expect.objectContaining({ allowsEditing: true, aspect: [1, 1] }),
     );
+    expect(picker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 
   it('takes a photo with the camera', async () => {
@@ -71,11 +73,19 @@ describe('pickSquareImage', () => {
     await expect(picked).resolves.toMatchObject({ uri: 'file://logo.jpg' });
   });
 
-  it('gives nothing when not allowed or cancelled', async () => {
+  it('gives nothing when not allowed or cancelled; a refused camera offers Settings', async () => {
     picker.requestCameraPermissionsAsync.mockResolvedValue({ status: 'denied' });
     const denied = pickSquareImage();
     press('التقاط صورة');
     await expect(denied).resolves.toBeNull();
+    // iOS asks only once: the way on is the app's page in Settings
+    const [title, , buttons] = (showAlert as jest.Mock).mock.calls[1] as [
+      string,
+      string,
+      Button[],
+    ];
+    expect(title).toBe('الإذن مطلوب');
+    expect(buttons.map((b) => b.text)).toEqual(['فتح الإعدادات', 'إلغاء']);
 
     (showAlert as jest.Mock).mockClear();
     const cancelled = pickSquareImage();

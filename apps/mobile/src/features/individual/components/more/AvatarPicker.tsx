@@ -21,16 +21,8 @@ export default function AvatarPicker({
 
   const pickImage = async () => {
     // Request permission to access the media library
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      showAlert(
-        'صلاحية مطلوبة',
-        'عذراً، نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك.',
-      );
-      return;
-    }
-
+    // The system photo picker needs no permission (iOS 11+, Android):
+    // asking for one left a denied user stuck with no way on (QA)
     // Launch the image picker
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,

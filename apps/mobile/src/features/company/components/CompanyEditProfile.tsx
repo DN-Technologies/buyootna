@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChangePasswordOtpSheet } from '@/shared/components/auth/ChangePasswordOtpSheet';
 import { SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
-import { showAlert } from '@/shared/utils/alert';
 
 import {
   CompanyEditProfileHeader,
@@ -32,14 +31,8 @@ export default function CompanyEditProfile() {
   // Logo: a square-cropped gallery image (same permission pattern as the
   // individual AvatarPicker), held until save rides the multipart PATCH
   const pickLogo = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showAlert(
-        'صلاحية مطلوبة',
-        'عذراً، نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك.',
-      );
-      return;
-    }
+    // The system photo picker needs no permission (iOS 11+, Android):
+    // asking for one left a denied user stuck with no way on (QA)
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
