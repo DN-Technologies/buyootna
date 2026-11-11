@@ -54,10 +54,16 @@ overrides:
   'handlebars@^4.0.0': 4.7.10
   'vite@^6.0.0': 6.4.4
   'follow-redirects@^1.0.0': 1.16.2
-  'node-forge@^1.0.0': 1.4.2
+  'node-forge@^1.0.0': 1.4.3
   'body-parser@^2.0.0': 2.4.0
   'postcss-selector-parser@^6.0.0': 6.1.5
   'zod@^4.0.0': 4.6.6
+  # glob/minimatch: only tooling (Expo CLI, Jest, Nest CLI, eslint) uses
+  # them, and the advisories' first fixes are new majors; their CommonJS
+  # builds keep require() working. Kept only because every suite and build
+  # passed with them (2026-11-11).
+  'minimatch@>=7.0.0 <11.0.1': 11.0.8
+  'glob@>=9.0.0 <14.0.2': 14.0.4
 
 patchedDependencies:
   react-native@0.81.5: patches/react-native@0.81.5.patch
