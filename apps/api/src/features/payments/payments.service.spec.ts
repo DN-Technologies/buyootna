@@ -157,7 +157,12 @@ describe('PaymentsService', () => {
 
       expect(prisma.planPackage.findFirst).toHaveBeenCalledWith(
         containing({
-          where: { planId: 'plan-gold', adsCount: 5, isActive: true },
+          where: {
+            planId: 'plan-gold',
+            adsCount: 5,
+            featuredAdsCount: 0,
+            isActive: true,
+          },
         }),
       );
       expect(prisma.invoice.create).toHaveBeenCalledWith({
@@ -230,7 +235,12 @@ describe('PaymentsService', () => {
 
       expect(prisma.planPackage.findFirst).toHaveBeenCalledWith(
         containing({
-          where: { planId: 'plan-gold', adsCount: 5, isActive: true },
+          where: {
+            planId: 'plan-gold',
+            adsCount: 5,
+            featuredAdsCount: 0,
+            isActive: true,
+          },
         }),
       );
     });
@@ -421,6 +431,146 @@ describe('PaymentsService', () => {
       expect(fetchMock).not.toHaveBeenCalled();
       expect(tx.property.update).toHaveBeenCalled();
       expect(result.status).toBe('PAID');
+    });
+  });
+
+  // Offices' own الباقات (Figma 10180:31480)
+  describe('office packages', () => {
+    const officeBasic = {
+      id: 'plan-office-basic',
+      slug: 'office-basic',
+      name: 'الاساسية',
+      price: 2,
+      maxActiveAds: 1,
+      audience: 'OFFICE',
+    };
+
+    it('buys a package by id: «1 اعلان مميز» has no regular-ad count', async () => {
+      prisma.plan.findUnique.mockResolvedValue(officeBasic);
+      prisma.identity.findUnique.mockResolvedValue({ type: 'OFFICE' });
+      prisma.planPackage.findFirst.mockResolvedValue({
+        id: 'pkg-featured',
+        adsCount: 0,
+        featuredAdsCount: 1,
+        price: 3,
+      });
+
+      await service.createCharge(
+        'user-1',
+        'identity-1',
+        'office-basic',
+        'buyootna://payment-callback',
+        undefined,
+        undefined,
+        { packageId: 'pkg-featured' },
+      );
+
+      expect(prisma.planPackage.findFirst).toHaveBeenCalledWith(
+        containing({
+          where: {
+            id: 'pkg-featured',
+            planId: 'plan-office-basic',
+            isActive: true,
+          },
+        }),
+      );
+      expect(prisma.invoice.create).toHaveBeenCalledWith({
+        data: containing({
+          amount: 3,
+          planPackageId: 'pkg-featured',
+          planDetails: 'باقة الاساسية - إعلان مميز واحد',
+        }),
+      });
+    });
+
+    it("refuses an office's plan to anyone but an office", async () => {
+      prisma.plan.findUnique.mockResolvedValue(officeBasic);
+      prisma.identity.findUnique.mockResolvedValue({ type: 'INDIVIDUAL' });
+      prisma.planPackage.findFirst.mockResolvedValue({
+        id: 'pkg-regular',
+        adsCount: 1,
+        featuredAdsCount: 0,
+        price: 2,
+      });
+
+      await expect(
+        service.createCharge(
+          'user-1',
+          'identity-1',
+          'office-basic',
+          'buyootna://payment-callback',
+          undefined,
+          undefined,
+          { packageId: 'pkg-regular' },
+        ),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    const paid = (planPackage: object) => {
+      tapReportsCharge('CAPTURED', 'inv-1');
+      prisma.plan.findUnique.mockResolvedValue({
+        ...officeBasic,
+        id: 'plan-office-regular',
+      });
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'inv-1',
+        invoiceNo: 'INV-1',
+        status: 'PENDING',
+        planName: 'العادية',
+        planId: 'plan-office-regular',
+        userId: 'user-1',
+        identityId: 'identity-1',
+        featurePackageId: null,
+        propertyId: null,
+        planPackage,
+      });
+      return service.handleWebhook({
+        id: 'chg_1',
+        status: 'CAPTURED',
+        reference: { transaction: 'inv-1' },
+      });
+    };
+
+    it('a bundle credits its regular and featured ads, both ending with its validity', async () => {
+      const before = Date.now();
+      await paid({
+        id: 'pkg-17-3',
+        adsCount: 17,
+        featuredAdsCount: 3,
+        featuredPlanId: 'plan-office-featured',
+        validityMonths: 2,
+      });
+
+      const created = tx.userPlanSlot.create.mock.calls.map(
+        ([arg]: [
+          { data: { planId: string; adsRemaining: number; expiresAt: Date } },
+        ]) => arg.data,
+      );
+      expect(created.map((d) => [d.planId, d.adsRemaining])).toEqual([
+        ['plan-office-regular', 17],
+        ['plan-office-featured', 3],
+      ]);
+      const ends = created[0].expiresAt;
+      expect(created[1].expiresAt).toEqual(ends);
+      const days = (ends.getTime() - before) / (24 * 3600 * 1000);
+      expect(days).toBeGreaterThan(58);
+      expect(days).toBeLessThan(63);
+    });
+
+    it('a featured single ad credits only the featured ad', async () => {
+      await paid({
+        id: 'pkg-featured',
+        adsCount: 0,
+        featuredAdsCount: 1,
+        featuredPlanId: 'plan-office-featured',
+        validityMonths: 2,
+      });
+
+      expect(tx.userPlanSlot.create).toHaveBeenCalledTimes(1);
+      expect(tx.userPlanSlot.create).toHaveBeenCalledWith({
+        data: containing({ planId: 'plan-office-featured', adsRemaining: 1 }),
+      });
     });
   });
 

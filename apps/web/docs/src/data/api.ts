@@ -9,6 +9,41 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-office-plans",
+      title: {
+        en: "Offices' own plans: regular and featured ads, with a validity",
+        ar: "باقات خاصة بالمكاتب: إعلانات عادية ومميزة بصلاحية محددة",
+      },
+      priority: "P1",
+      story: {
+        en: "Offices get their own الباقات (Figma 10180:31480; the client's rules, 2026-11-11): الاساسية, one regular ad 2 KD or one featured ad 3 KD; العادية 35 KD = 17 regular + 3 featured; الفضية 70 KD = 44 + 6. A featured ad has الذهبية's benefits with the badge for 30 days. Unused ads are lost when the validity ends: two months (الاساسية, العادية) or six (الفضية), from the purchase; published ads keep their 30 days. GET /plans?audience=OFFICE lists them (GET /plans stays the individuals'); a package is bought by its id; only offices can buy them. Payment credits the regular and featured ads separately with the same end date; publishing, the wallet and the publish choices skip expired credits, an hourly job marks them EXPIRED, and an expired credit says «انتهت صلاحية هذه الباقة.». Credits bought earlier keep no expiry.",
+        ar: "أصبح للمكاتب باقاتها (Figma 10180:31480، قواعد العميل 2026-11-11): الاساسية إعلان عادي 2 د.ك أو مميز 3 د.ك؛ العادية 35 د.ك = 17 عادي + 3 مميزة؛ الفضية 70 د.ك = 44 + 6. والإعلان المميز بمزايا الذهبية مع الشارة 30 يوماً. وتسقط الإعلانات غير المستخدمة عند انتهاء الصلاحية: شهرين (الاساسية والعادية) أو 6 شهور (الفضية) من الشراء، وتكمل المنشورة مدتها. ويعرضها GET /plans?audience=OFFICE (ويبقى GET /plans للأفراد)، وتُشترى الباقة برقمها، ولا يشتريها إلا المكتب. وبعد الدفع تُضاف الإعلانات العادية والمميزة كرصيدين بتاريخ انتهاء واحد؛ ويتجاهل النشر والمحفظة الرصيد المنتهي، وتعلّمه مهمة كل ساعة منتهياً، ويقول «انتهت صلاحية هذه الباقة.». والرصيد المشترى سابقاً بلا انتهاء.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "GET /plans?audience=OFFICE returns الاساسية, العادية and الفضية with their packages (featuredAdsCount, validityMonths); GET /plans is unchanged.",
+          "An individual buying an office plan gets 403 «هذه الباقة خاصة بالمكاتب العقارية».",
+          "Buying العادية credits 17 regular and 3 featured ads ending two months later; a featured ad published from them is featured 30 days with up to 15 photos.",
+          "After the end date the credits can't be used and show as expired.",
+        ],
+        ar: [
+          "GET /plans?audience=OFFICE يعيد الاساسية والعادية والفضية مع باقاتها؛ وGET /plans كما هو.",
+          "شراء فرد لباقة مكتب: 403 «هذه الباقة خاصة بالمكاتب العقارية».",
+          "شراء العادية يضيف 17 إعلاناً عادياً و3 مميزة تنتهي بعد شهرين؛ والإعلان المميز المنشور منها مميز 30 يوماً بحتى 15 صورة.",
+          "بعد تاريخ الانتهاء لا يمكن استخدام الرصيد ويظهر منتهياً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an office, buy الاساسية's «1 اعلان مميز» (packageId) and publish with it: the ad is featured for 30 days; the wallet shows its end date.",
+        ],
+        ar: [
+          "كمكتب، اشترِ «1 اعلان مميز» من الاساسية (packageId) وانشر منه: الإعلان مميز 30 يوماً، والمحفظة تعرض تاريخ الانتهاء.",
+        ],
+      },
+      updatedIn: "feat/office-plans-api",
+    },
+    {
       id: "api-sms-own-code-and-test-numbers",
       title: {
         en: "Phone codes QA can see: our own SMS, and test numbers with no SMS",

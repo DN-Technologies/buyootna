@@ -79,7 +79,12 @@ describe('PropertiesQuotaService.resolvePublishQuota', () => {
       id: 'slot-silver',
       identityId: 'identity-1',
     });
-    expect(slotQuery(tx)).not.toHaveProperty('OR');
+    // The only OR is the validity (an office bundle's), never another
+    // persona's credits
+    expect(slotQuery(tx)).toHaveProperty('OR', [
+      { expiresAt: null },
+      { expiresAt: { gt: expect.any(Date) as Date } },
+    ]);
     expect(quota).toMatchObject({ planSlotId: 'slot-silver', featuredDays: 5 });
     expect(tx.userPlanSlot.update).toHaveBeenCalledWith({
       where: { id: 'slot-silver' },

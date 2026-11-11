@@ -6,7 +6,9 @@ import { Prisma } from '@prisma/client';
  * daily job marks expired ones EXPIRED; this keeps them unusable before it
  * runs.
  */
-export function usableSlotWhere(now = new Date()): Prisma.UserPlanSlotWhereInput {
+export function usableSlotWhere(
+  now = new Date(),
+): Prisma.UserPlanSlotWhereInput {
   return {
     status: 'ACTIVE',
     adsRemaining: { gt: 0 },
@@ -15,13 +17,13 @@ export function usableSlotWhere(now = new Date()): Prisma.UserPlanSlotWhereInput
 }
 
 export function isSlotUsable(
-  slot: { status: string; adsRemaining: number; expiresAt: Date | null },
+  slot: { status: string; adsRemaining: number; expiresAt?: Date | null },
   now = new Date(),
 ): boolean {
   return (
     slot.status === 'ACTIVE' &&
     slot.adsRemaining > 0 &&
-    (slot.expiresAt === null || slot.expiresAt > now)
+    (slot.expiresAt == null || slot.expiresAt > now)
   );
 }
 
@@ -32,6 +34,7 @@ export function slotExpiry(
 ): Date | null {
   if (!validityMonths || validityMonths <= 0) return null;
   const end = new Date(from);
-  end.setMonth(end.getMonth() + validityMonths);
+  // In UTC: local months move the hour across a daylight-saving change
+  end.setUTCMonth(end.getUTCMonth() + validityMonths);
   return end;
 }

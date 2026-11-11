@@ -25,8 +25,11 @@ const featuredLabel = (ads: number) =>
   ads === 1 ? 'إعلان مميز واحد' : `${ads} إعلانات مميزة`;
 
 /** «3 إعلانات», «إعلان مميز واحد», «17 إعلانات و3 إعلانات مميزة». */
-export function packageAdsLabel(regular: number, featured: number): string {
-  if (featured <= 0) return adsLabel(regular);
+export function packageAdsLabel(
+  regular: number,
+  featured: number | null | undefined,
+): string {
+  if (!featured || featured <= 0) return adsLabel(regular);
   if (regular <= 0) return featuredLabel(featured);
   return `${adsLabel(regular)} و${featuredLabel(featured)}`;
 }
