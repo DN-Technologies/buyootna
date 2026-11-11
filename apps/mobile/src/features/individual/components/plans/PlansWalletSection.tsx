@@ -1,7 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
 
-import { groupWalletSlots } from '@/features/individual/utils/planWallet';
+import {
+  groupWalletSlots,
+  walletExpiryText,
+} from '@/features/individual/utils/planWallet';
 import type { UserWallet } from '@/shared/api/plans.service';
 
 export interface PlansWalletSectionProps {
@@ -50,9 +53,17 @@ export default function PlansWalletSection({
               className="h-3 w-3 rounded-full"
               style={{ backgroundColor: tier.color || '#15304D' }}
             />
-            <Text className="font-cairo-semibold text-sm text-[#111111]">
-              باقة {tier.planName}
-            </Text>
+            <View className="items-start">
+              <Text className="font-cairo-semibold text-sm text-[#111111]">
+                {tier.featured ? 'إعلانات مميزة' : `باقة ${tier.planName}`}
+              </Text>
+              {/* An office bundle's validity: unused ads are lost after it */}
+              {tier.expiresAt && (
+                <Text className="font-cairo text-xs text-[#6B6A6A]">
+                  {walletExpiryText(tier.expiresAt)}
+                </Text>
+              )}
+            </View>
           </View>
           <Text className="font-cairo-bold text-sm text-[#15304D]">
             متبقي {tier.adsRemaining} من {tier.totalAds} إعلانات

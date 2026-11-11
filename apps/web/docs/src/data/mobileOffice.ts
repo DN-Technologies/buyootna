@@ -9,6 +9,39 @@ export const mobileOffice: DocSection = {
   },
   stories: [
     {
+      id: "mobile-office-plans",
+      title: {
+        en: "An office's «الباقات»: الاساسية, العادية and الفضية",
+        ar: "«الباقات» للمكتب: الاساسية والعادية والفضية",
+      },
+      priority: "P1",
+      story: {
+        en: "An office now sees its own plans (Figma 10180:31480) instead of the individuals': «الباقة الاساسية» with «1 اعلان عادي» 2 د.ك and «1 اعلان مميز» 3 د.ك (orange outline), and the bundles «العادية» 35 دينار كويتي and «الفضية» 70 دينار كويتي with their lines (regular and featured ads, 30 days, validity). The discount banner shows as for individuals. A package is bought by its id at الدفع. The wallet lists «إعلانات مميزة» separately and says when unused ads end («تنتهي في …»); the publish choices name the featured credit «اعلان مميز» with «صالحة حتى …».",
+        ar: "أصبح المكتب يرى باقاته (Figma 10180:31480) بدل باقات الأفراد: «الباقة الاساسية» بخياري «1 اعلان عادي» 2 د.ك و«1 اعلان مميز» 3 د.ك (بإطار برتقالي)، والباقتان «العادية» 35 دينار كويتي و«الفضية» 70 دينار كويتي بمزاياهما (إعلانات عادية ومميزة، 30 يوماً، الصلاحية). ويظهر شريط الخصم كما للأفراد. وتُشترى الباقة برقمها في الدفع. وتعرض المحفظة «إعلانات مميزة» منفصلة ومتى تنتهي غير المستخدمة («تنتهي في …»)، وتسمي خيارات النشر الرصيد المميز «اعلان مميز» مع «صالحة حتى …».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "As an office, الباقات shows الاساسية (two choices), العادية 35 and الفضية 70; no الذهبية.",
+          "«1 اعلان مميز» → «اشتر الان» opens الدفع at 3 د.ك; paying credits one featured ad ending in two months.",
+          "An individual's الباقات is unchanged.",
+        ],
+        ar: [
+          "كمكتب تعرض الباقات الاساسية (خياران) والعادية 35 والفضية 70، ولا تظهر الذهبية.",
+          "«1 اعلان مميز» ← «اشتر الان» يفتح الدفع بـ3 د.ك، والدفع يضيف إعلاناً مميزاً ينتهي بعد شهرين.",
+          "باقات الفرد كما هي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an office: المزيد › الباقات; buy «1 اعلان مميز»; the wallet shows «إعلانات مميزة … تنتهي في …»; publish an ad choosing «اعلان مميز»: the ad is featured.",
+        ],
+        ar: [
+          "كمكتب: المزيد ← الباقات؛ اشترِ «1 اعلان مميز»؛ تعرض المحفظة «إعلانات مميزة … تنتهي في …»؛ انشر إعلاناً باختيار «اعلان مميز»: يظهر الإعلان مميزاً.",
+        ],
+      },
+      updatedIn: "feat/office-plans-api",
+    },
+    {
       id: "mobile-office-properties-tab",
       title: {
         en: "Office «العقارات» tab: the office's own ads by governorate, drafts and archive",

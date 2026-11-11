@@ -22,6 +22,7 @@ export interface CheckoutParams {
   purpose: CheckoutPurpose;
   planSlug?: string;
   adsCount?: number;
+  packageId?: string;
   companyPlanId?: string;
   propertyId?: string;
   featurePackageId?: string;
@@ -122,6 +123,7 @@ export function useCheckout(params: CheckoutParams) {
           undefined,
           params.adsCount,
           choice,
+          params.packageId,
         );
     }
   };
