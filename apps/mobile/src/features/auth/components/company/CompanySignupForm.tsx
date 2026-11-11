@@ -17,16 +17,26 @@ import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSh
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { SPECIALTIES } from '@/shared/data/serviceCatalog';
+import type { ResendOtpResult } from '@/shared/hooks/verification/useOtpResendTimer';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { isCoordinates } from '@/shared/utils/location';
 import type { PickedImage } from '@/shared/utils/pickImage';
 
+import { IndividualSignupOtpStep } from '../individual/IndividualSignupOtpStep';
 import { CompanySignupProgress } from './CompanySignupProgress';
 import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
 
+// «تحقق من الرمز» after the three form steps (a new sign-up only)
+const OTP_STEP = 4;
+
 interface CompanySignupFormProps {
   type: 'company' | 'office';
-  onSubmit: (data: CompanySignupFormValues) => Promise<boolean>;
+  // 'otp': the account waits for the emailed code (sign-up's last step)
+  onSubmit: (data: CompanySignupFormValues) => Promise<boolean | 'otp'>;
+  // «تحقق من الرمز» (a new sign-up): where the code went, and checking it
+  otpEmail?: string;
+  onVerifyOtp?: (otp: string) => Promise<boolean>;
+  onResendOtp?: () => Promise<ResendOtpResult>;
   logoFile: PickedImage | null;
   pickLogo: () => void;
   // An office's licence image; a company sends its licence later
@@ -51,6 +61,9 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   isLoading = false,
   includeAccountFields = true,
   onSuccessDone,
+  otpEmail,
+  onVerifyOtp,
+  onResendOtp,
 }) => {
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -118,10 +131,10 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
     // Every flow using this form, not only sign-up: «إضافة حساب» › شركة /
     // مكتب showed the box but created the profile unticked (QA)
     if (!requireTermsAccepted()) return;
-    const success = await onSubmit(data);
-    if (success) {
-      successSheetRef.current?.present();
-    }
+    const result = await onSubmit(data);
+    // The code comes last: the account is made only once it's right (QA)
+    if (result === 'otp') setStep(OTP_STEP);
+    else if (result) successSheetRef.current?.present();
   };
 
   // Leaves the finished sign-up once, however the sheet was closed: it was
@@ -181,7 +194,19 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         />
       )}
 
-      {/* Footer Actions */}
+      {step === OTP_STEP && onVerifyOtp && onResendOtp ? (
+        <IndividualSignupOtpStep
+          identifier={otpEmail ?? ''}
+          isLoading={isLoading}
+          onResendOtp={onResendOtp}
+          onSubmit={async (otp) => {
+            const verified = await onVerifyOtp(otp);
+            if (verified) successSheetRef.current?.present();
+            return verified;
+          }}
+        />
+      ) : (
+      /* Footer Actions */
       <View className="mt-auto pt-6">
         {step === 3 && <TermsAgreement />}
         <CompanySignupProgress step={step} totalSteps={3} />
@@ -221,6 +246,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           </TouchableOpacity>
         </View>
       </View>
+      )}
 
       {/* «التخصص»: the services catalogue's مجال التخصص */}
       <SelectionBottomSheet

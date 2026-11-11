@@ -24,6 +24,9 @@ export default function BusinessAuthScreen() {
     profileSheetRef,
     onLogin,
     onSignupFinal,
+    signupEmail,
+    onVerifySignupOtp,
+    onResendSignupOtp,
     handleAccountTypeChange,
     handleBack,
   } = useBusinessAuth();
@@ -68,6 +71,10 @@ export default function BusinessAuthScreen() {
               licenseFile={licenseFile}
               pickLicense={pickLicense}
               isLoading={isLoading}
+              // The emailed code, last: the account is made only then (QA)
+              otpEmail={signupEmail}
+              onVerifyOtp={onVerifySignupOtp}
+              onResendOtp={onResendSignupOtp}
             />
           )}
         </ScrollView>

@@ -81,9 +81,10 @@ async function seedLoginUser(): Promise<string> {
 }
 
 /**
- * Registers a company account — no OTP gate at all (see
- * UsersRegistrationService.registerCompany), so this alone is enough to
- * seed an "other party" identity for a conversation. Returns its User.id.
+ * Registers a company account the way the app does: the form, then the
+ * emailed code (read through the dev-only debug endpoint, mail being in mock
+ * mode here). Seeds an "other party" identity for a conversation. Returns
+ * its User.id.
  */
 async function seedCompany(
   name: string,
@@ -94,14 +95,38 @@ async function seedCompany(
   form.set('email', `${licenseNumber.toLowerCase()}@buyootna.test`);
   form.set('password', 'CompanySeed123!');
   form.set('licenseNumber', licenseNumber);
+  // A company signs up with its specialty; the code goes to the email
+  form.set('specialty', 'مكتب هندسي');
+  form.set('verification', 'email');
+  const email = `${licenseNumber.toLowerCase()}@buyootna.test`;
 
-  const res = await fetch(`http://localhost:${PORT}/users/register/company`, {
+  const start = await fetch(`http://localhost:${PORT}/users/register/company`, {
     method: 'POST',
     body: form,
   });
+  if (start.status !== 201) {
+    const body = await start.text();
+    throw new Error(
+      `Failed to seed company "${name}": ${start.status} ${body}`,
+    );
+  }
+  const otpRes = await fetch(
+    `http://localhost:${PORT}/auth/register/debug-email-otp?email=${encodeURIComponent(email)}`,
+  );
+  const { otp } = (await otpRes.json()) as { otp: string };
+  const res = await fetch(
+    `http://localhost:${PORT}/users/register/company/verify`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp }),
+    },
+  );
   if (res.status !== 201) {
     const body = await res.text();
-    throw new Error(`Failed to seed company "${name}": ${res.status} ${body}`);
+    throw new Error(
+      `Failed to verify company "${name}": ${res.status} ${body}`,
+    );
   }
   const body = (await res.json()) as { user: { id: string } };
   console.log(`[orchestrate] Seeded company "${name}"`);

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsIn,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -54,4 +55,10 @@ export class RegisterOfficeDto {
   @IsString()
   @IsOptional()
   licenseExpiry?: string;
+  // «verification: email» from apps that enter the emailed code next. Older
+  // ones don't send it and are told to update: the account is created only
+  // after the code (QA)
+  @IsOptional()
+  @IsIn(['email'])
+  verification?: string;
 }

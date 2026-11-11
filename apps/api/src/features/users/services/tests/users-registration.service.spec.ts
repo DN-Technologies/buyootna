@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ProviderRegistrationPendingService } from '../provider-registration-pending.service';
 import { UsersRegistrationService } from '../users-registration.service';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { IdentitiesService } from '../../../identities/identities.service';
@@ -64,7 +65,12 @@ describe('UsersRegistrationService', () => {
     hasPending: jest.Mock;
     consume: jest.Mock;
   };
-  let rateLimiter: { recordRequest: jest.Mock };
+  let rateLimiter: {
+    recordRequest: jest.Mock;
+    checkRequestLimit: jest.Mock;
+    recordVerifyAttempt: jest.Mock;
+  };
+  let providerPending: ProviderRegistrationPendingService;
   let identitiesService: {
     uploadProviderFiles: jest.Mock;
     createProviderPersonaInTx: jest.Mock;
@@ -85,7 +91,11 @@ describe('UsersRegistrationService', () => {
       hasPending: jest.fn().mockReturnValue(true),
       consume: jest.fn(),
     };
-    rateLimiter = { recordRequest: jest.fn() };
+    rateLimiter = {
+      recordRequest: jest.fn(),
+      checkRequestLimit: jest.fn(),
+      recordVerifyAttempt: jest.fn(),
+    };
     identitiesService = {
       uploadProviderFiles: jest
         .fn()
@@ -110,10 +120,12 @@ describe('UsersRegistrationService', () => {
           useValue: phonePendingService,
         },
         { provide: OtpRateLimiterService, useValue: rateLimiter },
+        ProviderRegistrationPendingService,
       ],
     }).compile();
 
     service = module.get<UsersRegistrationService>(UsersRegistrationService);
+    providerPending = module.get(ProviderRegistrationPendingService);
   });
 
   it('should be defined', () => {
@@ -390,12 +402,16 @@ describe('UsersRegistrationService', () => {
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
   });
-  describe('registerCompany', () => {
+  // QA [Critical]: a company was created with a fake email, no code at all.
+  // Now the form waits and the account is made only with the emailed code
+  describe('company signup with an emailed code', () => {
     const dto = {
       email: 'co@example.com',
       password: 'password123',
       name: 'شركة',
+      specialty: 'مكتب هندسي',
       licenseNumber: '12 3',
+      verification: 'email',
     } as never;
     const withLicenseLookups = () =>
       Object.assign(prisma, {
@@ -403,23 +419,117 @@ describe('UsersRegistrationService', () => {
         officeIdentityData: { findFirst: jest.fn().mockResolvedValue(null) },
       });
 
-    it('creates the login, then the persona through IdentitiesService', async () => {
+    it('step 1 emails a code and creates nothing', async () => {
       withLicenseLookups();
 
       const result = await service.registerCompany(dto);
+
+      expect(result).toEqual({
+        otpRequired: true,
+        identifier: 'co@example.com',
+        message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+      });
+      expect(emailOtpService.sendRegistrationOtp).toHaveBeenCalledWith(
+        'co@example.com',
+        'شركة',
+        expect.any(String),
+      );
+      expect(rateLimiter.checkRequestLimit).toHaveBeenCalledWith(
+        'co@example.com',
+      );
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(
+        identitiesService.createProviderPersonaInTx,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('step 2 with the right code creates the login, then the persona', async () => {
+      withLicenseLookups();
+      await service.registerCompany(dto);
+      emailOtpService.verifyAndConsume.mockReturnValue({
+        name: 'شركة',
+        hashedPassword: 'h',
+      });
+
+      const result = await service.completeProviderRegistration(
+        'COMPANY',
+        'co@example.com',
+        '123456',
+      );
 
       expect(identitiesService.createProviderPersonaInTx).toHaveBeenCalledWith(
         expect.anything(),
         'COMPANY',
         'user-1',
-        expect.objectContaining({ logoUrl: 'https://bucket/logo.png' }),
+        expect.objectContaining({
+          name: 'شركة',
+          specialty: 'مكتب هندسي',
+          logoUrl: 'https://bucket/logo.png',
+        }),
         { isActive: true },
       );
+      // The form is kept without the password
+      const persona = (
+        identitiesService.createProviderPersonaInTx.mock.calls[0] as unknown[]
+      )[3] as object;
+      expect(persona).not.toHaveProperty('password');
       expect(result.profile).toEqual({ id: 'cd-1' });
       expect(result.user).not.toHaveProperty('password');
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith(
+        'co@example.com',
+        true,
+      );
     });
 
-    it('refuses a taken licence with 409 before uploading anything', async () => {
+    it('a wrong code creates nothing and counts the attempt', async () => {
+      withLicenseLookups();
+      await service.registerCompany(dto);
+      emailOtpService.verifyAndConsume.mockReturnValue(null);
+
+      await expect(
+        service.completeProviderRegistration(
+          'COMPANY',
+          'co@example.com',
+          '000000',
+        ),
+      ).rejects.toThrow('رمز التحقق غير صحيح أو منتهي الصلاحية');
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith(
+        'co@example.com',
+        false,
+      );
+    });
+
+    it("an office's code can't complete a company signup (and none waiting is refused)", async () => {
+      withLicenseLookups();
+      await service.registerCompany(dto);
+      emailOtpService.verifyAndConsume.mockReturnValue({
+        name: 'شركة',
+        hashedPassword: 'h',
+      });
+
+      await expect(
+        service.completeProviderRegistration(
+          'OFFICE',
+          'co@example.com',
+          '123456',
+        ),
+      ).rejects.toThrow('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('starting again replaces the waiting signup and removes its files', async () => {
+      withLicenseLookups();
+      await service.registerCompany(dto);
+      await service.registerCompany(dto);
+
+      expect(identitiesService.deleteUploads).toHaveBeenCalledWith({
+        logoUrl: 'https://bucket/logo.png',
+      });
+      expect(providerPending).toBeDefined();
+    });
+
+    it('refuses a taken licence with 409 before uploading or sending anything', async () => {
       withLicenseLookups().officeIdentityData.findFirst.mockResolvedValue({
         id: 'od-1',
       });
@@ -428,17 +538,39 @@ describe('UsersRegistrationService', () => {
         ConflictException,
       );
       expect(identitiesService.uploadProviderFiles).not.toHaveBeenCalled();
+      expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
     });
 
-    it('removes the uploads and keeps the 409 when the persona is refused', async () => {
+    it('a code that fails to send removes the uploads', async () => {
       withLicenseLookups();
+      emailOtpService.sendRegistrationOtp.mockRejectedValue(new Error('smtp'));
+
+      await expect(service.registerCompany(dto)).rejects.toThrow(
+        'تعذر إرسال رمز التحقق إلى بريدك الإلكتروني',
+      );
+      expect(identitiesService.deleteUploads).toHaveBeenCalledWith({
+        logoUrl: 'https://bucket/logo.png',
+      });
+    });
+
+    it('removes the uploads and keeps the 409 when the persona is refused at step 2', async () => {
+      withLicenseLookups();
+      await service.registerCompany(dto);
+      emailOtpService.verifyAndConsume.mockReturnValue({
+        name: 'شركة',
+        hashedPassword: 'h',
+      });
       identitiesService.createProviderPersonaInTx.mockRejectedValue(
         new ConflictException('رقم الترخيص مسجل مسبقاً'),
       );
 
-      await expect(service.registerCompany(dto)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.completeProviderRegistration(
+          'COMPANY',
+          'co@example.com',
+          '123456',
+        ),
+      ).rejects.toThrow(ConflictException);
       expect(identitiesService.deleteUploads).toHaveBeenCalledWith({
         logoUrl: 'https://bucket/logo.png',
       });
