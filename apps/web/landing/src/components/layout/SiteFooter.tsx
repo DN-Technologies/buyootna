@@ -32,6 +32,7 @@ const COLUMNS = [
     links: [
       { label: 'سياسة الخصوصية', href: '/privacy' },
       { label: 'الشروط والأحكام', href: '/terms' },
+      { label: 'سياسة الاسترجاع والاسترداد', href: '/refund-policy' },
       { label: 'عن بيوتنا', href: '/about' },
       { label: 'تواصل معنا', href: '/contact' },
     ],
