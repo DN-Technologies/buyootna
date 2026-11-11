@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -51,6 +52,12 @@ import { UsersProfileService } from '../users/services/users-profile.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { ListServiceInvoicesDto } from '../service-invoices/dto/list-service-invoices.dto';
 import { CompanyInvoicesService } from '../service-invoices/services/company-invoices.service';
+import { IdentityType } from '@prisma/client';
+import {
+  OtpRequestRateLimit,
+  OtpVerifyRateLimit,
+} from '../../core/decorators/otp-rate-limit.decorator';
+import { VerifyEmailOtpDto } from '../auth/dto/verify-email-otp.dto';
 
 const LOGO_LICENSE_UPLOAD_BODY = {
   schema: {
@@ -86,6 +93,8 @@ export class CompanyController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
+  // Step 1: checks the form, uploads the files and emails a code
+  @OtpRequestRateLimit('email')
   @ApiResponse({ status: 201, type: RegisterCompanyResponseDto })
   @ApiCommonErrors()
   async registerCompany(
@@ -96,11 +105,35 @@ export class CompanyController {
       license?: Express.Multer.File[];
     },
   ) {
+    // The account is created only once the emailed code is entered
+    // (POST …/verify); a request without it is an app from before that
+    if (dto.verification !== 'email') {
+      throw new BadRequestException(
+        'يرجى تحديث التطبيق لإكمال التسجيل، فالتسجيل يتطلب الآن رمز تحقق يُرسل إلى بريدك الإلكتروني.',
+      );
+    }
     // No files at all when the request isn't multipart (e.g. the web portals)
     const logoFile = files?.logo?.[0];
     const licenseFile = files?.license?.[0];
 
     return this.registrationService.registerCompany(dto, logoFile, licenseFile);
+  }
+
+  // Step 2: the emailed code proves the email; only now is the account made
+  @Post('register/company/verify')
+  @OtpVerifyRateLimit('email')
+  @ApiOperation({
+    summary:
+      'Enter the code emailed by POST /users/register/company: creates the company account',
+  })
+  @ApiResponse({ status: 201, type: RegisterCompanyResponseDto })
+  @ApiCommonErrors()
+  async verifyCompanyRegistration(@Body() dto: VerifyEmailOtpDto) {
+    return this.registrationService.completeProviderRegistration(
+      IdentityType.COMPANY,
+      dto.email,
+      dto.otp,
+    );
   }
 
   @Get('companies')

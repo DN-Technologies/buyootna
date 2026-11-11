@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -31,6 +32,12 @@ import {
 } from './dto/office-response.dto';
 import { UsersDirectoryService } from '../users/services/users-directory.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
+import { IdentityType } from '@prisma/client';
+import {
+  OtpRequestRateLimit,
+  OtpVerifyRateLimit,
+} from '../../core/decorators/otp-rate-limit.decorator';
+import { VerifyEmailOtpDto } from '../auth/dto/verify-email-otp.dto';
 
 const LOGO_LICENSE_UPLOAD_BODY = {
   schema: {
@@ -89,6 +96,8 @@ export class OfficeController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
+  // Step 1: checks the form, uploads the files and emails a code
+  @OtpRequestRateLimit('email')
   @ApiResponse({ status: 201, type: RegisterOfficeResponseDto })
   @ApiCommonErrors()
   async registerOffice(
@@ -99,10 +108,34 @@ export class OfficeController {
       license?: Express.Multer.File[];
     },
   ) {
+    // The account is created only once the emailed code is entered
+    // (POST …/verify); a request without it is an app from before that
+    if (dto.verification !== 'email') {
+      throw new BadRequestException(
+        'يرجى تحديث التطبيق لإكمال التسجيل، فالتسجيل يتطلب الآن رمز تحقق يُرسل إلى بريدك الإلكتروني.',
+      );
+    }
     // No files at all when the request isn't multipart (e.g. the web portals)
     const logoFile = files?.logo?.[0];
     const licenseFile = files?.license?.[0];
 
     return this.registrationService.registerOffice(dto, logoFile, licenseFile);
+  }
+
+  // Step 2: the emailed code proves the email; only now is the account made
+  @Post('register/office/verify')
+  @OtpVerifyRateLimit('email')
+  @ApiOperation({
+    summary:
+      'Enter the code emailed by POST /users/register/office: creates the office account',
+  })
+  @ApiResponse({ status: 201, type: RegisterOfficeResponseDto })
+  @ApiCommonErrors()
+  async verifyOfficeRegistration(@Body() dto: VerifyEmailOtpDto) {
+    return this.registrationService.completeProviderRegistration(
+      IdentityType.OFFICE,
+      dto.email,
+      dto.otp,
+    );
   }
 }

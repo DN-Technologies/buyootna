@@ -9,6 +9,39 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-provider-signup-email-otp",
+      title: {
+        en: "Company/office sign-up is created only after the emailed code",
+        ar: "لا يُنشأ حساب الشركة/المكتب إلا بعد رمز البريد",
+      },
+      priority: "P0",
+      story: {
+        en: "POST /users/register/company|office created the account at once, with no proof of the email (QA, Critical). Now it checks the form (taken email/phone, licence), uploads the files, holds the signup in memory and emails a code; nothing is written. POST /users/register/company|office/verify {email, otp} creates the login and the persona only with the right code (re-checking the email/phone weren't taken meanwhile). A request without verification: 'email' (an app from before) gets 400 «يرجى تحديث التطبيق لإكمال التسجيل…» and creates nothing. Rate limits: the send cooldown is checked in the service (the multipart body is parsed after guards); wrong codes count towards the verify limit. Starting again replaces the waiting signup and removes its files.",
+        ar: "كان POST /users/register/company|office ينشئ الحساب فوراً دون إثبات البريد (حرج). أصبح يتحقق من النموذج ويرفع الملفات ويحفظ التسجيل في الذاكرة ويرسل رمزاً إلى البريد دون كتابة أي شيء. وPOST /users/register/company|office/verify {email, otp} ينشئ الحساب والملف فقط بالرمز الصحيح (مع إعادة التحقق من البريد والهاتف). والطلب دون verification: 'email' (تطبيق قديم) يعيد 400 «يرجى تحديث التطبيق لإكمال التسجيل…» دون إنشاء شيء. وحدود الإرسال تُفحص في الخدمة، والرموز الخاطئة تُحسب ضمن حد التحقق. وإعادة البدء تستبدل التسجيل المنتظر وتحذف ملفاته.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "POST …/register/company with verification: 'email' returns otpRequired and creates no user.",
+          "…/verify with the emailed code creates the user and the company; a wrong code: 400, nothing created.",
+          "Without verification: 400 asking to update the app; nothing created.",
+        ],
+        ar: [
+          "POST …/register/company مع verification: 'email' يعيد otpRequired دون إنشاء مستخدم.",
+          "…/verify برمز البريد ينشئ المستخدم والشركة؛ والرمز الخاطئ: 400 دون إنشاء.",
+          "دون verification: ‏400 يطلب تحديث التطبيق دون إنشاء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign up a company with a new email: no account until the code from the testing portal's الرموز is entered; then sign in works.",
+        ],
+        ar: [
+          "سجّل شركة ببريد جديد: لا يوجد حساب حتى يُدخل الرمز من «الرموز» في بوابة الاختبار؛ ثم يعمل تسجيل الدخول.",
+        ],
+      },
+      updatedIn: "fix/company-signup-otp",
+    },
+    {
       id: "api-office-plans",
       title: {
         en: "Offices' own plans: regular and featured ads, with a validity",

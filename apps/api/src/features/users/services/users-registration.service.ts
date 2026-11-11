@@ -21,6 +21,7 @@ import { RegisterIndividualDto } from '../dto/register.dto';
 import { RegisterCompanyDto } from '../../company/dto/register-company.dto';
 import { RegisterOfficeDto } from '../../office/dto/register-office.dto';
 import { IdentitiesService } from '../../identities/identities.service';
+import { ProviderRegistrationPendingService } from './provider-registration-pending.service';
 import {
   assertLicenseAvailable,
   normalizeLicenseNumber,
@@ -35,6 +36,7 @@ export class UsersRegistrationService {
     private readonly twilioService: TwilioService,
     private readonly emailOtpService: EmailOtpService,
     private readonly phoneRegistrationPendingService: PhoneRegistrationPendingService,
+    private readonly providerPending: ProviderRegistrationPendingService,
     private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
@@ -216,7 +218,6 @@ export class UsersRegistrationService {
       dto,
       logoFile,
       licenseFile,
-      'حدث خطأ أثناء إنشاء حساب الشركة',
     );
   }
 
@@ -231,23 +232,24 @@ export class UsersRegistrationService {
       dto,
       logoFile,
       licenseFile,
-      'حدث خطأ أثناء إنشاء حساب المكتب',
     );
   }
 
   /**
-   * Direct company/office signup: creates the login and then the persona
-   * through IdentitiesService -- the same path (and rules) as adding a
-   * company/office from inside the app. Everything is validated before any
-   * file is uploaded, and uploads are removed again if the write fails.
+   * Direct company/office signup, step 1: checks everything, uploads the
+   * logo/licence and emails a code. Nothing is created until the code is
+   * entered (completeProviderRegistration): QA found companies created with
+   * a fake email and no proof at all, like an individual's signup now has.
    */
   private async registerProvider(
     type: typeof IdentityType.COMPANY | typeof IdentityType.OFFICE,
     dto: RegisterCompanyDto | RegisterOfficeDto,
     logoFile: Express.Multer.File | undefined,
     licenseFile: Express.Multer.File | undefined,
-    failureMessage: string,
   ) {
+    // The resend cooldown, here: the route's guard can't read a multipart
+    // body (it's parsed after guards run)
+    this.rateLimiter?.checkRequestLimit(dto.email);
     await checkUserExists(this.prisma, dto.email, dto.phone);
     // A company may sign up without a licence (it comes with «طلب التوثيق»)
     if (dto.licenseNumber?.trim()) {
@@ -264,13 +266,79 @@ export class UsersRegistrationService {
     );
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    // The form waits, without its password or the client's flag
+    const data = Object.fromEntries(
+      Object.entries(dto).filter(
+        ([key]) => key !== 'password' && key !== 'verification',
+      ),
+    );
     try {
+      await this.emailOtpService.sendRegistrationOtp(
+        dto.email,
+        dto.name,
+        hashedPassword,
+      );
+      this.rateLimiter?.recordRequest(dto.email);
+    } catch (error) {
+      await this.identitiesService.deleteUploads(uploaded);
+      console.log(error);
+      throw new InternalServerErrorException(
+        'تعذر إرسال رمز التحقق إلى بريدك الإلكتروني. يرجى المحاولة مرة أخرى لاحقاً.',
+      );
+    }
+    // A signup started again replaces the old one: its files go
+    const replaced = this.providerPending.save(dto.email, {
+      type,
+      data,
+      hashedPassword,
+      uploaded,
+    });
+    if (replaced) await this.identitiesService.deleteUploads(replaced.uploaded);
+
+    return {
+      otpRequired: true,
+      identifier: dto.email,
+      message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+    };
+  }
+
+  /**
+   * Direct company/office signup, step 2: the emailed code proves the email,
+   * and only then are the login and the persona created, through
+   * IdentitiesService -- the same path (and rules) as adding a company/
+   * office in the app. Uploads are removed again if the write fails.
+   */
+  async completeProviderRegistration(
+    type: typeof IdentityType.COMPANY | typeof IdentityType.OFFICE,
+    email: string,
+    otp: string,
+  ) {
+    const code = this.emailOtpService.verifyAndConsume(email, otp);
+    // Wrong guesses count towards the verify limit (the route's guard checks it)
+    this.rateLimiter?.recordVerifyAttempt(email, !!code);
+    if (!code) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+    }
+    const pending = this.providerPending.consume(email, type);
+    if (!pending) {
+      throw new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
+    }
+    const dto = pending.data as unknown as RegisterCompanyDto;
+    const uploaded = pending.uploaded;
+    const failureMessage =
+      type === IdentityType.COMPANY
+        ? 'حدث خطأ أثناء إنشاء حساب الشركة'
+        : 'حدث خطأ أثناء إنشاء حساب المكتب';
+
+    try {
+      // Re-check: another signup may have taken these while the code waited
+      await checkUserExists(this.prisma, dto.email, dto.phone);
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
             email: dto.email,
             phone: dto.phone,
-            password: hashedPassword,
+            password: pending.hashedPassword,
             role: type === IdentityType.COMPANY ? Role.COMPANY : Role.OFFICE,
             loginMethod: defaultLoginMethod(dto.email, dto.phone),
           },

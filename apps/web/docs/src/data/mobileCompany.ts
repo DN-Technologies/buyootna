@@ -9,6 +9,39 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-signup-otp-last",
+      title: {
+        en: "Company/office sign-up ends with «تحقق من الرمز»",
+        ar: "تسجيل الشركة/المكتب ينتهي بـ«تحقق من الرمز»",
+      },
+      priority: "P0",
+      story: {
+        en: "After the three steps, «إنشاء حساب» now opens the code screen (the owner: it comes last): a code goes to the email entered, and only the right code creates the account and shows «تم إنشاء حساب شركتك بنجاح». «إعادة الإرسال» sends the form again. Adding a company/office from «إضافة حساب» (already signed in) is unchanged.",
+        ar: "بعد الخطوات الثلاث أصبح «إنشاء حساب» يفتح شاشة الرمز (كما طلب المالك: في النهاية): يُرسل رمز إلى البريد المُدخل، ولا يُنشأ الحساب ولا تظهر «تم إنشاء حساب شركتك بنجاح» إلا بالرمز الصحيح. و«إعادة الإرسال» يرسل النموذج مجدداً. أما إضافة شركة/مكتب من «إضافة حساب» (مسجّل الدخول) فكما هي.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The code screen shows after «إنشاء حساب», naming the email.",
+          "A wrong code says so and stays; the right one shows the success sheet.",
+          "No company exists until the code is entered.",
+        ],
+        ar: [
+          "تظهر شاشة الرمز بعد «إنشاء حساب» وتذكر البريد.",
+          "الرمز الخاطئ يظهر خطأ ويبقى؛ والصحيح يظهر نافذة النجاح.",
+          "لا توجد شركة قبل إدخال الرمز.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "إنشاء حساب › شركة: fill the three steps with a new email; «إنشاء حساب» → the code screen; enter the code from الرموز: «تم إنشاء حساب شركتك بنجاح»; sign in with that email.",
+        ],
+        ar: [
+          "إنشاء حساب ← شركة: املأ الخطوات الثلاث ببريد جديد؛ «إنشاء حساب» ← شاشة الرمز؛ أدخل الرمز من «الرموز»: «تم إنشاء حساب شركتك بنجاح»؛ ثم سجّل الدخول بذلك البريد.",
+        ],
+      },
+      updatedIn: "fix/company-signup-otp",
+    },
+    {
       id: "mobile-company-plans-figma-prices",
       title: {
         en: "Company subscriptions: 29 / 48 / 87 KD with the stories line",
