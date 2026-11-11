@@ -12,6 +12,7 @@ import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
 import { IdentitiesModule } from '../identities/identities.module';
 import { ServiceInvoicesModule } from '../service-invoices/service-invoices.module';
+import { ProviderRegistrationPendingService } from './services/provider-registration-pending.service';
 
 @Module({
   imports: [IdentitiesModule, ServiceInvoicesModule],
@@ -26,6 +27,7 @@ import { ServiceInvoicesModule } from '../service-invoices/service-invoices.modu
   controllers: [CompanyController, OfficeController, UsersController],
   providers: [
     UsersRegistrationService,
+    ProviderRegistrationPendingService,
     UsersProfileService,
     UsersDirectoryService,
     AccountSuspensionService,
