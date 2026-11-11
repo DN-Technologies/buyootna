@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlansService } from './plans.service';
+import { DiscountPurpose } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 describe('PlansService', () => {
@@ -8,6 +9,7 @@ describe('PlansService', () => {
   const prisma = {
     userPlanSlot: { findMany: jest.fn() },
     identity: { findUnique: jest.fn(), aggregate: jest.fn() },
+    discountCode: { findMany: jest.fn() },
   };
 
   const gold = {
@@ -38,6 +40,69 @@ describe('PlansService', () => {
     }).compile();
     service = module.get<PlansService>(PlansService);
     prisma.identity.findUnique.mockResolvedValue({ freeAdsRemaining: 0 });
+  });
+
+  // «خصم 10% عند استخدامك كود "BYOUTNA10"» at the top of الباقات
+  describe('getPromo', () => {
+    const now = new Date('2026-11-11T12:00:00Z');
+
+    it('asks only for flagged, active codes for this purpose, live now, newest first', async () => {
+      prisma.discountCode.findMany.mockResolvedValue([]);
+
+      await service.getPromo(DiscountPurpose.PLAN, now);
+
+      expect(prisma.discountCode.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            showOnPlans: true,
+            isActive: true,
+            appliesTo: { has: 'PLAN' },
+            AND: [
+              { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+              { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+            ],
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
+    });
+
+    it('gives the newest code that is not used up', async () => {
+      prisma.discountCode.findMany.mockResolvedValue([
+        {
+          code: 'USEDUP',
+          type: 'PERCENT',
+          value: 20,
+          maxUses: 5,
+          usedCount: 5,
+        },
+        {
+          code: 'BYOUTNA10',
+          type: 'PERCENT',
+          value: 10,
+          maxUses: null,
+          usedCount: 40,
+        },
+      ]);
+
+      await expect(
+        service.getPromo(DiscountPurpose.PLAN, now),
+      ).resolves.toEqual({
+        code: 'BYOUTNA10',
+        type: 'PERCENT',
+        value: 10,
+      });
+    });
+
+    it('is null when there is none', async () => {
+      prisma.discountCode.findMany.mockResolvedValue([
+        { code: 'USEDUP', type: 'FIXED', value: 1, maxUses: 1, usedCount: 1 },
+      ]);
+
+      await expect(
+        service.getPromo(DiscountPurpose.PLAN, now),
+      ).resolves.toBeNull();
+    });
   });
 
   describe('getWallet totalAds', () => {

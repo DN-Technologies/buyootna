@@ -76,6 +76,11 @@ export class AdminCreateDiscountCodeDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  // «إظهار في صفحة الباقات»: the plans screen's banner
+  @IsOptional()
+  @IsBoolean()
+  showOnPlans?: boolean;
 }
 
 export class AdminUpdateDiscountCodeDto extends PartialType(

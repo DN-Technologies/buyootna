@@ -1,5 +1,6 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { DiscountPurpose } from '@prisma/client';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PlansService, type PublishOptionsResponse } from './plans.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
@@ -24,6 +25,27 @@ export class PlansController {
   @ApiCommonErrors()
   async findAll() {
     return this.plansService.findAll();
+  }
+
+  // Before 'wallet' etc.: a static path, public like the list
+  @Get('promo')
+  @ApiOperation({
+    summary:
+      'The discount code advertised on «الباقات» (flagged by an admin, usable now), or null',
+  })
+  @ApiQuery({
+    name: 'purpose',
+    required: false,
+    enum: ['PLAN', 'SUBSCRIPTION'],
+    description: 'PLAN (ad packages, default) or SUBSCRIPTION (company plans)',
+  })
+  @ApiCommonErrors()
+  async getPromo(@Query('purpose') purpose?: string) {
+    return this.plansService.getPromo(
+      purpose === 'SUBSCRIPTION'
+        ? DiscountPurpose.SUBSCRIPTION
+        : DiscountPurpose.PLAN,
+    );
   }
 
   @Get('wallet')

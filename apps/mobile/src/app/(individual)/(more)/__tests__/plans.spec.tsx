@@ -30,6 +30,7 @@ jest.mock('expo-web-browser', () => ({
 
 jest.mock('@/shared/api/plans.service', () => ({
   plansService: {
+    getPromo: jest.fn(),
     getPlans: jest.fn(),
     getWallet: jest.fn(),
   },
@@ -72,6 +73,10 @@ describe('PlansScreen', () => {
         badge: null,
         features: [],
         color: '#15304D',
+        packages: [
+          { id: 'pkg-basic-1', adsCount: 1, price: 2 },
+          { id: 'pkg-basic-3', adsCount: 3, price: 6 },
+        ],
       },
       {
         id: 'gold-plan',
@@ -83,8 +88,13 @@ describe('PlansScreen', () => {
         badge: 'موصى به',
         features: [],
         color: '#D06400',
+        packages: [
+          { id: 'pkg-gold-1', adsCount: 1, price: 7 },
+          { id: 'pkg-gold-3', adsCount: 3, price: 17.5 },
+        ],
       },
     ]);
+    (plansService.getPromo as jest.Mock).mockResolvedValue(null);
     (plansService.getWallet as jest.Mock).mockResolvedValue({
       freeAdsRemaining: 1,
       slots: [],
@@ -92,7 +102,9 @@ describe('PlansScreen', () => {
   });
 
   it('renders the header and both plan cards with features and options', async () => {
-    const { getByText, getAllByText } = await renderWithClient(<PlansScreen />);
+    const { getByText, getAllByText, queryByTestId } = await renderWithClient(
+      <PlansScreen />,
+    );
 
     // Header
     expect(getByText('الباقات')).toBeTruthy();
@@ -104,10 +116,11 @@ describe('PlansScreen', () => {
       expect(getByText('حتى 5 صورة للعقار.')).toBeTruthy();
       expect(getByText('ظهور في نتائج البحث.')).toBeTruthy();
       expect(getByText('تواصل مباشر مع المهتمين.')).toBeTruthy();
-      expect(getByText('باقة 2 اعلان')).toBeTruthy();
-      expect(getByText('10 د.ك')).toBeTruthy();
-      expect(getAllByText('باقة 5 اعلانات').length).toBe(2);
-      expect(getByText('22.5 د.ك')).toBeTruthy();
+      // The owner's prices (Figma 10180:55265), from the backend's packages
+      expect(getAllByText('باقة 1 اعلان').length).toBe(2);
+      expect(getAllByText('باقة 3 اعلانات').length).toBe(2);
+      expect(getByText('2 د.ك')).toBeTruthy();
+      expect(getByText('6 د.ك')).toBeTruthy();
 
       // Gold plan card
       expect(getByText('الباقة الذهبية')).toBeTruthy();
@@ -116,10 +129,11 @@ describe('PlansScreen', () => {
       expect(getByText('حتى 15 صورة للعقار.')).toBeTruthy();
       expect(getByText('ظهور في أعلى نتائج البحث.')).toBeTruthy();
       expect(getByText('اولوية الظهور في البحث الجغرافي.')).toBeTruthy();
-      expect(getByText('باقة 1 اعلان')).toBeTruthy();
-      expect(getByText('12 د.ك')).toBeTruthy();
-      expect(getByText('50 د.ك')).toBeTruthy();
+      expect(getByText('7 د.ك')).toBeTruthy();
+      expect(getByText('17.5 د.ك')).toBeTruthy();
     });
+    // No advertised code: no banner
+    expect(queryByTestId('plans-promo')).toBeNull();
   });
 
   // «اشتر الان» opens «الدفع» (Figma 5557:142956), which charges through Tap
@@ -143,7 +157,7 @@ describe('PlansScreen', () => {
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith({
         pathname: '/checkout',
-        params: { purpose: 'plan', planSlug: 'regular', adsCount: '2' },
+        params: { purpose: 'plan', planSlug: 'regular', adsCount: '1' },
       });
     });
     expect(paymentsService.createCharge).not.toHaveBeenCalled();
@@ -160,12 +174,11 @@ describe('PlansScreen', () => {
     const { getByText, getAllByText } = await renderWithClient(<PlansScreen />);
 
     await waitFor(() => {
-      expect(getAllByText('باقة 5 اعلانات').length).toBe(2);
+      expect(getAllByText('باقة 3 اعلانات').length).toBe(2);
     });
 
-    // Select the 5-ads gold option
-    const gold5Option = getByText('50 د.ك');
-    await fireEvent.press(gold5Option);
+    // Select the 3-ads gold option
+    await fireEvent.press(getByText('17.5 د.ك'));
 
     const buyButtons = getAllByText('اشتر الان');
     // Click gold buy button (second button)
@@ -174,7 +187,7 @@ describe('PlansScreen', () => {
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith({
         pathname: '/checkout',
-        params: { purpose: 'plan', planSlug: 'gold', adsCount: '5' },
+        params: { purpose: 'plan', planSlug: 'gold', adsCount: '3' },
       });
     });
   });
@@ -204,8 +217,22 @@ describe('PlansScreen', () => {
       expect(getByText('55 د.ك')).toBeTruthy();
     });
     expect(queryByText('50 د.ك')).toBeNull();
-    // Basic has no packages from the API, so its hardcoded prices remain
-    expect(getByText('22.5 د.ك')).toBeTruthy();
+    // Basic has no packages from the API: its built-in options (the new prices)
+    expect(getByText('6 د.ك')).toBeTruthy();
+  });
+
+  // «خصم 10% عند استخدامك كود "BYOUTNA10".» (Figma 10180:55408)
+  it.each([
+    [{ code: 'BYOUTNA10', type: 'PERCENT', value: 10 }, 'خصم 10% عند استخدامك كود '],
+    [{ code: 'KWD1', type: 'FIXED', value: 1 }, 'خصم 1 د.ك عند استخدامك كود '],
+  ])('shows the advertised code above the plans: %j', async (promo, lead) => {
+    (plansService.getPromo as jest.Mock).mockResolvedValue(promo);
+
+    const { findByTestId } = await renderWithClient(<PlansScreen />);
+
+    const banner = await findByTestId('plans-promo');
+    expect(banner).toHaveTextContent(`${lead}“${promo.code}”.`);
+    expect(plansService.getPromo).toHaveBeenCalledWith('PLAN');
   });
 
   it('wallet section shows the real free-ad balance, not a hardcoded 1 (QA: quota mismatch)', async () => {

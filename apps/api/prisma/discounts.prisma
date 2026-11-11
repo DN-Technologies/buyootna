@@ -32,6 +32,9 @@ model DiscountCode {
   usedCount     Int               @default(0)
   // One paid use per account
   onePerAccount Boolean           @default(true)
+  // Advertised at the top of «الباقات» («خصم 10% عند استخدامك كود …»)
+  // while it can be used; the newest such code wins
+  showOnPlans   Boolean           @default(false)
   isActive      Boolean           @default(true)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt

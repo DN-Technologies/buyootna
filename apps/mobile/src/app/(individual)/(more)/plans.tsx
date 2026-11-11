@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import PlanCard from '@/features/individual/components/plans/PlanCard';
 import PlansHeader from '@/features/individual/components/plans/PlansHeader';
+import PlansPromoBanner from '@/features/individual/components/plans/PlansPromoBanner';
 import PlansWalletSection from '@/features/individual/components/plans/PlansWalletSection';
 import { usePlans } from '@/features/individual/hooks/usePlans';
 import PlanCardSkeleton from '@/shared/components/skeletons/PlanCardSkeleton';
@@ -13,8 +14,15 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function PlansScreen() {
   const router = useRouter();
-  const { tiers, wallet, isLoading, isProcessing, selectOption, buyPlan } =
-    usePlans();
+  const {
+    tiers,
+    wallet,
+    promo,
+    isLoading,
+    isProcessing,
+    selectOption,
+    buyPlan,
+  } = usePlans();
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
@@ -29,6 +37,7 @@ export default function PlansScreen() {
           </View>
         ) : (
           <View className="px-5 py-6">
+            {promo && <PlansPromoBanner promo={promo} />}
             <PlansWalletSection wallet={wallet} />
 
             <View className="gap-6">

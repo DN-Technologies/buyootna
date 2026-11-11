@@ -8,16 +8,20 @@ import {
   type PlanTier,
   type PlanTierId,
 } from '@/features/individual/components/plans/constants';
-import { withApiPrice } from '@/features/individual/utils/planPricing';
+import {
+  tierFeatures,
+  tierOptions,
+} from '@/features/individual/utils/planPricing';
 import { plansService } from '@/shared/api/plans.service';
 
 async function fetchPlansData() {
-  const [plansRes, walletRes] = await Promise.all([
+  const [plansRes, walletRes, promo] = await Promise.all([
     plansService.getPlans().catch(() => []),
     plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
+    plansService.getPromo('PLAN'),
   ]);
 
-  return { plans: plansRes, wallet: walletRes };
+  return { plans: plansRes, wallet: walletRes, promo };
 }
 
 export interface PlanTierState extends PlanTier {
@@ -25,23 +29,29 @@ export interface PlanTierState extends PlanTier {
 }
 
 export function usePlans() {
+  // Nothing picked yet: each tier's first package (1 ad, as in the Figma)
   const [selectedOptionIds, setSelectedOptionIds] = useState<
-    Record<PlanTierId, string>
-  >({ basic: 'basic-2', gold: 'gold-1' });
+    Partial<Record<PlanTierId, string>>
+  >({});
 
   const {
-    data = { plans: [], wallet: { freeAdsRemaining: 0, slots: [] } },
+    data = {
+      plans: [],
+      wallet: { freeAdsRemaining: 0, slots: [] },
+      promo: null,
+    },
     isLoading,
   } = useQuery({
     queryKey: ['plans'],
     queryFn: fetchPlansData,
   });
-  const { plans, wallet } = data;
+  const { plans, wallet, promo } = data;
 
   const tiers: PlanTierState[] = PLAN_TIERS.map((tier) => {
-    const options = tier.options.map((opt) => withApiPrice(opt, plans));
+    const options = tierOptions(tier, plans);
     return {
       ...tier,
+      features: tierFeatures(tier, plans),
       options,
       selectedOption:
         options.find((o) => o.id === selectedOptionIds[tier.id]) ||
@@ -76,6 +86,7 @@ export function usePlans() {
   return {
     tiers,
     wallet,
+    promo,
     isLoading,
     // Paying happens on «الدفع» now; the cards no longer wait here
     isProcessing: null as PlanTierId | null,
