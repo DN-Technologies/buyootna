@@ -14,36 +14,36 @@ model CompanyRequest {
   acceptedByIdentityId String?
   acceptedByIdentity   Identity? @relation("AcceptedRequests", fields: [acceptedByIdentityId], references: [id], onDelete: SetNull)
 
-  title       String
-  category    String?
-  priceRange  String?
+  title          String
+  category       String?
+  priceRange     String?
   // priceRange's two ends (د.ك), for the price filter
-  priceMin    Float?
-  priceMax    Float?
-  location    String
+  priceMin       Float?
+  priceMax       Float?
+  location       String
   // القطعة / الشارع / الجادة / المنزل / علامة مميزة, from the location picker
   addressDetails Json?
-  latitude    Float?
-  longitude   Float?
-  offerType   String?
-  images      String[] @default([])
-  description String
+  latitude       Float?
+  longitude      Float?
+  offerType      String?
+  images         String[] @default([])
+  description    String
 
-  status    RequestStatus @default(PENDING)
+  status        RequestStatus      @default(PENDING)
   // انهاء الطلب: the accepting company marked the work finished, and where
   // the final agreement was made (in_app | outside)
-  completedAt  DateTime?
-  completedVia String?
-  invoices  CompanyInvoice[]
+  completedAt   DateTime?
+  completedVia  String?
+  invoices      CompanyInvoice[]
   // The answers companies gave (one per company)
-  offers    RequestOffer[]
+  offers        RequestOffer[]
   // Chats opened about this request
   conversations Conversation[]
   // Companies that hid this public request, and that saved it
-  dismissals RequestDismissal[]
-  bookmarks  RequestBookmark[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  dismissals    RequestDismissal[]
+  bookmarks     RequestBookmark[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   @@index([targetIdentityId])
   @@index([clientIdentityId])
@@ -53,18 +53,18 @@ model CompanyRequest {
 // A company's answer to a request: what it says, any notes and its price.
 // One per company and request; the requester accepts or rejects it.
 model RequestOffer {
-  id                 String             @id @default(uuid())
+  id                 String         @id @default(uuid())
   requestId          String
-  request            CompanyRequest     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  request            CompanyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   providerIdentityId String
-  provider           Identity           @relation("ProvidedOffers", fields: [providerIdentityId], references: [id], onDelete: Cascade)
+  provider           Identity       @relation("ProvidedOffers", fields: [providerIdentityId], references: [id], onDelete: Cascade)
 
-  message String?
+  message  String?
   // العرض لا يشمل: what the offer leaves out
   excludes String?
-  notes   String?
+  notes    String?
   // What the company asks for (د.ك)
-  price   Float?
+  price    Float?
 
   status    RequestOfferStatus @default(SENT)
   createdAt DateTime           @default(now())

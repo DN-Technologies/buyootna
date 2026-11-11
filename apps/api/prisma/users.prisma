@@ -10,16 +10,16 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Account-level flags
-  isDisabled Boolean @default(false)
-  isBlocked  Boolean @default(false)
+  isDisabled     Boolean   @default(false)
+  isBlocked      Boolean   @default(false)
   // Set only when the user suspends their own account (تعطيل مؤقت); they
   // reactivate by signing in again. isDisabled without this is an admin
   // disable, which signing in doesn't undo.
-  suspendedAt DateTime?
+  suspendedAt    DateTime?
   // Set when that self-suspension was for a fixed period (7/14/30 days);
   // AccountStateService reactivates the account once it passes
   suspendedUntil DateTime?
-  isAdmin    Boolean @default(false)
+  isAdmin        Boolean   @default(false)
 
   // The terms of use (EULA) this account last agreed to at sign-in or
   // sign-up (Guideline 1.2), and when
@@ -34,28 +34,28 @@ model User {
   // Edit Profile phone check); a phone without it can't be the login method
   phoneVerifiedAt DateTime?
   // The one identifier password login accepts; null = email or phone
-  loginMethod LoginMethod?
+  loginMethod     LoginMethod?
 
   // Relations
-  identities       Identity[]
-  otpCode          OtpCode?
-  settings         UserSettings?
-  notifPreferences NotificationPreferences?
-  notifications    Notification[]
-  sessions         Session[]
-  suspensions      AccountSuspension[]
-  savedLocations   SavedLocation[]
-  socialAccounts   SocialAccount[]
-  reportsFiled     Report[]                  @relation("ReporterReports")
-  reportsAgainst   Report[]                  @relation("TargetUserReports")
-  reportsResolved  Report[]                  @relation("ReportResolvedBy")
-  reportsAssigned  Report[]                  @relation("ReportAssignedAdmin")
-  adminActionLogsActed AdminActionLog[]      @relation("AdminActionLogActor")
-  adminActionLogsAbout AdminActionLog[]      @relation("AdminActionLogTarget")
-  adminNotesAuthored   AdminNote[]           @relation("AdminNoteAuthor")
-  adminNotesAbout      AdminNote[]           @relation("AdminNoteTarget")
-  blocksMade           UserBlock[]           @relation("UserBlocksMade")
-  blocksReceived       UserBlock[]           @relation("UserBlocksReceived")
+  identities           Identity[]
+  otpCode              OtpCode?
+  settings             UserSettings?
+  notifPreferences     NotificationPreferences?
+  notifications        Notification[]
+  sessions             Session[]
+  suspensions          AccountSuspension[]
+  savedLocations       SavedLocation[]
+  socialAccounts       SocialAccount[]
+  reportsFiled         Report[]                 @relation("ReporterReports")
+  reportsAgainst       Report[]                 @relation("TargetUserReports")
+  reportsResolved      Report[]                 @relation("ReportResolvedBy")
+  reportsAssigned      Report[]                 @relation("ReportAssignedAdmin")
+  adminActionLogsActed AdminActionLog[]         @relation("AdminActionLogActor")
+  adminActionLogsAbout AdminActionLog[]         @relation("AdminActionLogTarget")
+  adminNotesAuthored   AdminNote[]              @relation("AdminNoteAuthor")
+  adminNotesAbout      AdminNote[]              @relation("AdminNoteTarget")
+  blocksMade           UserBlock[]              @relation("UserBlocksMade")
+  blocksReceived       UserBlock[]              @relation("UserBlocksReceived")
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -69,22 +69,22 @@ model User {
 }
 
 model Session {
-  id          String   @id @default(uuid())
-  userId      String
-  deviceId    String?
+  id               String    @id @default(uuid())
+  userId           String
+  deviceId         String?
   // Expo push token registered by the app on this device, for security
   // alerts such as a login from another device
-  pushToken   String?
-  platform    String?
-  deviceModel String?
-  deviceName  String
-  isActive    Boolean  @default(true)
-  lastActive  DateTime @default(now())
-  location    String?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushToken        String?
+  platform         String?
+  deviceModel      String?
+  deviceName       String
+  isActive         Boolean   @default(true)
+  lastActive       DateTime  @default(now())
+  location         String?
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   // The persona this device is using: logging in again on the same device
   // resumes it, and switching on one device leaves the others alone
   activeIdentityId String?

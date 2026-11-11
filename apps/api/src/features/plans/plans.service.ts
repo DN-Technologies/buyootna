@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { DiscountPurpose, DiscountType, Prisma } from '@prisma/client';
+import {
+  DiscountPurpose,
+  DiscountType,
+  PlanAudience,
+  Prisma,
+} from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { isSlotUsable } from './plan-slots.rules';
 
 export interface PublishOption {
   type: string;
@@ -25,15 +31,32 @@ export interface PublishOptionsResponse {
 export class PlansService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  /**
+   * The plans sold to individuals (default; what older apps get) or to
+   * offices. Only plans with something to buy are listed: an office's
+   * «اعلان مميز» plan only carries featured ads' benefits.
+   */
+  async findAll(audience: PlanAudience = PlanAudience.INDIVIDUAL) {
     return this.prisma.plan.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        audience,
+        ...(audience === PlanAudience.OFFICE
+          ? { packages: { some: { isActive: true } } }
+          : {}),
+      },
       orderBy: { sortOrder: 'asc' },
       include: {
         packages: {
           where: { isActive: true },
           orderBy: { sortOrder: 'asc' },
-          select: { id: true, adsCount: true, price: true },
+          select: {
+            id: true,
+            adsCount: true,
+            featuredAdsCount: true,
+            validityMonths: true,
+            price: true,
+          },
         },
       },
     });
@@ -112,9 +135,9 @@ export class PlansService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const activeSlots = allSlots.filter(
-      (s) => s.status === 'ACTIVE' && s.adsRemaining > 0,
-    );
+    const now = new Date();
+    // Expired credits (past «صلاحية انتهاء الباقة») can't be spent
+    const activeSlots = allSlots.filter((s) => isSlotUsable(s, now));
 
     // Calculate balance counts by plan slug
     let gold = 0;
@@ -134,10 +157,15 @@ export class PlansService {
 
     const formattedHistory = allSlots.map((s) => {
       const shortId = s.id.replace(/-/g, '').slice(0, 8).toUpperCase();
-      const isActive = s.status === 'ACTIVE' && s.adsRemaining > 0;
+      const isActive = isSlotUsable(s, now);
 
-      const expiryDate = new Date(s.createdAt);
-      expiryDate.setDate(expiryDate.getDate() + (s.plan.durationDays || 30));
+      // A bundle's own validity, else the plan's ad duration as before
+      const expiryDate = s.expiresAt
+        ? new Date(s.expiresAt)
+        : new Date(s.createdAt);
+      if (!s.expiresAt) {
+        expiryDate.setDate(expiryDate.getDate() + (s.plan.durationDays || 30));
+      }
       const formattedExpiry = expiryDate.toLocaleDateString('ar-EG', {
         day: 'numeric',
         month: 'long',
@@ -180,6 +208,9 @@ export class PlansService {
         totalAds:
           s.invoice?.planPackage?.adsCount ??
           Math.max(s.plan.maxActiveAds, s.adsRemaining),
+        // An office credit's «اعلان مميز» and when its unused ads are lost
+        featured: s.plan.featuredDays > 0,
+        expiresAt: s.expiresAt,
         createdAt: s.createdAt,
       })),
       history: formattedHistory,
@@ -220,11 +251,22 @@ export class PlansService {
         include: { plan: true },
       });
       if (fullSlot) {
+        const until = fullSlot.expiresAt
+          ? ` · صالحة حتى ${fullSlot.expiresAt.toLocaleDateString('ar-EG', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}`
+          : '';
         options.push({
           type: 'PLAN_SLOT',
           slotId: fullSlot.id,
-          title: `باقة ${fullSlot.plan.name}`,
-          subtitle: `متبقي لديك ${fullSlot.adsRemaining} إعلان في هذه الباقة`,
+          // An office's featured credit reads «اعلان مميز», not «باقة …»
+          title:
+            fullSlot.plan.slug === 'office-featured'
+              ? fullSlot.plan.name
+              : `باقة ${fullSlot.plan.name}`,
+          subtitle: `متبقي لديك ${fullSlot.adsRemaining} إعلان في هذه الباقة${until}`,
           planName: fullSlot.plan.name,
           color: fullSlot.plan.color || '#15304D',
           adsRemaining: fullSlot.adsRemaining,

@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import OfficePlanCard from '@/features/individual/components/plans/OfficePlanCard';
 import PlanCard from '@/features/individual/components/plans/PlanCard';
 import PlansHeader from '@/features/individual/components/plans/PlansHeader';
 import PlansPromoBanner from '@/features/individual/components/plans/PlansPromoBanner';
@@ -15,6 +16,11 @@ WebBrowser.maybeCompleteAuthSession();
 export default function PlansScreen() {
   const router = useRouter();
   const {
+    isOffice,
+    officePlans,
+    officeSelection,
+    selectOfficePackage,
+    buyOfficePackage,
     tiers,
     wallet,
     promo,
@@ -40,6 +46,21 @@ export default function PlansScreen() {
             {promo && <PlansPromoBanner promo={promo} />}
             <PlansWalletSection wallet={wallet} />
 
+            {isOffice ? (
+              <View className="gap-6">
+                {officePlans.map((plan) => (
+                  <OfficePlanCard
+                    key={plan.id}
+                    plan={plan}
+                    selectedPackageId={officeSelection[plan.id]}
+                    onSelectPackage={(packageId) =>
+                      selectOfficePackage(plan.id, packageId)
+                    }
+                    onBuy={(packageId) => buyOfficePackage(plan.slug, packageId)}
+                  />
+                ))}
+              </View>
+            ) : (
             <View className="gap-6">
               {tiers.map((tier) => (
                 <PlanCard
@@ -55,6 +76,7 @@ export default function PlansScreen() {
                 />
               ))}
             </View>
+            )}
           </View>
         )}
       </ScrollView>

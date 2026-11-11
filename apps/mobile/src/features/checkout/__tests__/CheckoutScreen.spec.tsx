@@ -169,6 +169,7 @@ describe('«الدفع»', () => {
       undefined,
       5,
       { method: 'knet', discountCode: undefined },
+      undefined,
     );
     expect(openAuth).toHaveBeenCalledWith(
       'https://tap/checkout',
@@ -180,6 +181,42 @@ describe('«الدفع»', () => {
 
     await fireEvent.press(getByTestId('checkout-result-backdrop'));
     expect(mockBack).toHaveBeenCalled();
+  });
+
+  // An office's «1 اعلان مميز» has no regular-ad count: it goes by id
+  it('prices and pays an office package by its id', async () => {
+    api.createCharge.mockResolvedValue({
+      invoiceId: 'inv-2',
+      status: 'PENDING',
+      checkoutUrl: 'https://tap/checkout',
+    });
+    openAuth.mockResolvedValue({
+      type: 'success',
+      url: 'buyootna://payment-callback?status=success',
+    });
+    api.getPaymentStatus.mockResolvedValue({ status: 'PAID', planName: 'الاساسية' });
+    const { getByTestId, findByTestId } = await renderScreen({
+      purpose: 'plan',
+      planSlug: 'office-basic',
+      packageId: 'pkg-featured',
+    });
+
+    await findByTestId('checkout-pay');
+    expect(api.quote).toHaveBeenCalledWith(
+      expect.objectContaining({ planSlug: 'office-basic', packageId: 'pkg-featured' }),
+    );
+    await fireEvent.press(getByTestId('checkout-method-knet'));
+    await fireEvent.press(getByTestId('checkout-pay'));
+
+    expect(await findByTestId('checkout-result-success')).toBeTruthy();
+    expect(api.createCharge).toHaveBeenCalledWith(
+      'office-basic',
+      'buyootna://payment-callback',
+      undefined,
+      undefined,
+      { method: 'knet', discountCode: undefined },
+      'pkg-featured',
+    );
   });
 
   it('a declined payment shows «تعذر إتمام الدفع» with a retry', async () => {

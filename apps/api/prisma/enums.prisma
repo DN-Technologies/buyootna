@@ -70,6 +70,14 @@ enum ListingStatus {
 enum SlotStatus {
   ACTIVE
   EXHAUSTED
+  // Its validity ran out with ads left (office bundles: «صلاحية انتهاء الباقة»)
+  EXPIRED
+}
+
+// Who a plan is sold to: individuals' الباقات, or offices' own
+enum PlanAudience {
+  INDIVIDUAL
+  OFFICE
 }
 
 enum RequestStatus {

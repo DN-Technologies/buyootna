@@ -6,6 +6,9 @@ export interface PlanOption {
   adsCount: number;
   label: string;
   price: string;
+  // An office package, bought by id; «1 اعلان مميز» is drawn in orange
+  packageId?: string;
+  featured?: boolean;
 }
 
 export interface PlanTier {

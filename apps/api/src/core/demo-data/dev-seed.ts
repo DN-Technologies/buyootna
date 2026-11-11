@@ -995,7 +995,11 @@ export async function runDevSeed(
     for (const pkg of packages) {
       await prisma.planPackage.upsert({
         where: {
-          planId_adsCount: { planId: saved.id, adsCount: pkg.adsCount },
+          planId_adsCount_featuredAdsCount: {
+            planId: saved.id,
+            adsCount: pkg.adsCount,
+            featuredAdsCount: 0,
+          },
         },
         update: { ...pkg, isActive: true },
         create: { ...pkg, planId: saved.id },
@@ -1005,6 +1009,7 @@ export async function runDevSeed(
     await prisma.planPackage.updateMany({
       where: {
         planId: saved.id,
+        featuredAdsCount: 0,
         adsCount: { notIn: packages.map((pkg) => pkg.adsCount) },
       },
       data: { isActive: false },

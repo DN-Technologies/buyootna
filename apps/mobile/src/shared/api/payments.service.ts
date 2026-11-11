@@ -40,6 +40,8 @@ export interface QuoteRequest {
   purpose: CheckoutPurpose;
   planSlug?: string;
   adsCount?: number;
+  // The package by id: an office's «1 اعلان مميز» has no regular-ad count
+  packageId?: string;
   companyPlanId?: string;
   propertyId?: string;
   featurePackageId?: string;
@@ -65,10 +67,12 @@ export const paymentsService = {
     sourceId?: string,
     adsCount?: number,
     choice: CheckoutChoice = {},
+    packageId?: string,
   ): Promise<ChargeResponse> => {
     const response = await apiClient.post<ChargeResponse>('/payments/charge', {
       planSlug,
       adsCount,
+      ...(packageId ? { packageId } : {}),
       appRedirectUrl,
       sourceId,
       ...choice,

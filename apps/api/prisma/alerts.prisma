@@ -40,12 +40,12 @@ model Alert {
 // A listing that matched an alert when it was published. Unique per pair so
 // a republished listing never notifies the same alert twice.
 model AlertMatch {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   alertId    String
-  alert      Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  alert      Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
   // Set when the owner opens the alert's matches; null ones are the home
   // avatar pill's gold "+N"
   seenAt     DateTime?

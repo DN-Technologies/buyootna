@@ -89,6 +89,7 @@ model Property {
   // TODO: Remove after migration is complete
   userId String?
 
+  @@unique([identityId, submissionKey])
   @@index([type])
   @@index([price])
   @@index([areaSize])
@@ -99,7 +100,6 @@ model Property {
   @@index([latitude, longitude])
   @@index([identityId])
   @@index([publishedAt])
-  @@unique([identityId, submissionKey])
 }
 
 model PropertyDeletionLog {

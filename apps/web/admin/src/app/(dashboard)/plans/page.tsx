@@ -31,8 +31,8 @@ export interface PlanItem {
   prioritySearchText?: string
 }
 
-// The app sells one set of plans (العادية / الفضية / الذهبية) to every
-// account type, so each tab shows the same real plans from the API.
+// Offices have their own plans (الاساسية / العادية / الفضية, sold as regular
+// and featured ads with a validity); the other tabs show the individuals'.
 function toPlanItem(plan: AdminCatalogPlan): PlanItem {
   const featured = plan.featuredDays > 0
   return {
@@ -84,7 +84,17 @@ export default function PlansPage() {
     void loadPlans()
   }, [loadPlans])
 
-  const currentPlans = useMemo(() => catalog.map(toPlanItem), [catalog])
+  const currentPlans = useMemo(
+    () =>
+      catalog
+        .filter((plan) =>
+          selectedCategory === 'OFFICE'
+            ? plan.audience === 'OFFICE'
+            : plan.audience !== 'OFFICE',
+        )
+        .map(toPlanItem),
+    [catalog, selectedCategory],
+  )
 
   const now = new Date()
   const addedThisMonth = catalog.filter((p) => {
@@ -124,7 +134,12 @@ export default function PlansPage() {
         price: /\d/.test(updated.price) ? digits(updated.price) : current.price,
         isActive: updated.isActive !== false,
         ...numbers,
-        features: buildPlanFeatures(numbers),
+        // An office plan's lines name its bundle («17 اعلان عادي.»,
+        // «صلاحية انتهاء الباقة شهرين.»), which the numbers can't rebuild
+        features:
+          current.audience === 'OFFICE'
+            ? current.features
+            : buildPlanFeatures(numbers),
       })
       await loadPlans()
     } catch {

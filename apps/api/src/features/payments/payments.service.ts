@@ -65,6 +65,7 @@ export class PaymentsService {
       purpose?: string;
       planSlug?: string;
       adsCount?: number | string;
+      packageId?: string;
       companyPlanId?: string;
       propertyId?: string;
       featurePackageId?: string;
@@ -81,6 +82,7 @@ export class PaymentsService {
           body.planSlug,
           body.adsCount,
           body.discountCode,
+          body.packageId,
         );
       case 'subscription':
         return this.subscriptionCheckout.quote(
