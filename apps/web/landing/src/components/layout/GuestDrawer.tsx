@@ -1,6 +1,6 @@
 'use client'
 
-import { Info, ScrollText, type LucideIcon } from 'lucide-react'
+import { Info, RotateCcw, ScrollText, type LucideIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -46,6 +46,11 @@ const SECTIONS: { title: string; links: DrawerLink[] }[] = [
         icon: '/landing/drawer-shield.svg',
       },
       { label: 'الشروط والأحكام', href: '/terms', icon: ScrollText },
+      {
+        label: 'سياسة الاسترجاع والاسترداد',
+        href: '/refund-policy',
+        icon: RotateCcw,
+      },
     ],
   },
 ]
