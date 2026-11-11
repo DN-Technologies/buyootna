@@ -17,6 +17,8 @@ export interface AdminPlan {
   maxImagesPerAd: number
   featuredDays: number
   prioritySearch: boolean
+  // Offices have their own plans; individuals (and companies' ads) the rest
+  audience?: 'INDIVIDUAL' | 'OFFICE'
 }
 
 export interface AdminWalletSlot {
