@@ -8,9 +8,22 @@ jobs:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
     environment: production
+    env:
+      # Set: SSH goes over the private Tailscale network (the server's
+      # 100.x address in SSH_HOST), so port 22 can be closed to the
+      # internet (Tap Payments' scan flagged it). Unset: as before.
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Join the private network (Tailscale)
+        if: env.TS_OAUTH_CLIENT_ID != ''
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
