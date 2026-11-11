@@ -17,10 +17,13 @@ export default function PlanOptionItem({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onSelect}
+      // «1 اعلان مميز» keeps its orange outline (Figma 10180:55742)
       className={`flex-1 flex-row items-center gap-2 rounded-lg p-3 ${
         isSelected
           ? 'border border-[#15304D] bg-[#F5F7F9]'
-          : 'border border-transparent bg-[#F5F7F9]'
+          : option.featured
+            ? 'border border-[#FF8D28] bg-[#F5F7F9]'
+            : 'border border-transparent bg-[#F5F7F9]'
       }`}
     >
       <View

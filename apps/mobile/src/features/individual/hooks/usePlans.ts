@@ -13,10 +13,11 @@ import {
   tierOptions,
 } from '@/features/individual/utils/planPricing';
 import { plansService } from '@/shared/api/plans.service';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
-async function fetchPlansData() {
+async function fetchPlansData(isOffice: boolean) {
   const [plansRes, walletRes, promo] = await Promise.all([
-    plansService.getPlans().catch(() => []),
+    plansService.getPlans(isOffice ? 'OFFICE' : undefined).catch(() => []),
     plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
     plansService.getPromo('PLAN'),
   ]);
@@ -29,9 +30,15 @@ export interface PlanTierState extends PlanTier {
 }
 
 export function usePlans() {
+  // An office has its own plans (Figma 10180:31480)
+  const isOffice = useAuthStore((s) => s.activeIdentity?.type === 'OFFICE');
   // Nothing picked yet: each tier's first package (1 ad, as in the Figma)
   const [selectedOptionIds, setSelectedOptionIds] = useState<
     Partial<Record<PlanTierId, string>>
+  >({});
+  // An office plan's picked package, by plan id
+  const [officeSelection, setOfficeSelection] = useState<
+    Record<string, string>
   >({});
 
   const {
@@ -42,8 +49,8 @@ export function usePlans() {
     },
     isLoading,
   } = useQuery({
-    queryKey: ['plans'],
-    queryFn: fetchPlansData,
+    queryKey: ['plans', isOffice ? 'OFFICE' : 'INDIVIDUAL'],
+    queryFn: () => fetchPlansData(isOffice),
   });
   const { plans, wallet, promo } = data;
 
@@ -83,7 +90,22 @@ export function usePlans() {
     });
   };
 
+  // An office plan's package, bought by id (its «1 اعلان مميز» has no
+  // regular-ad count)
+  const buyOfficePackage = (planSlug: string, packageId: string) => {
+    router.push({
+      pathname: '/checkout',
+      params: { purpose: 'plan', planSlug, packageId },
+    });
+  };
+
   return {
+    isOffice,
+    officePlans: isOffice ? plans : [],
+    officeSelection,
+    selectOfficePackage: (planId: string, packageId: string) =>
+      setOfficeSelection((prev) => ({ ...prev, [planId]: packageId })),
+    buyOfficePackage,
     tiers,
     wallet,
     promo,

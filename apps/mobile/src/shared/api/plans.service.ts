@@ -2,8 +2,13 @@ import apiClient from '@/shared/api/api';
 
 export interface PlanPackage {
   id: string;
+  // Regular ads
   adsCount: number;
   price: number;
+  // An office package's featured ads («1 اعلان مميز», «3 اعلانات مميزة»)
+  featuredAdsCount?: number;
+  // «صلاحية انتهاء الباقة»: unused ads are lost after this many months
+  validityMonths?: number | null;
 }
 
 export interface PlanItem {
@@ -30,6 +35,9 @@ export interface WalletSlot {
   maxActiveAds: number;
   // Ads the slot started with; absent from APIs that predate plan packages
   totalAds?: number;
+  // An office credit's «اعلان مميز», and when its unused ads are lost
+  featured?: boolean;
+  expiresAt?: string | null;
   createdAt: string;
 }
 
@@ -101,8 +109,12 @@ export const plansService = {
     }
   },
 
-  getPlans: async (): Promise<PlanItem[]> => {
-    const response = await apiClient.get<PlanItem[]>('/plans');
+  // An office gets its own plans (Figma 10180:31480); everyone else, the
+  // individuals'
+  getPlans: async (audience?: 'OFFICE'): Promise<PlanItem[]> => {
+    const response = await apiClient.get<PlanItem[]>('/plans', {
+      params: audience ? { audience } : undefined,
+    });
     return response.data;
   },
 

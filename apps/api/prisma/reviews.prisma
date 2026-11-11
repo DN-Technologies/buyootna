@@ -39,7 +39,7 @@ model ReviewReaction {
 
   // Owning persona
   identityId String
-  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete

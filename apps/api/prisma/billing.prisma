@@ -18,9 +18,13 @@ model Plan {
   maxImagesPerAd Int            @default(5)
   featuredDays   Int            @default(0)
   prioritySearch Boolean        @default(false)
+  // Offices have their own plans (Figma 10180:31480); individuals the rest
+  audience       PlanAudience   @default(INDIVIDUAL)
   users          User[]
   slots          UserPlanSlot[]
   packages       PlanPackage[]
+  // Packages whose featured ads are credited under this plan («اعلان مميز»)
+  featuredIn     PlanPackage[]  @relation("PackageFeaturedPlan")
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -29,18 +33,26 @@ model Plan {
 // The plan carries the per-ad benefits; the package carries the ad count
 // and price actually charged.
 model PlanPackage {
-  id        String    @id @default(uuid())
-  planId    String
-  adsCount  Int
-  price     Float
-  sortOrder Int       @default(0)
-  isActive  Boolean   @default(true)
-  plan      Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
-  invoices  Invoice[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  planId           String
+  // Regular ads, credited under the plan itself
+  adsCount         Int
+  // Featured ads, credited under featuredPlan (an office bundle's «3 اعلانات
+  // مميزة»; a featured single ad has adsCount 0)
+  featuredAdsCount Int       @default(0)
+  featuredPlanId   String?
+  featuredPlan     Plan?     @relation("PackageFeaturedPlan", fields: [featuredPlanId], references: [id], onDelete: SetNull)
+  // «صلاحية انتهاء الباقة»: ads not used by then are lost. null: no expiry
+  validityMonths   Int?
+  price            Float
+  sortOrder        Int       @default(0)
+  isActive         Boolean   @default(true)
+  plan             Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  invoices         Invoice[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  @@unique([planId, adsCount])
+  @@unique([planId, adsCount, featuredAdsCount])
 }
 
 // A paid "feature this ad" option (e.g. 7 days for 3 KWD). Admin-editable;
@@ -97,12 +109,12 @@ model Invoice {
   discountCode       DiscountCode?       @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
   discountRedemption DiscountRedemption?
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Owning persona
   identityId String
-  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -116,6 +128,9 @@ model UserPlanSlot {
   planId       String
   adsRemaining Int
   status       SlotStatus @default(ACTIVE)
+  // Unused ads are lost after this (the package's validityMonths from the
+  // purchase); null for packages without one
+  expiresAt    DateTime?
   invoiceId    String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -126,7 +141,7 @@ model UserPlanSlot {
 
   // Owning persona
   identityId String
-  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete

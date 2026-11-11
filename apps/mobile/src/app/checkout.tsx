@@ -4,7 +4,7 @@ import CheckoutScreen from '@/features/checkout/CheckoutScreen';
 import type { CheckoutPurpose } from '@/shared/api/payments.service';
 
 /**
- * «الدفع»: /checkout?purpose=plan&planSlug=…&adsCount=…,
+ * «الدفع»: /checkout?purpose=plan&planSlug=…&adsCount=… (or &packageId=…),
  * purpose=subscription&companyPlanId=…, or
  * purpose=feature&propertyId=…&featurePackageId=….
  */
@@ -13,6 +13,7 @@ export default function CheckoutRoute() {
     purpose?: string;
     planSlug?: string;
     adsCount?: string;
+    packageId?: string;
     companyPlanId?: string;
     propertyId?: string;
     featurePackageId?: string;
@@ -29,6 +30,7 @@ export default function CheckoutRoute() {
         purpose,
         planSlug: params.planSlug,
         adsCount: Number.isFinite(adsCount) && adsCount > 0 ? adsCount : undefined,
+        packageId: params.packageId || undefined,
         companyPlanId: params.companyPlanId,
         propertyId: params.propertyId,
         featurePackageId: params.featurePackageId,

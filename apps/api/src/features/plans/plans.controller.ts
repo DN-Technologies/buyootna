@@ -1,5 +1,5 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { DiscountPurpose } from '@prisma/client';
+import { DiscountPurpose, PlanAudience } from '@prisma/client';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PlansService, type PublishOptionsResponse } from './plans.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,10 +21,19 @@ export class PlansController {
 
   @Get()
   @ApiOperation({ summary: 'List all active subscription plans' })
+  @ApiQuery({
+    name: 'audience',
+    required: false,
+    enum: ['INDIVIDUAL', 'OFFICE'],
+    description:
+      "INDIVIDUAL (default, what older apps get) or OFFICE: offices' own plans",
+  })
   @ApiResponse({ status: 200, type: [PlanDto] })
   @ApiCommonErrors()
-  async findAll() {
-    return this.plansService.findAll();
+  async findAll(@Query('audience') audience?: string) {
+    return this.plansService.findAll(
+      audience === 'OFFICE' ? PlanAudience.OFFICE : PlanAudience.INDIVIDUAL,
+    );
   }
 
   // Before 'wallet' etc.: a static path, public like the list

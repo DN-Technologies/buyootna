@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlansService } from './plans.service';
-import { DiscountPurpose } from '@prisma/client';
+import { DiscountPurpose, PlanAudience } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 describe('PlansService', () => {
@@ -10,7 +10,18 @@ describe('PlansService', () => {
     userPlanSlot: { findMany: jest.fn() },
     identity: { findUnique: jest.fn(), aggregate: jest.fn() },
     discountCode: { findMany: jest.fn() },
+    plan: { findMany: jest.fn() },
   };
+  // What findAll asked Prisma for
+  const planQuery = () =>
+    (
+      prisma.plan.findMany.mock.calls[0] as [
+        {
+          where: Record<string, unknown>;
+          include: { packages: { select: Record<string, boolean> } };
+        },
+      ]
+    )[0];
 
   const gold = {
     id: 'plan-gold',
@@ -40,6 +51,55 @@ describe('PlansService', () => {
     }).compile();
     service = module.get<PlansService>(PlansService);
     prisma.identity.findUnique.mockResolvedValue({ freeAdsRemaining: 0 });
+  });
+
+  // Offices' own الباقات (Figma 10180:31480)
+  describe('findAll', () => {
+    it('lists individual plans by default (older apps), as before', async () => {
+      prisma.plan.findMany.mockResolvedValue([]);
+      await service.findAll();
+      expect(planQuery().where).toEqual({
+        isActive: true,
+        audience: 'INDIVIDUAL',
+      });
+    });
+
+    it("lists an office's plans with something to buy (not «اعلان مميز» itself)", async () => {
+      prisma.plan.findMany.mockResolvedValue([]);
+      await service.findAll(PlanAudience.OFFICE);
+      expect(planQuery().where).toEqual({
+        isActive: true,
+        audience: 'OFFICE',
+        packages: { some: { isActive: true } },
+      });
+      // Each package says what it gives and how long it lasts
+      expect(planQuery().include.packages.select).toMatchObject({
+        featuredAdsCount: true,
+        validityMonths: true,
+      });
+    });
+  });
+
+  describe('getWallet validity', () => {
+    it('leaves out credits past «صلاحية انتهاء الباقة», and shows when the rest end', async () => {
+      const ends = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+      prisma.userPlanSlot.findMany.mockResolvedValue([
+        slot({
+          id: 'old',
+          adsRemaining: 5,
+          expiresAt: new Date(Date.now() - 1000),
+        }),
+        slot({ id: 'live', adsRemaining: 3, expiresAt: ends }),
+      ]);
+
+      const wallet = await service.getWallet('identity-1');
+
+      expect(wallet.slots.map((s) => s.id)).toEqual(['live']);
+      expect(wallet.slots[0]).toMatchObject({ expiresAt: ends });
+      expect(wallet.history.find((h) => h.id === 'old')?.status).toBe(
+        'EXPIRED',
+      );
+    });
   });
 
   // «خصم 10% عند استخدامك كود "BYOUTNA10"» at the top of الباقات
