@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -20,6 +21,15 @@ import { PaymentFulfillmentService } from './payment-fulfillment.service';
 import { TapGatewayService } from './tap-gateway.service';
 
 const adsLabel = (ads: number) => (ads === 1 ? 'إعلان واحد' : `${ads} إعلانات`);
+const featuredLabel = (ads: number) =>
+  ads === 1 ? 'إعلان مميز واحد' : `${ads} إعلانات مميزة`;
+
+/** «3 إعلانات», «إعلان مميز واحد», «17 إعلانات و3 إعلانات مميزة». */
+export function packageAdsLabel(regular: number, featured: number): string {
+  if (featured <= 0) return adsLabel(regular);
+  if (regular <= 0) return featuredLabel(featured);
+  return `${adsLabel(regular)} و${featuredLabel(featured)}`;
+}
 
 /** Buying a plan package (ads credited to the user's wallet). */
 @Injectable()
@@ -32,7 +42,11 @@ export class PlanCheckoutService {
   ) {}
 
   /** The plan and package bought, and its price (from the database only). */
-  private async resolve(planSlug: string, adsCount?: number | string) {
+  private async resolve(
+    planSlug: string,
+    adsCount?: number | string,
+    packageId?: string,
+  ) {
     const plan = await this.prisma.plan.findUnique({
       where: { slug: planSlug, isActive: true },
     });
@@ -44,24 +58,50 @@ export class PlanCheckoutService {
     // The selected package (identified by its ad count) decides the price
     // and ads credited. Clients that predate packages send no adsCount and
     // buy the plan as a whole.
-    let planPackage: { id: string; adsCount: number; price: number } | null =
-      null;
-    if (adsCount !== undefined && adsCount !== null) {
+    let planPackage: {
+      id: string;
+      adsCount: number;
+      featuredAdsCount: number;
+      price: number;
+    } | null = null;
+    const packageSelect = {
+      id: true,
+      adsCount: true,
+      featuredAdsCount: true,
+      price: true,
+    } as const;
+    if (packageId) {
+      planPackage = await this.prisma.planPackage.findFirst({
+        where: { id: packageId, planId: plan.id, isActive: true },
+        select: packageSelect,
+      });
+      if (!planPackage) {
+        throw new NotFoundException('خيار الباقة غير موجود أو غير نشط');
+      }
+    } else if (adsCount !== undefined && adsCount !== null) {
       const requestedAds = Number(adsCount);
       if (!Number.isInteger(requestedAds) || requestedAds <= 0) {
         throw new BadRequestException('عدد الإعلانات غير صالح');
       }
       planPackage = await this.prisma.planPackage.findFirst({
-        where: { planId: plan.id, adsCount: requestedAds, isActive: true },
-        select: { id: true, adsCount: true, price: true },
+        // By count: the regular-ads package (a featured one goes by id)
+        where: {
+          planId: plan.id,
+          adsCount: requestedAds,
+          featuredAdsCount: 0,
+          isActive: true,
+        },
+        select: packageSelect,
       });
       if (!planPackage) {
         throw new NotFoundException('خيار الباقة غير موجود أو غير نشط');
       }
     }
     const amount = planPackage ? planPackage.price : plan.price;
-    const adsToGrant = planPackage ? planPackage.adsCount : plan.maxActiveAds;
-    return { plan, planPackage, amount, adsToGrant };
+    const adsLabelText = planPackage
+      ? packageAdsLabel(planPackage.adsCount, planPackage.featuredAdsCount)
+      : adsLabel(plan.maxActiveAds);
+    return { plan, planPackage, amount, adsLabelText };
   }
 
   /** The payment screen's card and summary, with a code if given. */
@@ -70,8 +110,13 @@ export class PlanCheckoutService {
     planSlug: string,
     adsCount?: number | string,
     discountCode?: string,
+    packageId?: string,
   ): Promise<CheckoutQuote> {
-    const { plan, amount, adsToGrant } = await this.resolve(planSlug, adsCount);
+    const { plan, amount, adsLabelText } = await this.resolve(
+      planSlug,
+      adsCount,
+      packageId,
+    );
     const priced = await this.discounts.price(
       discountCode,
       'PLAN',
@@ -80,7 +125,7 @@ export class PlanCheckoutService {
     );
     return {
       title: `الباقة ${plan.name}`,
-      subtitle: adsLabel(adsToGrant),
+      subtitle: adsLabelText,
       price: priced.price,
       discount: priced.discount,
       total: priced.total,
@@ -110,10 +155,21 @@ export class PlanCheckoutService {
       throw new NotFoundException('المستخدم غير موجود');
     }
 
-    const { plan, planPackage, amount, adsToGrant } = await this.resolve(
+    const { plan, planPackage, amount, adsLabelText } = await this.resolve(
       planSlug,
       adsCount,
+      options.packageId,
     );
+    // An office's plans are sold to offices only
+    if (plan.audience === 'OFFICE') {
+      const identity = await this.prisma.identity.findUnique({
+        where: { id: identityId },
+        select: { type: true },
+      });
+      if (identity?.type !== 'OFFICE') {
+        throw new ForbiddenException('هذه الباقة خاصة بالمكاتب العقارية');
+      }
+    }
     const priced = await this.discounts.price(
       options.discountCode,
       'PLAN',
@@ -125,7 +181,7 @@ export class PlanCheckoutService {
       data: {
         invoiceNo: newInvoiceNo(),
         planName: plan.name,
-        planDetails: `باقة ${plan.name} - ${adsLabel(adsToGrant)}`,
+        planDetails: `باقة ${plan.name} - ${adsLabelText}`,
         ...invoiceAmountFields(priced),
         status: 'PENDING',
         userId: user.id,

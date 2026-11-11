@@ -56,6 +56,11 @@ export class PaymentsController {
           description:
             "Ad count of the selected package (one of the plan's `packages[].adsCount` from GET /plans). Omit to buy the plan's legacy single package.",
         },
+        packageId: {
+          type: 'string',
+          description:
+            "The selected package's id (`packages[].id` from GET /plans). Required for a package not told apart by adsCount (an office's featured single ad); wins over adsCount.",
+        },
         appRedirectUrl: { type: 'string' },
         sourceId: { type: 'string' },
         method: {
@@ -78,6 +83,7 @@ export class PaymentsController {
     @Body('adsCount') adsCount?: number,
     @Body('method') method?: string,
     @Body('discountCode') discountCode?: string,
+    @Body('packageId') packageId?: string,
   ) {
     return this.paymentsService.createCharge(
       reqUser.userId,
@@ -86,7 +92,7 @@ export class PaymentsController {
       appRedirectUrl,
       sourceId,
       adsCount,
-      { method, discountCode },
+      { method, discountCode, packageId },
     );
   }
 
@@ -105,6 +111,7 @@ export class PaymentsController {
         purpose: { type: 'string', enum: ['plan', 'subscription', 'feature'] },
         planSlug: { type: 'string' },
         adsCount: { type: 'integer' },
+        packageId: { type: 'string' },
         companyPlanId: { type: 'string' },
         propertyId: { type: 'string' },
         featurePackageId: { type: 'string' },
@@ -121,6 +128,7 @@ export class PaymentsController {
       purpose?: string;
       planSlug?: string;
       adsCount?: number;
+      packageId?: string;
       companyPlanId?: string;
       propertyId?: string;
       featurePackageId?: string;

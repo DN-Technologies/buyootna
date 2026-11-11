@@ -27,6 +27,9 @@ export interface TapChargeResponse {
 export interface CheckoutOptions {
   method?: string;
   discountCode?: string;
+  // The package by id: the only way to pick one that isn't told apart by its
+  // regular-ad count (an office's «1 اعلان مميز» has none)
+  packageId?: string;
 }
 
 /** What the payment screen shows before paying (POST /payments/quote). */

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { usableSlotWhere } from '../../plans/plan-slots.rules';
 
 // The picked package (or free ad) can't be spent. The code tells the app
 // to offer the packages still available rather than a dead-end error, and
@@ -77,7 +78,7 @@ export class PropertiesQuotaService {
 
     if (!targetSlotId) {
       const activeSlots = await tx.userPlanSlot.findMany({
-        where: { ...ownedBy, status: 'ACTIVE', adsRemaining: { gt: 0 } },
+        where: { ...ownedBy, ...usableSlotWhere() },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -98,8 +99,7 @@ export class PropertiesQuotaService {
       where: {
         id: targetSlotId,
         ...ownedBy,
-        status: 'ACTIVE',
-        adsRemaining: { gt: 0 },
+        ...usableSlotWhere(),
       },
       include: { plan: true },
     });
@@ -148,6 +148,7 @@ export class PropertiesQuotaService {
           identityId: true,
           status: true,
           adsRemaining: true,
+          expiresAt: true,
           identity: { select: { userId: true } },
         },
       }),
@@ -163,6 +164,12 @@ export class PropertiesQuotaService {
     }
     if (slot.identityId !== identityId) {
       return 'هذه الباقة تابعة لحساب آخر لديك (فرد/شركة). بدّل الحساب للنشر منها.';
+    }
+    if (
+      slot.status === 'EXPIRED' ||
+      (slot.expiresAt !== null && slot.expiresAt <= new Date())
+    ) {
+      return 'انتهت صلاحية هذه الباقة.';
     }
     if (slot.status !== 'ACTIVE' || slot.adsRemaining <= 0) {
       return 'نفدت إعلانات هذه الباقة.';

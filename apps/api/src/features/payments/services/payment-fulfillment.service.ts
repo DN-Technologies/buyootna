@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Invoice, PlanPackage, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { addMonths } from '../../company-subscriptions/company-subscription.rules';
+import { slotExpiry } from '../../plans/plan-slots.rules';
 import { DAY_MS } from '../payments.types';
 
 /**
@@ -50,8 +51,13 @@ export class PaymentFulfillmentService {
           },
         });
 
-    const adsToAdd =
-      invoice.planPackage?.adsCount ?? (plan ? plan.maxActiveAds : 1);
+    const pkg = invoice.planPackage;
+    const adsToAdd = pkg ? pkg.adsCount : plan ? plan.maxActiveAds : 1;
+    // An office bundle's «3 اعلانات مميزة», credited under the featured plan
+    const featuredToAdd = pkg?.featuredAdsCount ?? 0;
+    const featuredPlanId = pkg?.featuredPlanId ?? plan?.id;
+    // «صلاحية انتهاء الباقة»: from the purchase, the same for both credits
+    const expiresAt = slotExpiry(pkg?.validityMonths, new Date());
 
     const fulfilled = await this.prisma.$transaction(async (tx) => {
       if (!(await this.markPaid(tx, invoice.id))) return false;
@@ -60,16 +66,33 @@ export class PaymentFulfillmentService {
       // Add the ads to the buying persona's wallet; the account's
       // activePlan stays as the admin's plan label
       if (plan) {
-        await tx.userPlanSlot.create({
-          data: {
-            identityId: invoice.identityId,
-            userId: invoice.userId,
-            planId: plan.id,
-            adsRemaining: adsToAdd,
-            status: 'ACTIVE',
-            invoiceId: invoice.id,
-          },
-        });
+        // A featured single ad has no regular ads: no empty credit for them
+        if (adsToAdd > 0) {
+          await tx.userPlanSlot.create({
+            data: {
+              identityId: invoice.identityId,
+              userId: invoice.userId,
+              planId: plan.id,
+              adsRemaining: adsToAdd,
+              status: 'ACTIVE',
+              expiresAt,
+              invoiceId: invoice.id,
+            },
+          });
+        }
+        if (featuredToAdd > 0 && featuredPlanId) {
+          await tx.userPlanSlot.create({
+            data: {
+              identityId: invoice.identityId,
+              userId: invoice.userId,
+              planId: featuredPlanId,
+              adsRemaining: featuredToAdd,
+              status: 'ACTIVE',
+              expiresAt,
+              invoiceId: invoice.id,
+            },
+          });
+        }
         if (invoice.userId) {
           await tx.user.update({
             where: { id: invoice.userId },
@@ -82,7 +105,7 @@ export class PaymentFulfillmentService {
 
     if (fulfilled) {
       console.log(
-        `Payment Fulfilled: Invoice ${invoice.invoiceNo} paid, user ${invoice.userId} activated plan ${plan?.name || invoice.planName} with ${adsToAdd} ads.`,
+        `Payment Fulfilled: Invoice ${invoice.invoiceNo} paid, user ${invoice.userId} activated plan ${plan?.name || invoice.planName} with ${adsToAdd} ads and ${featuredToAdd} featured.`,
       );
     }
   }
