@@ -79,6 +79,13 @@ deploys there and QA tests there before the release PR.
 
 ## Backend/web deploys
 
+- CD reaches the server over SSH. Port 22 is to be closed to the internet
+  (Tap Payments' account check, 2026-11-11, flagged it open): with the
+  `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` secrets set, the job first joins
+  the private Tailscale network (`tag:ci`) and `SSH_HOST` is the server's
+  Tailscale address (100.x). Admins SSH the same way. Without those
+  secrets the job connects as before. Never reopen 22 publicly; Hostinger's
+  browser console is the way in if Tailscale is down.
 - CD pipeline (`cd.yml`) is `workflow_dispatch`-only — it does not run
   automatically on push to `main`. After a `dev` → `main` PR merges,
   someone with write access must manually trigger it from the Actions
