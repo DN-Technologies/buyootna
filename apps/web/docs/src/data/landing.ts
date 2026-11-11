@@ -9,6 +9,39 @@ export const landing: DocSection = {
   },
   stories: [
     {
+      id: "landing-refund-policy-page-and-www-com",
+      title: {
+        en: "The refund policy has its own page, and www.buyootna.com is served",
+        ar: "سياسة الاسترجاع في صفحة مستقلة، وwww.buyootna.com يعمل",
+      },
+      priority: "P1",
+      story: {
+        en: "Payment providers (Tap) ask for a refund policy page. /refund-policy («سياسة الاسترجاع والاسترداد») shows the terms' «الاسترجاع والاسترداد المالي» section, taken from the terms so the two never differ, and is linked in the footer's policies and the guest menu. buyootna.com and its subdomains (api, admin, companies, offices, management, docs, testing) already served the same apps as buyootna.cloud; www.buyootna.com had no DNS, certificate or nginx name: nginx now serves it with buyootna.com, and the certificate list includes it.",
+        ar: "تطلب مزودات الدفع (Tap) صفحة لسياسة الاسترجاع. صفحة /refund-policy («سياسة الاسترجاع والاسترداد») تعرض قسم «الاسترجاع والاسترداد المالي» من الشروط نفسها فلا يختلفان أبداً، ولها رابط في قسم السياسات في التذييل وفي قائمة الزائر. وكان buyootna.com ونطاقاته الفرعية (api وadmin وcompanies وoffices وmanagement وdocs وtesting) يعمل كـbuyootna.cloud، أما www.buyootna.com فلم يكن له سجل DNS ولا شهادة ولا اسم في nginx: أصبح nginx يخدمه مع buyootna.com وأُضيف لقائمة الشهادات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "buyootna.cloud/refund-policy and buyootna.com/refund-policy show the seven parts (أولاً … سابعاً) and nothing else from the terms.",
+          "The footer's policies and the guest menu link to it.",
+          "Once DNS and the certificate are in place, https://www.buyootna.com opens the site with a valid certificate.",
+        ],
+        ar: [
+          "تعرض buyootna.cloud/refund-policy وbuyootna.com/refund-policy الأجزاء السبعة (أولاً … سابعاً) ولا شيء آخر من الشروط.",
+          "التذييل وقائمة الزائر يحتويان رابطاً لها.",
+          "بعد إضافة سجل DNS والشهادة يفتح https://www.buyootna.com الموقع بشهادة صالحة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open buyootna.com, scroll to the footer › السياسات › سياسة الاسترجاع والاسترداد; on a phone, open the menu › السياسات; open https://www.buyootna.com.",
+        ],
+        ar: [
+          "افتح buyootna.com وانزل إلى التذييل ← السياسات ← سياسة الاسترجاع والاسترداد؛ وعلى الهاتف افتح القائمة ← السياسات؛ وافتح https://www.buyootna.com.",
+        ],
+      },
+      updatedIn: "feat/refund-page-and-www-com",
+    },
+    {
       id: "terms-refund-policy-and-contacts",
       title: {
         en: "Terms & conditions: refund policy and real contact details (app and website)",
