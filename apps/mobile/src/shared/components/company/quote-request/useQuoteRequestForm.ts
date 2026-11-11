@@ -87,13 +87,8 @@ export function useQuoteRequestForm({
 
   const pickAttachments = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert('إذن مطلوب', 'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!', [
-          { text: 'حسناً' },
-        ]);
-        return;
-      }
+      // The system photo picker needs no permission (iOS 11+, Android):
+      // asking for one left a denied user stuck with no way on (QA)
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsMultipleSelection: true,
