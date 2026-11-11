@@ -9,6 +9,39 @@ export const landing: DocSection = {
   },
   stories: [
     {
+      id: "terms-refund-policy-and-contacts",
+      title: {
+        en: "Terms & conditions: refund policy and real contact details (app and website)",
+        ar: "الشروط والأحكام: سياسة الاسترجاع وبيانات التواصل (التطبيق والموقع)",
+      },
+      priority: "P1",
+      story: {
+        en: "The terms were updated from the owner's document (الشروط والاحكام.docx), for Tap Payments' account review: a new «الاسترجاع والاسترداد المالي» section (digital services; when a refund is possible and when not; how to ask, via support@buyootna.com or WhatsApp 99507399; review; how money is returned; general rules), the contact section now shows the WhatsApp/support number and the email (it listed labels only), «خدمات الدعم والسداد» is «خدمات الدفع والسداد», and small wording fixes. The app's الشروط والأحكام and the website's /terms show the same text; the zero-tolerance section (App Store Guideline 1.2) is kept in both.",
+        ar: "حُدّثت الشروط من مستند المالك (الشروط والاحكام.docx) لمراجعة حساب Tap للمدفوعات: قسم جديد «الاسترجاع والاسترداد المالي» (طبيعة الخدمات الرقمية، حالات الاسترداد وما لا يشمله، آلية الطلب عبر support@buyootna.com أو واتساب 99507399، المراجعة، طريقة إعادة المبالغ، أحكام عامة)، وأصبح قسم التواصل يعرض رقم الواتساب والدعم والبريد (كان يعرض العناوين فقط)، و«خدمات الدعم والسداد» أصبحت «خدمات الدفع والسداد»، مع تصحيحات لغوية. والنص نفسه في التطبيق وفي صفحة /terms على الموقع، مع الإبقاء على سياسة عدم التسامح مع المحتوى المسيء (إرشادات App Store 1.2).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "App › الإعدادات › الشروط والأحكام and buyootna.cloud/terms both show «الاسترجاع والاسترداد المالي» with its seven parts.",
+          "التواصل shows WhatsApp 99507399, the support number 99507399 and support@buyootna.com.",
+          "The zero-tolerance section is still there.",
+        ],
+        ar: [
+          "في التطبيق (الإعدادات ← الشروط والأحكام) وفي buyootna.cloud/terms يظهر قسم «الاسترجاع والاسترداد المالي» بأجزائه السبعة.",
+          "قسم التواصل يعرض واتساب 99507399 ورقم الدعم 99507399 وsupport@buyootna.com.",
+          "سياسة عدم التسامح مع المحتوى المسيء ما زالت موجودة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open buyootna.cloud/terms and the app's الشروط والأحكام side by side; scroll to «الاسترجاع والاسترداد المالي» and «التواصل»: the same text in both.",
+        ],
+        ar: [
+          "افتح buyootna.cloud/terms و«الشروط والأحكام» في التطبيق؛ انتقل إلى «الاسترجاع والاسترداد المالي» و«التواصل»: النص نفسه في الاثنين.",
+        ],
+      },
+      updatedIn: "feat/terms-refund-policy",
+    },
+    {
       id: "landing-signup-role-picker",
       title: {
         en: "Landing: sign in, sign up by account type, and password recovery",
