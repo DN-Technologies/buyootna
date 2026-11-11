@@ -9,6 +9,39 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-photo-picker-no-permission-dead-end",
+      title: {
+        en: "Picking photos never dead-ends on a refused permission",
+        ar: "اختيار الصور لا يتوقف عند رفض الإذن",
+      },
+      priority: "P0",
+      story: {
+        en: "Adding an ad's photos (and the avatar, logos, projects, quote attachments) asked for photo-library permission first; iOS shows that prompt once, so after one «Don't Allow» every tap showed «نحتاج إلى إذن …» with no way on (QA, Critical). The system photo picker needs no permission on iOS 11+ and Android (expo-image-picker: required on iOS 10 only), and chat already opened it directly. All eight pickers now open it straight away, whatever the permission. The camera does need one: refused, it says so with «فتح الإعدادات».",
+        ar: "كانت إضافة صور الإعلان (والصورة الشخصية والشعارات والمشاريع ومرفقات طلب السعر) تطلب إذن الصور أولاً؛ ولأن iOS يعرض الطلب مرة واحدة، صار كل ضغط بعد «عدم السماح» يعرض «نحتاج إلى إذن …» بلا مخرج (حرج). منتقي الصور في النظام لا يحتاج إذناً على iOS 11+ وأندرويد، والمحادثة تفتحه مباشرة أصلاً. أصبحت المنتقيات الثمانية تفتحه فوراً أياً كان الإذن. أما الكاميرا فتحتاج إذناً: وعند رفضه تعرض «فتح الإعدادات».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With Photos set to «None» in Settings, «إضافة إعلان» › الصور › «اضغط هنا» opens the photo picker and the chosen photos are added.",
+          "The same for the avatar, the company logo, a project's and a quote's photos.",
+          "A refused camera («التقاط صورة» for a logo) shows «الإذن مطلوب» with «فتح الإعدادات».",
+        ],
+        ar: [
+          "مع ضبط الصور على «لا شيء» في الإعدادات، «إضافة إعلان» ← الصور ← «اضغط هنا» يفتح منتقي الصور وتُضاف الصور المختارة.",
+          "وكذلك الصورة الشخصية وشعار الشركة وصور المشروع ومرفقات طلب السعر.",
+          "الكاميرا المرفوضة («التقاط صورة» للشعار) تعرض «الإذن مطلوب» مع «فتح الإعدادات».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "iPhone Settings › Buyootna › Photos › None; in the app add an ad and tap the photos zone: the picker opens; pick 3: they show.",
+        ],
+        ar: [
+          "إعدادات iPhone ← بيوتنا ← الصور ← لا شيء؛ في التطبيق أضف إعلاناً واضغط منطقة الصور: يفتح المنتقي؛ اختر 3: تظهر.",
+        ],
+      },
+      updatedIn: "fix/photo-permission-prompt",
+    },
+    {
       id: "mobile-notification-prompt-after-sign-in",
       title: {
         en: "The notification prompt waits until the user is in the app",
