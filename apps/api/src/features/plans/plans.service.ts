@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { DiscountPurpose, DiscountType, Prisma } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 export interface PublishOption {
@@ -37,6 +37,43 @@ export class PlansService {
         },
       },
     });
+  }
+
+  /**
+   * The code advertised at the top of «الباقات»: flagged «إظهار في صفحة
+   * الباقات» by an admin, and only while anyone could still use it (active,
+   * started, not expired or used up, for this purpose). Newest first; null
+   * when there's none.
+   */
+  async getPromo(
+    purpose: DiscountPurpose = DiscountPurpose.PLAN,
+    now = new Date(),
+  ): Promise<{ code: string; type: DiscountType; value: number } | null> {
+    const candidates = await this.prisma.discountCode.findMany({
+      where: {
+        showOnPlans: true,
+        isActive: true,
+        appliesTo: { has: purpose },
+        AND: [
+          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+          { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        code: true,
+        type: true,
+        value: true,
+        maxUses: true,
+        usedCount: true,
+      },
+    });
+    const usable = candidates.find(
+      (c) => c.maxUses === null || c.usedCount < c.maxUses,
+    );
+    return usable
+      ? { code: usable.code, type: usable.type, value: usable.value }
+      : null;
   }
 
   /** One persona's wallet: its own credits and its own free ad. */

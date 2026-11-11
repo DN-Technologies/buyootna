@@ -79,7 +79,28 @@ export interface PublishOptionsResponse {
   options: PublishOption[];
 }
 
+/** The code advertised at the top of «الباقات» (admin: إظهار في صفحة الباقات). */
+export interface PlansPromo {
+  code: string;
+  type: 'PERCENT' | 'FIXED';
+  value: number;
+}
+
 export const plansService = {
+  // null when none is advertised, or from an API that predates it
+  getPromo: async (
+    purpose: 'PLAN' | 'SUBSCRIPTION' = 'PLAN',
+  ): Promise<PlansPromo | null> => {
+    try {
+      const response = await apiClient.get<PlansPromo | null>('/plans/promo', {
+        params: { purpose },
+      });
+      return response.data?.code ? response.data : null;
+    } catch {
+      return null;
+    }
+  },
+
   getPlans: async (): Promise<PlanItem[]> => {
     const response = await apiClient.get<PlanItem[]>('/plans');
     return response.data;

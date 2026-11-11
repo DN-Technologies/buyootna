@@ -18,6 +18,8 @@ export interface AdminDiscountCode {
   usedCount: number
   onePerAccount: boolean
   isActive: boolean
+  // Advertised at the top of the app's «الباقات» while usable
+  showOnPlans: boolean
   createdAt: string
 }
 

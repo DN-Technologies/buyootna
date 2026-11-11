@@ -9,6 +9,39 @@ export const admin: DocSection = {
   },
   stories: [
     {
+      id: "admin-discount-show-on-plans",
+      title: {
+        en: "Discount codes: «إظهار في صفحة الباقات»",
+        ar: "أكواد الخصم: «إظهار في صفحة الباقات»",
+      },
+      priority: "P2",
+      story: {
+        en: "A discount code can be marked «إظهار في صفحة الباقات». The app's الباقات then shows «خصم … عند استخدامك كود …» for it, but only while anyone could use it: active, started, not expired or used up, and for ad packages. If several are marked, the newest shows. GET /plans/promo (public) returns it, or null.",
+        ar: "يمكن تحديد كود خصم بـ«إظهار في صفحة الباقات» فيعرضه التطبيق أعلى الباقات: «خصم … عند استخدامك كود …»، ما دام صالحاً للجميع: فعّال، بدأ، لم ينتهِ ولم تُستنفد استخداماته، ولباقات الإعلانات. وإن حُدد أكثر من كود يظهر الأحدث. ويعيده GET /plans/promo (عام) أو null.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The code drawer has «إظهار في صفحة الباقات», off by default, saved with the code.",
+          "An expired, paused or used-up code doesn't show, even if marked.",
+          "Unmarking hides the banner.",
+        ],
+        ar: [
+          "نافذة الكود فيها «إظهار في صفحة الباقات»، مطفأ افتراضياً، ويُحفظ مع الكود.",
+          "الكود المنتهي أو الموقوف أو المستنفد لا يظهر حتى لو كان محدداً.",
+          "إلغاء التحديد يخفي الشريط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Admin › أكواد الخصم: create BYOUTNA10 (10%, باقات الإعلانات), tick «إظهار في صفحة الباقات», save; open the app's الباقات: the banner; untick: gone.",
+        ],
+        ar: [
+          "الإدارة ← أكواد الخصم: أنشئ BYOUTNA10 (10%، باقات الإعلانات) وحدد «إظهار في صفحة الباقات» واحفظ؛ افتح الباقات في التطبيق: يظهر الشريط؛ ألغِ التحديد: يختفي.",
+        ],
+      },
+      updatedIn: "feat/plans-prices-and-promo",
+    },
+    {
       id: "admin-discount-codes",
       title: {
         en: "«أكواد الخصم»: create and manage the codes the app's payment screen accepts",
