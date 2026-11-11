@@ -909,7 +909,7 @@ export async function runDevSeed(
     {
       slug: 'regular',
       name: 'الاساسية',
-      price: 10,
+      price: 2,
       originalPrice: null,
       discountText: null,
       badge: null,
@@ -928,8 +928,8 @@ export async function runDevSeed(
       sortOrder: 1,
       isActive: true,
       packages: [
-        { adsCount: 2, price: 10, sortOrder: 1 },
-        { adsCount: 5, price: 22.5, sortOrder: 2 },
+        { adsCount: 1, price: 2, sortOrder: 1 },
+        { adsCount: 3, price: 6, sortOrder: 2 },
       ],
     },
     {
@@ -960,7 +960,7 @@ export async function runDevSeed(
     {
       slug: 'gold',
       name: 'الذهبية',
-      price: 12,
+      price: 7,
       originalPrice: null,
       discountText: null,
       badge: 'موصى به',
@@ -980,8 +980,8 @@ export async function runDevSeed(
       sortOrder: 3,
       isActive: true,
       packages: [
-        { adsCount: 1, price: 12, sortOrder: 1 },
-        { adsCount: 5, price: 50, sortOrder: 2 },
+        { adsCount: 1, price: 7, sortOrder: 1 },
+        { adsCount: 3, price: 17.5, sortOrder: 2 },
       ],
     },
   ];
@@ -997,10 +997,18 @@ export async function runDevSeed(
         where: {
           planId_adsCount: { planId: saved.id, adsCount: pkg.adsCount },
         },
-        update: pkg,
+        update: { ...pkg, isActive: true },
         create: { ...pkg, planId: saved.id },
       });
     }
+    // Packages no longer sold stay (invoices point at them), switched off
+    await prisma.planPackage.updateMany({
+      where: {
+        planId: saved.id,
+        adsCount: { notIn: packages.map((pkg) => pkg.adsCount) },
+      },
+      data: { isActive: false },
+    });
   }
   log('✅ Seeded subscription plans.');
 

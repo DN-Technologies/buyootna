@@ -9,6 +9,39 @@ export const mobileIndividual: DocSection = {
   },
   stories: [
     {
+      id: "mobile-plans-figma-prices-and-promo",
+      title: {
+        en: "الباقات: the owner's prices, packages from the backend, and the discount banner",
+        ar: "الباقات: أسعار المالك، والباقات من الخادم، وشريط الخصم",
+      },
+      priority: "P1",
+      story: {
+        en: "«الباقات» (Figma 10180:55265) now sells الاساسية 1 ad 2 KD / 3 ads 6 KD and الذهبية 1 ad 7 KD / 3 ads 17.5 KD (a data migration; the old 2/5-ad packages are switched off, kept for past invoices). The app shows exactly the packages and feature lines the backend sells (it had 2/5 and 1/5 ads built in and only borrowed the price), so later changes in admin need no app update. A code marked «إظهار في صفحة الباقات» in admin shows above the plans: «خصم 10% عند استخدامك كود “BYOUTNA10”.» (or «خصم 1 د.ك …»), only while it can be used.",
+        ar: "أصبحت «الباقات» (Figma 10180:55265) تبيع الاساسية: إعلان 2 د.ك / 3 إعلانات 6 د.ك، والذهبية: إعلان 7 د.ك / 3 إعلانات 17.5 د.ك (عبر ترحيل بيانات؛ الباقات القديمة 2/5 أُوقفت وبقيت للفواتير السابقة). ويعرض التطبيق الباقات والمزايا كما يبيعها الخادم تماماً (كانت 2/5 و1/5 مدمجة فيه)، فلا يحتاج أي تغيير لاحق من لوحة الإدارة تحديثاً للتطبيق. والكود المحدد بـ«إظهار في صفحة الباقات» يظهر أعلى الباقات: «خصم 10% عند استخدامك كود “BYOUTNA10”.» (أو «خصم 1 د.ك …») ما دام صالحاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "الاساسية offers باقة 1 اعلان 2 د.ك and باقة 3 اعلانات 6 د.ك; الذهبية 7 د.ك and 17.5 د.ك; 1 ad is selected first.",
+          "«اشتر الان» opens الدفع with that package (adsCount 1 or 3).",
+          "With an advertised, usable code the banner shows its amount and code; with none, no banner.",
+        ],
+        ar: [
+          "الاساسية: باقة 1 اعلان 2 د.ك وباقة 3 اعلانات 6 د.ك؛ الذهبية 7 د.ك و17.5 د.ك؛ والمحدد أولاً إعلان واحد.",
+          "«اشتر الان» يفتح الدفع بتلك الباقة (1 أو 3 إعلانات).",
+          "مع كود معلَن وصالح يظهر الشريط بقيمته وكوده، ودونه لا يظهر.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "المزيد › الباقات: check both cards' prices; pick 3 ads in الذهبية and «اشتر الان»: الدفع shows 17.5 د.ك. In admin, mark an active PLAN code «إظهار في صفحة الباقات»: reopen الباقات, the banner shows it.",
+        ],
+        ar: [
+          "المزيد ← الباقات: تحقق من أسعار البطاقتين؛ اختر 3 إعلانات في الذهبية ثم «اشتر الان»: يظهر في الدفع 17.5 د.ك. وفي لوحة الإدارة حدّد كوداً فعّالاً للباقات بـ«إظهار في صفحة الباقات»: أعد فتح الباقات فيظهر الشريط.",
+        ],
+      },
+      updatedIn: "feat/plans-prices-and-promo",
+    },
+    {
       id: "mobile-home-view-mode-remembered",
       title: {
         en: "Home remembers the list or photos view across launches",

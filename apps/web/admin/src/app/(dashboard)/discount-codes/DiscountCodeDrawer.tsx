@@ -29,6 +29,7 @@ const EMPTY: DiscountCodeInput = {
   maxUses: null,
   onePerAccount: true,
   isActive: true,
+  showOnPlans: false,
 }
 
 const toDateInput = (iso: string | null) => (iso ? iso.slice(0, 10) : '')
@@ -68,6 +69,7 @@ export default function DiscountCodeDrawer({
             maxUses: code.maxUses,
             onePerAccount: code.onePerAccount,
             isActive: code.isActive,
+            showOnPlans: code.showOnPlans ?? false,
           }
         : EMPTY,
     )
@@ -272,6 +274,20 @@ export default function DiscountCodeDrawer({
               onChange={(e) => update({ isActive: e.target.checked })}
             />
             <span className="text-[14px] font-medium text-[#111111]">فعّال</span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={form.showOnPlans}
+              onChange={(e) => update({ showOnPlans: e.target.checked })}
+            />
+            <span className="flex flex-col">
+              <span className="text-[14px] font-medium text-[#111111]">إظهار في صفحة الباقات</span>
+              <span className="text-[12px] text-[#6B6A6A]">
+                يظهر في أعلى «الباقات» في التطبيق: «خصم … عند استخدامك كود …» ما دام الكود صالحاً
+              </span>
+            </span>
           </label>
 
           {error && <p className="text-[13px] font-medium text-red-600">{error}</p>}

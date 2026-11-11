@@ -9,6 +9,39 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-plans-figma-prices",
+      title: {
+        en: "Company subscriptions: 29 / 48 / 87 KD with the stories line",
+        ar: "اشتراكات الشركة: 29 / 48 / 87 د.ك مع سطر القصص",
+      },
+      priority: "P1",
+      story: {
+        en: "Company «الباقات» (Figma 10180:16350) is ثلاث شهور 29 KD, 6 شهور 48 KD and السنوية 87 KD (was 35 / 60 / 100), each listing «نشر القصص وإضافتها إلى المميزة.» after اصدار الفواتير. Data only (a migration): the screen already draws the plans from the backend, «باقتك الحالية» included.",
+        ar: "أصبحت «الباقات» للشركة (Figma 10180:16350): ثلاث شهور 29 د.ك، 6 شهور 48 د.ك، السنوية 87 د.ك (كانت 35 / 60 / 100)، وفي كل منها «نشر القصص وإضافتها إلى المميزة.» بعد اصدار الفواتير. بيانات فقط (ترحيل): الشاشة تعرض الباقات من الخادم أصلاً ومعها «باقتك الحالية».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The three plans show 29, 48 and 87 دينار كويتي.",
+          "Each lists six features, the last «نشر القصص وإضافتها إلى المميزة.».",
+          "Subscribing charges the new price.",
+        ],
+        ar: [
+          "تظهر الباقات الثلاث بـ29 و48 و87 دينار كويتي.",
+          "في كل منها ست مزايا آخرها «نشر القصص وإضافتها إلى المميزة.».",
+          "الاشتراك يحسب السعر الجديد.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: المزيد › الباقات: check the three prices and features; «اشترك الان» on ثلاث شهور: الدفع shows 29 د.ك.",
+        ],
+        ar: [
+          "كشركة: المزيد ← الباقات: تحقق من الأسعار الثلاثة والمزايا؛ «اشترك الان» على ثلاث شهور: يظهر في الدفع 29 د.ك.",
+        ],
+      },
+      updatedIn: "feat/plans-prices-and-promo",
+    },
+    {
       id: "mobile-company-home-view-all-opens-its-list",
       title: {
         en: "Home's «عرض الكل» opens الطلبات on that section's list",
