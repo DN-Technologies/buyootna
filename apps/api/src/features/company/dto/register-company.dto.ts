@@ -5,9 +5,14 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import {
+  BUSINESS_NAME_MESSAGE,
+  BUSINESS_NAME_PATTERN,
+} from '../../../core/validators/business-name';
 import { trim } from '../../../core/validators/trim.transform';
 import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
@@ -15,6 +20,7 @@ export class RegisterCompanyDto {
   @Transform(trim)
   @IsString()
   @IsNotEmpty()
+  @Matches(BUSINESS_NAME_PATTERN, { message: BUSINESS_NAME_MESSAGE })
   name: string;
 
   @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })

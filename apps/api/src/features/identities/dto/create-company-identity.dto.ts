@@ -3,8 +3,13 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
 } from 'class-validator';
+import {
+  BUSINESS_NAME_MESSAGE,
+  BUSINESS_NAME_PATTERN,
+} from '../../../core/validators/business-name';
 import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 import { RequireTermsAccepted } from '../../auth/dto/terms-acceptance.dto';
 
@@ -15,6 +20,7 @@ export class CreateCompanyIdentityDto {
 
   @IsNotEmpty()
   @IsString()
+  @Matches(BUSINESS_NAME_PATTERN, { message: BUSINESS_NAME_MESSAGE })
   name: string;
 
   // The licence comes with «طلب التوثيق» now; older builds still send it

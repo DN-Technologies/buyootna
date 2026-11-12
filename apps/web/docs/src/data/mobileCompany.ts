@@ -1281,5 +1281,26 @@ export const mobileCompany: DocSection = {
       ],
       updatedIn: "feat/company-subscriptions",
     },
+    {
+      id: "mobile-company-name-letters-only",
+      title: {
+        en: "Company or office name: Arabic or English letters and spaces only",
+        ar: "اسم الشركة أو المكتب: حروف عربية أو إنجليزية ومسافات فقط",
+      },
+      priority: "P2",
+      story: {
+        en: "In «إنشاء حساب شركة» or مكتب, and when adding a company or office to an account, «اسم الشركة» / «اسم المكتب» takes only Arabic or English letters and spaces. Numbers (Arabic or English), emojis and symbols can't be typed or pasted: they're dropped as entered. If such a name still reaches «التالي», the field shows «الاسم يجب أن يحتوي على حروف عربية أو إنجليزية ومسافات فقط». The server refuses such names with the same message. Existing company names are unchanged.",
+        ar: "في «إنشاء حساب شركة» أو مكتب، وعند إضافة شركة أو مكتب إلى الحساب، لا يقبل «اسم الشركة» / «اسم المكتب» إلا الحروف العربية أو الإنجليزية والمسافات. والأرقام (عربية أو إنجليزية) والرموز التعبيرية والرموز لا يمكن كتابتها أو لصقها، إذ تُحذف عند إدخالها. وإن وصل مثل هذا الاسم إلى «التالي» يظهر تحت الحقل «الاسم يجب أن يحتوي على حروف عربية أو إنجليزية ومسافات فقط». والخادم يرفض هذه الأسماء بالرسالة نفسها. وأسماء الشركات الحالية لا تتغير.",
+      },
+      acceptanceCriteria: {
+        en: ["Typing «Company 123!@#» leaves «Company ».", "Typing «شركة بيوتنا 💲» leaves «شركة بيوتنا ».", "«البنيان للمقاولات» and «Al Bunyan» are accepted.", "The API returns 400 with the message for a name with numbers or symbols."],
+        ar: ["كتابة «Company 123!@#» تُبقي «Company ».", "كتابة «شركة بيوتنا 💲» تُبقي «شركة بيوتنا ».", "«البنيان للمقاولات» و«Al Bunyan» مقبولان.", "الخادم يعيد 400 مع الرسالة لاسم فيه أرقام أو رموز."],
+      },
+      testScenarios: {
+        en: ["Open إنشاء حساب شركة and type numbers, emojis and symbols in اسم الشركة.", "Paste «شركة ٣ 💲» into the field.", "Do the same for an office, and via «إضافة حساب»."],
+        ar: ["افتح إنشاء حساب شركة واكتب أرقاماً ورموزاً تعبيرية ورموزاً في اسم الشركة.", "الصق «شركة ٣ 💲» في الحقل.", "كرر ذلك لمكتب، ومن «إضافة حساب»."],
+      },
+      updatedIn: "fix/company-name-letters-only",
+    },
   ],
 };

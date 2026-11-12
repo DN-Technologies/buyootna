@@ -28,3 +28,28 @@ describe('company sign-up step 3', () => {
     ).toEqual([]);
   });
 });
+
+// QA: «اسم الشركة» took numbers, emojis and symbols
+describe('company or office name', () => {
+  const company = (name: string) =>
+    messages({ type: 'company', name, specialty: 'مقاول عام' });
+
+  it('takes Arabic or English letters and spaces', () => {
+    expect(company('البنيان للمقاولات')).toEqual([]);
+    expect(company('Al Bunyan')).toEqual([]);
+  });
+
+  it('refuses numbers, emojis and symbols with a message', () => {
+    for (const name of ['Company 123!@#', 'شركة بيوتنا 💲']) {
+      expect(company(name)).toEqual([
+        'الاسم يجب أن يحتوي على حروف عربية أو إنجليزية ومسافات فقط',
+      ]);
+    }
+  });
+
+  it('applies to an office too', () => {
+    expect(
+      messages({ type: 'office', name: 'مكتب 24', licenseNumber: '123456' }),
+    ).toEqual(['الاسم يجب أن يحتوي على حروف عربية أو إنجليزية ومسافات فقط']);
+  });
+});
