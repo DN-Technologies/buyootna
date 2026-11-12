@@ -2682,5 +2682,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/request-form-keyboard",
     },
+    {
+      id: "mobile-guest-favorite-sign-in",
+      title: {
+        en: "Guest: tapping a heart asks to sign in or create an account",
+        ar: "الزائر: الضغط على القلب يطلب تسجيل الدخول أو إنشاء حساب",
+      },
+      priority: "P1",
+      story: {
+        en: "A guest who taps the heart on an ad (its sheet from Home or search, a card, an alert's matches, an office's ads) or on a company or office card sees the sign-in sheet, with «تسجيل الدخول» and «إنشاء حساب». Nothing is saved. Before this fix, an ad's heart did nothing at all, and a company's heart showed a plain alert with no way to sign in. The ad page's heart already asked, and still does. Signed-in users save favorites as before.",
+        ar: "عندما يضغط الزائر على القلب في إعلان (نافذته من الرئيسية أو البحث، أو بطاقة، أو نتائج تنبيه، أو إعلانات مكتب) أو في بطاقة شركة أو مكتب، تظهر نافذة تسجيل الدخول مع «تسجيل الدخول» و«إنشاء حساب»، ولا يُحفظ شيء. وقبل هذا الإصلاح لم يكن قلب الإعلان يفعل شيئاً، وكان قلب الشركة يعرض تنبيهاً بلا طريقة لتسجيل الدخول. وصفحة الإعلان كانت تطلب ذلك وما زالت. والمستخدم المسجّل يحفظ المفضلة كما كان.",
+      },
+      acceptanceCriteria: {
+        en: ["As a guest, the heart on an ad's sheet opens the sign-in sheet.", "The heart on a company or office card opens the same sheet.", "Its buttons lead to sign-in or account creation; closing it returns to the ad.", "Signed in, the heart saves and unsaves as before."],
+        ar: ["كزائر، القلب في نافذة الإعلان يفتح نافذة تسجيل الدخول.", "القلب في بطاقة شركة أو مكتب يفتح النافذة نفسها.", "أزرارها تقود إلى تسجيل الدخول أو إنشاء حساب، وإغلاقها يعيد إلى الإعلان.", "بعد تسجيل الدخول، القلب يحفظ ويلغي الحفظ كما كان."],
+      },
+      testScenarios: {
+        en: ["Without logging in, open an ad from Home and tap its heart.", "Tap the heart on a company card in الشركات and on a search result."],
+        ar: ["دون تسجيل الدخول افتح إعلاناً من الرئيسية واضغط قلبه.", "اضغط القلب في بطاقة شركة في الشركات وفي نتيجة بحث."],
+      },
+      updatedIn: "fix/guest-favorite-auth-prompt",
+    },
   ],
 }

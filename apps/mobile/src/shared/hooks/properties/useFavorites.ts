@@ -4,6 +4,7 @@ import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient as sharedQueryClient } from '@/shared/api/queryClient';
 import { registerIdentityScopedStore } from '@/shared/store/identityScopedStores';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { requestSignIn } from '@/shared/store/useSignInPrompt';
 
 export const FAVORITE_IDS_QUERY_KEY = ['favoriteIds'];
 
@@ -53,7 +54,11 @@ export function useFavorites() {
   const isFavorited = (propertyId: string) => favoritedIds.includes(propertyId);
 
   const toggleFavorite = async (propertyId: string) => {
-    if (!token) return;
+    // A guest is asked to sign in: the heart did nothing at all (QA)
+    if (!token) {
+      requestSignIn();
+      return;
+    }
     await toggleMutation.mutateAsync(propertyId);
   };
 
