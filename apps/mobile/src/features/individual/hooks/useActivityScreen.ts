@@ -71,9 +71,10 @@ export function useActivityScreen() {
   // saving a listing edit).
   useEffect(() => {
     if (params.showUpdateSuccess === 'true') {
-      const timer = triggerToast('تم تحديث بيانات الإعلان بنجاح.');
+      // The toast hides itself; clearing the param re-runs this effect, so
+      // no cleanup here may cancel its timer
+      triggerToast('تم تحديث بيانات الإعلان بنجاح.');
       router.setParams({ showUpdateSuccess: undefined });
-      return () => clearTimeout(timer);
     }
   }, [params.showUpdateSuccess, triggerToast]);
 
@@ -82,9 +83,8 @@ export function useActivityScreen() {
     if (params.draftSaved === 'true') {
       setActiveTab('ads');
       setActiveFilterId('DRAFT');
-      const timer = triggerToast('تم حفظ الاعلان كمسودة بنجاح.');
+      triggerToast('تم حفظ الاعلان كمسودة بنجاح.');
       router.setParams({ draftSaved: undefined });
-      return () => clearTimeout(timer);
     }
   }, [params.draftSaved, triggerToast]);
 
