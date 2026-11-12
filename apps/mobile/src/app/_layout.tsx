@@ -31,6 +31,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
+import GlobalSignInPrompt from '@/shared/components/auth/GlobalSignInPrompt';
 import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
 import LaunchOverlay from '@/shared/components/launch/LaunchOverlay';
 import { useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
@@ -245,6 +246,8 @@ function RootLayout() {
                   />
                 </Stack>
                 <AppAlertModal />
+                {/* «تسجيل الدخول» for a guest's tap from anywhere (favorites) */}
+                <GlobalSignInPrompt />
                 {/* The app is light everywhere, whatever the phone's theme:
                     with the phone in dark mode Android drew white clock and
                     battery icons on the white screens (QA). Dark screens

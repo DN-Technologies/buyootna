@@ -4,6 +4,7 @@ import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient as sharedQueryClient } from '@/shared/api/queryClient';
 import { registerIdentityScopedStore } from '@/shared/store/identityScopedStores';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { requestSignIn } from '@/shared/store/useSignInPrompt';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
@@ -75,7 +76,8 @@ export function useProviderFavorites() {
 
   const toggleFavorite = async (providerId: string) => {
     if (!token) {
-      showAlert('تنبيه', 'يجب تسجيل الدخول لإضافة الشركات والمكاتب إلى المفضلة');
+      // The sign-in sheet, with its way on, not a dead-end alert
+      requestSignIn();
       return;
     }
     await toggleMutation.mutateAsync(providerId).catch(() => undefined);
