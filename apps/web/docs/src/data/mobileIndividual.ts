@@ -2661,5 +2661,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/draft-toast-autodismiss",
     },
+    {
+      id: "mobile-request-quote-description-above-keyboard",
+      title: {
+        en: "Request a quote: «وصف» stays above the keyboard while typing",
+        ar: "طلب عرض سعر: حقل «وصف» يبقى فوق لوحة المفاتيح أثناء الكتابة",
+      },
+      priority: "P1",
+      story: {
+        en: "In «+» › طلب عرض سعر, tapping «وصف» opens the keyboard and scrolls the form so the box and its label sit just above it, with the «تم» bar. The user sees what they type. Before this fix, the box stayed under the keyboard. Tapping «تم» closes the keyboard, and the form can still be scrolled to «مرفقات» and the submit button.",
+        ar: "في «+» › طلب عرض سعر، يؤدي الضغط على «وصف» إلى فتح لوحة المفاتيح وتمرير النموذج بحيث يظهر الحقل وعنوانه فوقها مباشرة مع شريط «تم»، فيرى المستخدم ما يكتبه. وقبل هذا الإصلاح كان الحقل يبقى تحت لوحة المفاتيح. والضغط على «تم» يغلق لوحة المفاتيح، ويمكن تمرير النموذج إلى «مرفقات» وزر الإرسال.",
+      },
+      acceptanceCriteria: {
+        en: ["Tapping «وصف» shows the whole box above the keyboard.", "Several lines typed stay visible inside the box.", "Moving from the price fields to «وصف» also brings it into view."],
+        ar: ["الضغط على «وصف» يُظهر الحقل كاملاً فوق لوحة المفاتيح.", "الأسطر المكتوبة تبقى ظاهرة داخل الحقل.", "الانتقال من حقول السعر إلى «وصف» يُظهره أيضاً."],
+      },
+      testScenarios: {
+        en: ["On an iPhone (a small one too), open «+» › طلب عرض سعر, tap «وصف» and type a few lines.", "Type a price, then tap «وصف» without closing the keyboard."],
+        ar: ["على آيفون (وصغير أيضاً) افتح «+» › طلب عرض سعر واضغط «وصف» واكتب عدة أسطر.", "اكتب سعراً ثم اضغط «وصف» دون إغلاق لوحة المفاتيح."],
+      },
+      updatedIn: "fix/request-form-keyboard",
+    },
   ],
 }

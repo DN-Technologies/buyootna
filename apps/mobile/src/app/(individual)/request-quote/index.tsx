@@ -27,6 +27,7 @@ import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet'
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import GovAreaFields from '@/shared/components/forms/GovAreaFields';
 import RequirementMark from '@/shared/components/ui/RequirementMark';
+import { useScrollFieldAboveKeyboard } from '@/shared/hooks/useScrollFieldAboveKeyboard';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -56,6 +57,10 @@ export default function RequestQuoteScreen() {
     handleSubmit,
   } = useRequestQuoteForm();
 
+  // «وصف» sits low in the form: keep it above the keyboard while typed in
+  const scrollRef = useRef<ScrollView>(null);
+  const descriptionField = useScrollFieldAboveKeyboard(scrollRef);
+
   const handleSuccess = () => {
     successSheetRef.current?.present();
   };
@@ -69,6 +74,7 @@ export default function RequestQuoteScreen() {
         <RequestQuoteHeader onBack={() => router.back()} />
 
         <ScrollView
+          ref={scrollRef}
           className="flex-1"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
@@ -117,7 +123,7 @@ export default function RequestQuoteScreen() {
           <GovAreaFields value={govArea} />
 
           {/* --- وصف --- */}
-          <View className="mb-6 w-full">
+          <View className="mb-6 w-full" onLayout={descriptionField.onLayout}>
             <Text
               className="mb-2 font-cairo-medium text-sm text-[#111111]"
               style={{ writingDirection: 'rtl' }}
@@ -129,6 +135,7 @@ export default function RequestQuoteScreen() {
               testID="request-quote-description"
               value={description}
               onChangeText={setDescription}
+              onFocus={descriptionField.onFocus}
               placeholder="اشرح تفاصيل الخدمة المطلوبة..."
               placeholderTextColor={PLACEHOLDER_COLOR}
               multiline
