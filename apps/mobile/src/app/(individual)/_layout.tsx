@@ -2,6 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router, Tabs } from 'expo-router';
 import { useRef } from 'react';
 
+import { individualTabOptions } from '@/features/individual/navigation/individualTabOptions';
 import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
@@ -37,9 +38,8 @@ export default function MainLayout() {
         tabBar={(props) => (
           <CustomTabBar {...props} onOpenPlusSheet={handleOpenPlusSheet} />
         )}
-        screenOptions={{
-          headerShown: false,
-        }}
+        // «إضافة إعلان» starts from the form each time (see the options)
+        screenOptions={individualTabOptions}
         // The default 'firstRoute' rebuilds this navigator's back-history to
         // just [home, currentRoute] on every navigation, so "Back" from any
         // (more)/* sub-screen (which lives inside this Tabs group) always

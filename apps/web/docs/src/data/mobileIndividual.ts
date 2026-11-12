@@ -2619,5 +2619,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/activity-ad-title-rtl",
     },
+    {
+      id: "mobile-add-ad-back-after-draft",
+      title: {
+        en: "Add ad: Back from a new ad returns where it was opened, never to an empty preview",
+        ar: "إضافة إعلان: الرجوع من إعلان جديد يعود إلى مكان فتحه، لا إلى معاينة فارغة",
+      },
+      priority: "P1",
+      story: {
+        en: "After «حفظ كمسودة» (or publishing) takes the user to نشاطي, tapping «+» opens a fresh ad form. Back from that form returns to نشاطي as it was. Before this fix, the old «معاينة الإعلان» stayed behind the new form, so Back opened an empty preview. Every later «+» starts from the form too, and the form's own «معاينة» and Back work as before.",
+        ar: "بعد أن ينقل «حفظ كمسودة» (أو النشر) المستخدم إلى نشاطي، يفتح «+» نموذج إعلان جديداً. والرجوع من هذا النموذج يعود إلى نشاطي كما كانت. وقبل هذا الإصلاح كانت «معاينة الإعلان» القديمة تبقى خلف النموذج الجديد، فيفتح الرجوع معاينة فارغة. وكل «+» بعد ذلك يبدأ من النموذج أيضاً، و«معاينة» النموذج والرجوع منها يعملان كما كانا.",
+      },
+      acceptanceCriteria: {
+        en: ["Save a draft, then «+» › Back: نشاطي, not «معاينة الإعلان».", "Repeating «+» › Back keeps returning to نشاطي.", "From the form, «معاينة» then Back returns to the form with its data."],
+        ar: ["احفظ مسودة، ثم «+» › رجوع: نشاطي، لا «معاينة الإعلان».", "تكرار «+» › رجوع يعود دائماً إلى نشاطي.", "من النموذج، «معاينة» ثم رجوع يعود إلى النموذج ببياناته."],
+      },
+      testScenarios: {
+        en: ["Create an ad, open its preview, tap «حفظ كمسودة»; on نشاطي tap «+», then Back.", "Do the same as a company account (its home instead of نشاطي)."],
+        ar: ["أنشئ إعلاناً وافتح معاينته واضغط «حفظ كمسودة»؛ في نشاطي اضغط «+» ثم رجوع.", "كرر ذلك بحساب شركة (صفحتها الرئيسية بدلاً من نشاطي)."],
+      },
+      updatedIn: "fix/add-ad-back-after-draft",
+    },
   ],
 }
