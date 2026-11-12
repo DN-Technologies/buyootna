@@ -27,3 +27,16 @@ describe('ActiveAdCard status badge', () => {
     expect(queryByText('اعلان مخفي')).toBeNull();
   });
 });
+
+// QA: the ad's title sat on the left in «نشاطي»
+describe('ActiveAdCard title', () => {
+  it('reads right to left, starting on the right', async () => {
+    const { getByTestId } = await render(
+      <ActiveAdCard property={makeActivityItem({})} />,
+    );
+
+    expect(getByTestId(/active-ad-title-/)).toHaveStyle({
+      writingDirection: 'rtl',
+    });
+  });
+});
