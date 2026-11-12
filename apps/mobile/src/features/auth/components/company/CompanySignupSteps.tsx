@@ -6,6 +6,7 @@ import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import FormInput from '@/shared/components/ui/FormInput';
+import { keepBusinessNameChars } from '@/shared/utils/businessName';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 import type { PickedImage } from '@/shared/utils/pickImage';
 
@@ -36,6 +37,8 @@ export const SignupStep1: React.FC<Step1Props> = ({
         name="name"
         label={nameLabel}
         placeholder={namePlaceholder}
+        // Letters and spaces only (QA: numbers and symbols got through)
+        sanitize={keepBusinessNameChars}
       />
       {includeAccountFields && (
         <>
