@@ -2640,5 +2640,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/add-ad-back-after-draft",
     },
+    {
+      id: "mobile-activity-toast-auto-dismiss",
+      title: {
+        en: "My Activity: the draft-saved and ad-updated toasts hide by themselves",
+        ar: "نشاطي: رسالتا حفظ المسودة وتحديث الإعلان تختفيان تلقائياً",
+      },
+      priority: "P1",
+      story: {
+        en: "After «حفظ كمسودة» the user lands on نشاطي › مسودة with «تم حفظ الاعلان كمسودة بنجاح.». After saving an ad edit, the toast is «تم تحديث بيانات الإعلان بنجاح.». Either toast fades out by itself about 3.5 seconds later. Before this fix, both stayed on screen until the user left. A second toast shown meanwhile gets its own full time.",
+        ar: "بعد «حفظ كمسودة» ينتقل المستخدم إلى نشاطي › مسودة مع رسالة «تم حفظ الاعلان كمسودة بنجاح.»، وبعد حفظ تعديل إعلان تظهر «تم تحديث بيانات الإعلان بنجاح.». وتختفي كل منهما تلقائياً بعد نحو 3.5 ثانية. وقبل هذا الإصلاح كانتا تبقيان على الشاشة حتى يغادرها المستخدم. وأي رسالة ثانية تظهر في الأثناء تأخذ وقتها كاملاً.",
+      },
+      acceptanceCriteria: {
+        en: ["Save a draft: the toast shows on نشاطي and disappears within about 4 seconds without touching anything.", "Save an ad edit: «تم تحديث بيانات الإعلان بنجاح.» disappears the same way."],
+        ar: ["احفظ مسودة: تظهر الرسالة في نشاطي وتختفي خلال نحو 4 ثوانٍ دون لمس أي شيء.", "احفظ تعديل إعلان: تختفي «تم تحديث بيانات الإعلان بنجاح.» بالطريقة نفسها."],
+      },
+      testScenarios: {
+        en: ["Add an ad, open its preview, tap «حفظ كمسودة» and wait 10 seconds on نشاطي: the toast is gone.", "Edit an active ad, save, and wait on نشاطي: the toast is gone."],
+        ar: ["أضف إعلاناً وافتح معاينته واضغط «حفظ كمسودة» وانتظر 10 ثوانٍ في نشاطي: اختفت الرسالة.", "عدّل إعلاناً نشطاً واحفظ وانتظر في نشاطي: اختفت الرسالة."],
+      },
+      updatedIn: "fix/draft-toast-autodismiss",
+    },
   ],
 }
