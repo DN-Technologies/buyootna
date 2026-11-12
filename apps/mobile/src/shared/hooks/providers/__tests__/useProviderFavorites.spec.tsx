@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { ReactNode } from 'react';
 
 import { favoritesService } from '@/shared/api/favorites.service';
+import { useSignInPrompt } from '@/shared/store/useSignInPrompt';
 import { showAlert } from '@/shared/utils/alert';
 
 import { useProviderFavorites } from '../useProviderFavorites';
@@ -88,13 +89,13 @@ describe('useProviderFavorites', () => {
   it('asks a signed-out user to sign in instead of saving', async () => {
     mockToken = null;
     const { result } = await setup();
+    const before = useSignInPrompt.getState().requestId;
 
     await act(() => result.current.toggleFavorite('c1'));
 
     expect(favoritesService.toggleProvider).not.toHaveBeenCalled();
-    expect(showAlert).toHaveBeenCalledWith(
-      'تنبيه',
-      'يجب تسجيل الدخول لإضافة الشركات والمكاتب إلى المفضلة',
-    );
+    // The sign-in sheet (with its way on), not a dead-end alert
+    expect(useSignInPrompt.getState().requestId).toBe(before + 1);
+    expect(showAlert).not.toHaveBeenCalled();
   });
 });
