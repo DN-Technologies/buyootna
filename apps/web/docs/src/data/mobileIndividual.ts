@@ -2598,5 +2598,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/ad-contact-preferences",
     },
+    {
+      id: "mobile-activity-active-ad-title-rtl",
+      title: {
+        en: "My Activity: an active ad's title starts on the right",
+        ar: "نشاطي: عنوان الإعلان النشط يبدأ من اليمين",
+      },
+      priority: "P2",
+      story: {
+        en: "In «نشاطي» › الإعلانات, an active ad's card title (e.g. «شقة للبيع») reads right to left and starts on the right, like the price row, the archived and draft cards and the rest of the Arabic screen. It used to sit on the left.",
+        ar: "في «نشاطي» › الإعلانات، يُقرأ عنوان بطاقة الإعلان النشط (مثل «شقة للبيع») من اليمين إلى اليسار ويبدأ من اليمين، مثل صف السعر وبطاقات المؤرشف والمسودة وبقية الشاشة العربية. وكان يظهر على اليسار.",
+      },
+      acceptanceCriteria: {
+        en: ["An active ad's title starts at the card's right edge.", "Hidden and featured active ads show their title the same way."],
+        ar: ["عنوان الإعلان النشط يبدأ من الحافة اليمنى للبطاقة.", "الإعلانات النشطة المخفية والمميزة تعرض عنوانها بالطريقة نفسها."],
+      },
+      testScenarios: {
+        en: ["Open نشاطي › الإعلانات with an active ad: its title sits on the right, above the price."],
+        ar: ["افتح نشاطي › الإعلانات مع إعلان نشط: يظهر عنوانه على اليمين فوق السعر."],
+      },
+      updatedIn: "fix/activity-ad-title-rtl",
+    },
   ],
 }
