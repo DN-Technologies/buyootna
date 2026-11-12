@@ -15,6 +15,7 @@ import {
 } from './property-formatting.util';
 import { notExpiredWhere, ownerActiveWhere } from './property-expiry.util';
 import { isBlockedEitherWay } from '../../blocks/block.rules';
+import { adNumbersVisible } from './ad-contact.rules';
 
 // Stable orders for paginated lists: the id tiebreaker keeps ads with the
 // same publish time from shifting between pages
@@ -360,8 +361,11 @@ export class PropertiesFeedService {
       identity?.companyData?.isVerified ||
       false;
 
+    // «طرق التواصل»: both off, no number is sent with the ad
+    const numbersVisible = adNumbersVisible(property);
     return {
       ...property,
+      ...(numbersVisible ? {} : { phoneNumber: null, whatsappNumber: null }),
       host: {
         id: identity?.id,
         name: hostName,
@@ -371,7 +375,10 @@ export class PropertiesFeedService {
         rating: hostStats.rating,
         reviewsCount: hostStats.reviewsCount,
         // The persona's contact number (its own, or the account's)
-        phone: identity ? contactPhoneOf(identity, identity.user) : null,
+        phone:
+          identity && numbersVisible
+            ? contactPhoneOf(identity, identity.user)
+            : null,
         role: identity?.type || 'INDIVIDUAL',
       },
       licenseNumber: identity?.officeData?.licenseNumber || undefined,

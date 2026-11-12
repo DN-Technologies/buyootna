@@ -3,7 +3,12 @@ import { Linking } from 'react-native';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-import { adContactPhone, canUseWhatsapp } from '@/shared/utils/helpers/contact';
+import {
+  adContactPhone,
+  adShowsCall,
+  adShowsWhatsapp,
+  canUseWhatsapp,
+} from '@/shared/utils/helpers/contact';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 import { PropertyDetailsDto } from '@/types/property';
@@ -83,8 +88,12 @@ export function usePropertyContactActions({
   };
 
   return {
-    // Only between individuals: not to a company or office, nor from one
-    canWhatsApp: canUseWhatsapp(viewerType, property?.host?.role),
+    // Only between individuals: not to a company or office, nor from one;
+    // and only if the ad was published with it on («طرق التواصل»)
+    canWhatsApp:
+      canUseWhatsapp(viewerType, property?.host?.role) &&
+      adShowsWhatsapp(property),
+    canCall: adShowsCall(property),
     handleWhatsApp,
     handleCall,
     handleChat,

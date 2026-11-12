@@ -1,5 +1,6 @@
 import { Prisma, PropertyCategory } from '@prisma/client';
 import { visibleServices } from '../../users/services/profile-formatting.util';
+import { adNumbersVisible } from './ad-contact.rules';
 
 // "عمارة للبيع": the listing type after the category label
 export const LISTING_TYPE_LABELS: Record<string, string> = {
@@ -103,8 +104,11 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
       location: p.location,
       createdAt: p.createdAt,
       publishedAt: p.publishedAt,
-      phoneNumber: p.phoneNumber,
-      whatsappNumber: p.whatsappNumber,
+      // «طرق التواصل»: which buttons the ad shows; both off, no number
+      showPhone: p.showPhone,
+      showWhatsapp: p.showWhatsapp,
+      phoneNumber: adNumbersVisible(p) ? p.phoneNumber : null,
+      whatsappNumber: adNumbersVisible(p) ? p.whatsappNumber : null,
       identityId: identity?.id,
       identityType: identity?.type,
     };

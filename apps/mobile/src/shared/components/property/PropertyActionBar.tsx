@@ -28,14 +28,17 @@ export default function PropertyActionBar({
         shadowRadius: 10,
       }}
     >
-      {/* Phone Button (Navy Outline) */}
-      <TouchableOpacity
-        className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
-        activeOpacity={0.7}
-        onPress={onCall}
-      >
-        <CallIcon color="#15304D" size={16} />
-      </TouchableOpacity>
+      {/* Phone Button (Navy Outline); none when the ad has «اتصال» off */}
+      {onCall && (
+        <TouchableOpacity
+          testID="property-action-call"
+          className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
+          activeOpacity={0.7}
+          onPress={onCall}
+        >
+          <CallIcon color="#15304D" size={16} />
+        </TouchableOpacity>
+      )}
 
       {/* WhatsApp Button (Green Outline); none for companies and offices */}
       {onWhatsapp && (

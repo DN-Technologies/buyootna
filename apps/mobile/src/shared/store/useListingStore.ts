@@ -341,9 +341,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       requiredYear: property.requiredYear ? property.requiredYear.toString() : '',
       allocationState: property.allocationStatus || '',
       adDetails: property.description || '',
-      showPhone: !!property.phoneNumber,
+      // The ad's own choice; older ads go by whether they had a number
+      showPhone: property.showPhone ?? !!property.phoneNumber,
       phoneNumber: property.phoneNumber || '',
-      showWhatsapp: !!property.whatsappNumber,
+      showWhatsapp: property.showWhatsapp ?? !!property.whatsappNumber,
       whatsappNumber: property.whatsappNumber || '',
       images: property.images || [],
       adLevel: property.isFeatured ? 'premium' : 'normal',
@@ -419,6 +420,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       payload.isBuilt = state.isBuilt;
     }
     if (state.isOwner) payload.isOwner = true;
+
+    // «طرق التواصل» are kept on the ad, so its page hides «اتصال» /
+    // «واتساب» switched off here (QA: they showed with the account's number)
+    payload.showPhone = state.showPhone;
+    payload.showWhatsapp = state.showWhatsapp;
 
     // A contact number is sent while its toggle is on; an edit that turns
     // one off has to clear what the ad was published with

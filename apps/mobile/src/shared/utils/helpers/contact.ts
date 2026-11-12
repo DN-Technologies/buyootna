@@ -30,3 +30,18 @@ export function adContactPhone(property?: {
     property?.phoneNumber || property?.phone || property?.host?.phone || null
   );
 }
+
+/**
+ * The ad's own «طرق التواصل»: «اتصال» / «واتساب» switched off when it was
+ * published are not shown (QA: both showed, calling the account's number).
+ * Older ads, without the flags, show both as before.
+ */
+export function adShowsCall(property?: { showPhone?: boolean | null } | null) {
+  return property?.showPhone !== false;
+}
+
+export function adShowsWhatsapp(
+  property?: { showWhatsapp?: boolean | null } | null,
+) {
+  return property?.showWhatsapp !== false;
+}

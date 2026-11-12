@@ -78,4 +78,13 @@ describe('hasListingChanges', () => {
     useListingStore.getState().addImages(['file:///new.jpg']);
     expect(changed(property)).toBe(true);
   });
+
+  it('notices a contact toggle switched, even with no number change', () => {
+    const property = ad({ showPhone: true, showWhatsapp: false });
+    load(property);
+    expect(changed(property)).toBe(false);
+
+    useListingStore.getState().updateField('showWhatsapp', true);
+    expect(changed(property)).toBe(true);
+  });
 });
