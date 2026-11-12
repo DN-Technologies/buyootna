@@ -8,6 +8,7 @@ import { forwardRef, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { activeFeatureLabel } from '@/features/individual/components/activity/ads/featuredState';
 import { formatAdDate } from '@/features/individual/components/activity/ads/formatAdDate';
 import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
 import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
@@ -150,6 +151,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
             })}
             onFeaturePress={closeThen(() => onFeaturePress?.(property.id))}
             onDeletePress={closeThen(onDeletePress)}
+            featuredLabel={activeFeatureLabel(property)}
             markDoneLabel={markDoneLabel}
             onMarkDonePress={
               onMarkDonePress && property.status === 'ACTIVE'

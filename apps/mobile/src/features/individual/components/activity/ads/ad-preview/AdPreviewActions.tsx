@@ -4,6 +4,9 @@ interface AdPreviewActionsProps {
   onEditPress: () => void;
   onFeaturePress: () => void;
   onDeletePress: () => void;
+  // Set while the ad is featured («مميز حتى 20 نوفمبر»): shown instead of
+  // «تمييز», which stayed on a featured ad (QA)
+  featuredLabel?: string | null;
   // Offices, on a live ad: «تم البيع» / «تم التأجير» / «تمت المبادلة»
   markDoneLabel?: string;
   onMarkDonePress?: () => void;
@@ -14,6 +17,7 @@ export default function AdPreviewActions({
   onEditPress,
   onFeaturePress,
   onDeletePress,
+  featuredLabel,
   markDoneLabel,
   onMarkDonePress,
 }: AdPreviewActionsProps) {
@@ -31,13 +35,31 @@ export default function AdPreviewActions({
           <Text className={`${label} text-white`}>تعديل</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={onFeaturePress}
-          className={`${button} border border-[#B28648] bg-white`}
-        >
-          <Text className={`${label} text-[#B28648]`}>تمييز</Text>
-        </TouchableOpacity>
+        {featuredLabel ? (
+          <View
+            testID="ad-preview-featured"
+            accessibilityRole="text"
+            className={`${button} bg-[#FFF7EB] px-2`}
+          >
+            <Text
+              className="font-cairo-semibold text-xs leading-[18px] text-[#B28648]"
+              style={{ writingDirection: 'rtl' }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {featuredLabel}
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            testID="ad-preview-feature"
+            activeOpacity={0.8}
+            onPress={onFeaturePress}
+            className={`${button} border border-[#B28648] bg-white`}
+          >
+            <Text className={`${label} text-[#B28648]`}>تمييز</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           activeOpacity={0.8}

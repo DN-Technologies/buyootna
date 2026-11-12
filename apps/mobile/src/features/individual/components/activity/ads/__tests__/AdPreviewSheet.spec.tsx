@@ -87,6 +87,35 @@ describe('AdPreviewSheet', () => {
       expect(props.onFeaturePress).toHaveBeenCalledWith('ad-9');
     });
 
+    // QA: «تمييز» stayed on an ad that was already featured
+    it('a featured ad shows until when instead of «تمييز»', async () => {
+      const until = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
+      const ref = createRef<any>();
+      ref.current = { dismiss: jest.fn() };
+      const onFeaturePress = jest.fn();
+      const { queryByText, getByTestId, queryByTestId } = await render(
+        <AdPreviewSheet
+          ref={ref}
+          variant="active"
+          property={makeActivityItem({
+            id: 'ad-9',
+            isHidden: false,
+            isPremium: true,
+            featuredUntil: until,
+          } as any)}
+          onFeaturePress={onFeaturePress}
+          onDeletePress={jest.fn()}
+          onToggleVisibility={jest.fn()}
+        />,
+      );
+
+      expect(queryByText('تمييز')).toBeNull();
+      expect(queryByTestId('ad-preview-feature')).toBeNull();
+      expect(getByTestId('ad-preview-featured')).toHaveTextContent(/^مميز حتى /);
+      await fireEvent.press(getByTestId('ad-preview-featured'));
+      expect(onFeaturePress).not.toHaveBeenCalled();
+    });
+
     it('delete closes the sheet and asks to delete', async () => {
       const { getByText, props, ref } = await renderActive();
       await fireEvent.press(getByText('حذف'));
