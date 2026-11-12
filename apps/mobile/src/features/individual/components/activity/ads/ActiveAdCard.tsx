@@ -88,9 +88,14 @@ export default function ActiveAdCard({
         activeOpacity={0.85}
         onPress={onPress}
         className="relative p-4">
-        {/* Category label */}
+        {/* Category label: starts on the right like the rest of the card
+            (QA: it sat on the left), as in the archived card */}
         <View className="mb-1">
-          <Text className="font-cairo-bold text-[16px] text-[#111111]">
+          <Text
+            testID={`active-ad-title-${property.id}`}
+            className="font-cairo-bold text-[16px] text-[#111111]"
+            style={{ writingDirection: 'rtl' }}
+          >
             {displayLabel}
           </Text>
         </View>
