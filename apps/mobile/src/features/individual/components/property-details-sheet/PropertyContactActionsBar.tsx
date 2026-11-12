@@ -3,7 +3,8 @@ import { TouchableOpacity, View } from 'react-native';
 import { CallIcon, ChatIcon, WhatsappIcon } from '@/assets/icons/home/cards';
 
 interface PropertyContactActionsBarProps {
-  onCall: () => void;
+  // Absent: the ad was published without «اتصال»
+  onCall?: () => void;
   // Left out for companies and offices: they have no WhatsApp
   onWhatsApp?: () => void;
   onChat: () => void;
@@ -16,14 +17,17 @@ export default function PropertyContactActionsBar({
 }: PropertyContactActionsBarProps) {
   return (
     <View className="mb-5 flex-row items-center justify-start gap-4">
-      {/* Call Button (Navy Border) */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onCall}
-        className="h-12 w-20 items-center justify-center rounded-full border border-[#15304D]"
-      >
-        <CallIcon color="#15304D" size={16} />
-      </TouchableOpacity>
+      {/* Call Button (Navy Border); none when the ad has «اتصال» off */}
+      {onCall && (
+        <TouchableOpacity
+          testID="sheet-action-call"
+          activeOpacity={0.7}
+          onPress={onCall}
+          className="h-12 w-20 items-center justify-center rounded-full border border-[#15304D]"
+        >
+          <CallIcon color="#15304D" size={16} />
+        </TouchableOpacity>
+      )}
 
       {/* WhatsApp Button (Green Border) */}
       {onWhatsApp && (

@@ -176,9 +176,13 @@ describe('PropertiesFeedService.findOne host card', () => {
     identityStats as unknown as IdentityStatsService,
   );
 
-  const withIdentity = (identity: Record<string, unknown>) =>
+  const withIdentity = (
+    identity: Record<string, unknown>,
+    ad: Record<string, unknown> = {},
+  ) =>
     prisma.property.findUnique.mockResolvedValue({
       id: 'p1',
+      ...ad,
       identity: {
         id: 'ident-1',
         type: 'INDIVIDUAL',
@@ -229,6 +233,36 @@ describe('PropertiesFeedService.findOne host card', () => {
     expect((await service.findOne('p1')).host.avatarUrl).toBe(
       'https://cdn/ident.jpg',
     );
+  });
+
+  // QA: «اتصال» and «واتساب» showed on an ad with both switched off
+  it('with both «طرق التواصل» off, no number is sent with the ad', async () => {
+    withIdentity(
+      { user: { phone: '+96550000000' } },
+      {
+        showPhone: false,
+        showWhatsapp: false,
+        phoneNumber: '+96550000000',
+        whatsappNumber: '+96550000000',
+      },
+    );
+
+    const ad = await service.findOne('p1');
+
+    expect(ad.phoneNumber).toBeNull();
+    expect(ad.whatsappNumber).toBeNull();
+    expect(ad.host.phone).toBeNull();
+    expect(ad).toMatchObject({ showPhone: false, showWhatsapp: false });
+  });
+
+  it.each([
+    [{ showPhone: true, showWhatsapp: false }],
+    [{ showPhone: false, showWhatsapp: true }],
+    [{}],
+  ])('with either on (or an older ad) the number stays: %j', async (toggles) => {
+    withIdentity({ user: { phone: '+96550000000' } }, toggles);
+
+    expect((await service.findOne('p1')).host.phone).toBe('+96550000000');
   });
 
   it('uses the user name when the identity has no name', async () => {

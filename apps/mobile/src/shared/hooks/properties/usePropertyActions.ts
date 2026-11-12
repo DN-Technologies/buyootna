@@ -5,7 +5,12 @@ import { normalizeKuwaitPhone } from '@/shared/hooks/providers/useProfileContact
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-import { adContactPhone, canUseWhatsapp } from '@/shared/utils/helpers/contact';
+import {
+  adContactPhone,
+  adShowsCall,
+  adShowsWhatsapp,
+  canUseWhatsapp,
+} from '@/shared/utils/helpers/contact';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -125,7 +130,11 @@ export function usePropertyActions({
   return {
     // Only between individuals: not to a company or office (even if the ad
     // carries a number), nor from one
-    canWhatsapp: canUseWhatsapp(viewerType, property?.host?.role),
+    canWhatsapp:
+      canUseWhatsapp(viewerType, property?.host?.role) &&
+      adShowsWhatsapp(property),
+    // «طرق التواصل»: an ad published without «اتصال» shows only the rest
+    canCall: adShowsCall(property),
     handleWhatsapp,
     handleCall,
     handleChat,

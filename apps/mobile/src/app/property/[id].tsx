@@ -65,6 +65,7 @@ export default function PropertyDetailsScreen() {
   const {
     handleWhatsapp,
     canWhatsapp,
+    canCall,
     handleCall,
     handleChat,
     handleShare,
@@ -181,7 +182,7 @@ export default function PropertyDetailsScreen() {
           <PropertyActionBar
             insets={insets}
             onWhatsapp={canWhatsapp ? handleWhatsapp : undefined}
-            onCall={handleCall}
+            onCall={canCall ? handleCall : undefined}
             onChat={handleChat}
           />
         )}

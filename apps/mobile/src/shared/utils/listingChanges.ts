@@ -41,6 +41,11 @@ export function hasListingChanges(
 
   // Details & contact; a number counts only while its toggle is on
   if (form.adDetails !== (initial.description || '')) return true;
+  // The toggles themselves count (an ad now keeps them)
+  if (form.showPhone !== (initial.showPhone ?? !!initial.phoneNumber)) return true;
+  if (form.showWhatsapp !== (initial.showWhatsapp ?? !!initial.whatsappNumber)) {
+    return true;
+  }
   const phone = form.showPhone ? form.phoneNumber : '';
   if (phone !== (initial.phoneNumber || '')) return true;
   const whatsapp = form.showWhatsapp ? form.whatsappNumber : '';

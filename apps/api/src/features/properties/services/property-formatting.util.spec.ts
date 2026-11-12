@@ -23,6 +23,29 @@ const property = (overrides: Partial<PropertyFeedPayload>) =>
   }) as unknown as PropertyFeedPayload;
 
 describe('formatProperties', () => {
+  // «طرق التواصل» on the feed cards too
+  it('a card says which buttons the ad shows, and drops the numbers with both off', () => {
+    const [hidden] = formatProperties([
+      property({
+        showPhone: false,
+        showWhatsapp: false,
+        phoneNumber: '+96550000000',
+        whatsappNumber: '+96550000000',
+      } as never),
+    ]);
+    expect(hidden).toMatchObject({
+      showPhone: false,
+      showWhatsapp: false,
+      phoneNumber: null,
+      whatsappNumber: null,
+    });
+
+    const [callOnly] = formatProperties([
+      property({ showPhone: true, showWhatsapp: false, phoneNumber: '+96550000000' } as never),
+    ]);
+    expect(callOnly).toMatchObject({ showPhone: true, phoneNumber: '+96550000000' });
+  });
+
   it("returns the property's income, which the cards show as 'مدخول العقار'", () => {
     const [card] = formatProperties([property({ propertyIncome: 1500 })]);
     expect(card.propertyIncome).toBe(1500);
