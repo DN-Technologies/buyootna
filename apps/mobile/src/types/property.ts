@@ -3,6 +3,9 @@ export interface PropertyDetailsDto {
   type: 'SALE' | 'RENT' | 'EXCHANGE';
   category: string;
   isFeatured: boolean;
+  // «طرق التواصل» the ad was published with (absent on older ads: both on)
+  showPhone?: boolean;
+  showWhatsapp?: boolean;
   price: number;
   area: number;
   // null for categories that have none (land, farm)

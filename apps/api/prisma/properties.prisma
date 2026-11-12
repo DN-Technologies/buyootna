@@ -44,6 +44,11 @@ model Property {
   phoneNumber        String?
   // Per-ad WhatsApp contact; the ad's WhatsApp button uses it when set
   whatsappNumber     String?
+  // «طرق التواصل» chosen when the ad was made: off hides «اتصال» /
+  // «واتساب» on it, and with both off its numbers aren't sent at all (QA:
+  // they showed though switched off). Older ads keep both on
+  showPhone          Boolean          @default(true)
+  showWhatsapp       Boolean          @default(true)
   // حالة التخصيص, free text on exchange ads
   allocationStatus   String?
   rentConditions     String?

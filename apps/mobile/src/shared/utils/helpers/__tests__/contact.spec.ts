@@ -1,5 +1,7 @@
 import {
   adContactPhone,
+  adShowsCall,
+  adShowsWhatsapp,
   canUseWhatsapp,
   hostHasWhatsapp,
 } from '@/shared/utils/helpers/contact';
@@ -44,5 +46,20 @@ describe('adContactPhone', () => {
   it('never invents a number', () => {
     expect(adContactPhone({})).toBeNull();
     expect(adContactPhone(null)).toBeNull();
+  });
+});
+
+// QA: «اتصال» / «واتساب» switched off in «طرق التواصل» still showed
+describe('adShowsCall / adShowsWhatsapp', () => {
+  it('hide a method the ad turned off', () => {
+    expect(adShowsCall({ showPhone: false })).toBe(false);
+    expect(adShowsWhatsapp({ showWhatsapp: false })).toBe(false);
+  });
+
+  it('show it when on, and for older ads without the flag', () => {
+    expect(adShowsCall({ showPhone: true })).toBe(true);
+    expect(adShowsWhatsapp({ showWhatsapp: true })).toBe(true);
+    expect(adShowsCall({})).toBe(true);
+    expect(adShowsWhatsapp(undefined)).toBe(true);
   });
 });

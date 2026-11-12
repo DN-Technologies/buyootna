@@ -29,6 +29,9 @@ export interface CreatePropertyPayload {
   // null clears the number on an edit
   phoneNumber?: string | null;
   whatsappNumber?: string | null;
+  // «طرق التواصل»: off hides «اتصال» / «واتساب» on the ad
+  showPhone?: boolean;
+  showWhatsapp?: boolean;
   allocationStatus?: string;
   automatedNumber?: string;
   features?: { id: string; label: string }[];

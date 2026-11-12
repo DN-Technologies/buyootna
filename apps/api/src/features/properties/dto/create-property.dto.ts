@@ -220,6 +220,15 @@ export class CreatePropertyDto {
   @IsBoolean({ message: 'مبنية يجب أن تكون قيمة منطقية' })
   isBuilt?: boolean;
 
+  // «طرق التواصل»: show «اتصال» / «واتساب» on the ad (default: both)
+  @IsOptional()
+  @IsBoolean({ message: 'إظهار رقم الهاتف يجب أن يكون قيمة منطقية' })
+  showPhone?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'إظهار الواتساب يجب أن يكون قيمة منطقية' })
+  showWhatsapp?: boolean;
+
   // «أنا مالك العقار»: an individual declares they own it (Ministry of
   // Commerce, December 2024); shown on the ad
   @IsOptional()

@@ -2577,5 +2577,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/add-ad-category-fields",
     },
+    {
+      id: "mobile-ad-contact-methods-respected",
+      title: {
+        en: "Ad page: only the contact methods chosen in «طرق التواصل»",
+        ar: "صفحة الإعلان: طرق التواصل المختارة فقط",
+      },
+      priority: "P0",
+      story: {
+        en: "When adding or editing an ad, «طرق التواصل» has «رقم الهاتف» and «الواتساب» toggles. The ad keeps that choice: its page and sheet show «اتصال» only when «رقم الهاتف» is on, and «واتساب» only when «الواتساب» is on. «مراسلة» is always there. With both off, the server doesn't give out the advertiser's number for that ad either; before this fix, the page fell back to the account's phone and still showed both buttons. Ads published before this change keep showing what they had.",
+        ar: "عند إضافة إعلان أو تعديله، تحتوي «طرق التواصل» على مفتاحي «رقم الهاتف» و«الواتساب». ويحفظ الإعلان هذا الاختيار: فتعرض صفحته ونافذته زر «اتصال» فقط عند تفعيل «رقم الهاتف»، وزر «واتساب» فقط عند تفعيل «الواتساب»، أما «مراسلة» فتظهر دائماً. وعند إيقاف الاثنين لا يعطي الخادم رقم المعلن لهذا الإعلان أيضاً؛ وقبل هذا الإصلاح كانت الصفحة تعود إلى رقم الحساب وتعرض الزرين. والإعلانات المنشورة قبل هذا التغيير تبقى كما كانت.",
+      },
+      acceptanceCriteria: {
+        en: ["Both toggles off: the published ad shows only «مراسلة».", "Only «رقم الهاتف» on: «اتصال» and «مراسلة», no «واتساب».", "Editing the ad, switching a toggle counts as a change (leaving unsaved asks first), and after saving the page follows the new choice."],
+        ar: ["إيقاف المفتاحين: يعرض الإعلان المنشور «مراسلة» فقط.", "تفعيل «رقم الهاتف» فقط: «اتصال» و«مراسلة» دون «واتساب».", "عند تعديل الإعلان يُعدّ تغيير المفتاح تعديلاً (والخروج دون حفظ يسأل أولاً)، وبعد الحفظ تتبع الصفحة الاختيار الجديد."],
+      },
+      testScenarios: {
+        en: ["Add an ad with «رقم الهاتف» and «الواتساب» off and publish it; open it from another account: only «مراسلة».", "Edit it, turn «الواتساب» on with a number and save: «واتساب» appears, «اتصال» doesn't."],
+        ar: ["أضف إعلاناً مع إيقاف «رقم الهاتف» و«الواتساب» وانشره؛ افتحه من حساب آخر: «مراسلة» فقط.", "عدّله وفعّل «الواتساب» برقم واحفظ: يظهر «واتساب» ولا يظهر «اتصال»."],
+      },
+      updatedIn: "fix/ad-contact-preferences",
+    },
   ],
 }

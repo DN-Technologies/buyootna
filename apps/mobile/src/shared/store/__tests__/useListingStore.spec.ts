@@ -255,6 +255,43 @@ describe('useListingStore contact numbers', () => {
     expect(payload.whatsappNumber).toBeNull();
   });
 
+  // QA: with both off the ad page fell back to the account's number
+  it('always sends the contact toggles', () => {
+    const { updateField } = useListingStore.getState();
+    let payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload.showPhone).toBe(true);
+
+    updateField('showPhone', false);
+    updateField('showWhatsapp', false);
+    payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload.showPhone).toBe(false);
+    expect(payload.showWhatsapp).toBe(false);
+  });
+
+  it("loads an ad's own toggles when editing, else goes by its numbers", () => {
+    type Ad = Parameters<
+      ReturnType<typeof useListingStore.getState>['populateFromProperty']
+    >[0];
+    const { populateFromProperty } = useListingStore.getState();
+    populateFromProperty({
+      type: 'SALE',
+      category: 'HOUSE',
+      phoneNumber: null,
+      showPhone: false,
+      showWhatsapp: false,
+    } as unknown as Ad);
+    expect(useListingStore.getState().showPhone).toBe(false);
+    expect(useListingStore.getState().showWhatsapp).toBe(false);
+
+    populateFromProperty({
+      type: 'SALE',
+      category: 'HOUSE',
+      phoneNumber: '58094586',
+    } as unknown as Ad);
+    expect(useListingStore.getState().showPhone).toBe(true);
+    expect(useListingStore.getState().showWhatsapp).toBe(false);
+  });
+
   it('saves the allocation status of an exchange ad', () => {
     const { updateField, setListingType } = useListingStore.getState();
     setListingType('exchange');
