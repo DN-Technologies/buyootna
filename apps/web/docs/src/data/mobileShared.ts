@@ -9,6 +9,37 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-featured-ad-no-feature-button",
+      title: {
+        en: "A featured ad shows until when, not «تمييز»",
+        ar: "الإعلان المميز يعرض حتى متى بدل «تمييز»",
+      },
+      priority: "P2",
+      story: {
+        en: "In an ad's details sheet (نشاطي and an office's عقارات), «تمييز» stayed on ads that were already featured (QA). While an ad is featured, the button's place shows «مميز حتى 20 نوفمبر» (or «مميز» without an end date), which can't be tapped. Once the featuring ends — even before the server's clean-up runs — «تمييز» is back.",
+        ar: "في نافذة تفاصيل الإعلان (نشاطي وعقارات المكتب) كان «تمييز» يبقى على الإعلان المميز. أصبح مكانه أثناء التمييز «مميز حتى 20 نوفمبر» (أو «مميز» دون تاريخ انتهاء) ولا يمكن الضغط عليه، ويعود «تمييز» عند انتهاء التمييز ولو قبل تنظيف الخادم.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A featured ad's sheet shows «مميز حتى …» and no «تمييز».",
+          "An ad that isn't featured, or whose featuring ended, shows «تمييز» as before.",
+        ],
+        ar: [
+          "نافذة الإعلان المميز تعرض «مميز حتى …» دون «تمييز».",
+          "الإعلان غير المميز أو المنتهي تمييزه يعرض «تمييز» كما كان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "نشاطي › الإعلانات النشطة: open a featured ad: «مميز حتى …»; open a normal one: «تمييز».",
+        ],
+        ar: [
+          "نشاطي ← الإعلانات النشطة: افتح إعلاناً مميزاً: «مميز حتى …»؛ وافتح إعلاناً عادياً: «تمييز».",
+        ],
+      },
+      updatedIn: "fix/hide-feature-on-featured-ads",
+    },
+    {
       id: "mobile-photo-picker-no-permission-dead-end",
       title: {
         en: "Picking photos never dead-ends on a refused permission",
