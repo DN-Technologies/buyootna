@@ -9,6 +9,11 @@ import RegisteredDevicesScreen from '../devices';
 
 const mockReplace = jest.fn();
 
+const mockResetToSignedOut = jest.fn();
+jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
+  ...jest.requireActual('@/shared/navigation/getIdentityHomeRoute'),
+  resetToSignedOut: () => mockResetToSignedOut(),
+}));
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -185,7 +190,7 @@ describe('RegisteredDevicesScreen', () => {
       expect(mockLogout).toHaveBeenCalledTimes(1);
     });
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(auth)/individual-auth');
+      expect(mockResetToSignedOut).toHaveBeenCalled();
     });
   });
 
@@ -208,6 +213,6 @@ describe('RegisteredDevicesScreen', () => {
       );
     });
     expect(mockLogout).not.toHaveBeenCalled();
-    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)/individual-auth');
+    expect(mockResetToSignedOut).not.toHaveBeenCalled();
   });
 });

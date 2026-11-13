@@ -54,3 +54,16 @@ export function resetToIdentityHome(type: IdentityType | null | undefined) {
   }
   router.replace(getIdentityHomeRoute(type));
 }
+
+/**
+ * After the account is gone or signed out everywhere (deleting it, deactivating
+ * it, «تسجيل الخروج من جميع الأجهزة»): the guest home alone on the stack, with
+ * the login screen over it. A plain replace to the login screen swapped only
+ * the top screen: from settings over a company's tabs, Back (or the login
+ * screen's close) showed the deleted company's layout, signed out, until a
+ * restart (QA).
+ */
+export function resetToSignedOut() {
+  resetToIdentityHome(null);
+  router.push('/(auth)/individual-auth');
+}

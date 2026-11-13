@@ -1,7 +1,10 @@
 import { renderHook } from '@testing-library/react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
-import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import {
+  resetToIdentityHome,
+  resetToSignedOut,
+} from '@/shared/navigation/getIdentityHomeRoute';
 import { resetToProfileHome } from '@/shared/navigation/resetToProfileHome';
 import { Identity, useAuthStore } from '@/shared/store/useAuthStore';
 import { AlertButton, showAlert } from '@/shared/utils/alert';
@@ -22,6 +25,7 @@ jest.mock('@/shared/api/settings.service', () => ({
 }));
 jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
   resetToIdentityHome: jest.fn(),
+  resetToSignedOut: jest.fn(),
 }));
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
 jest.mock('@/shared/store/useAuthStore', () => ({
@@ -75,7 +79,8 @@ describe('useDeleteAccount', () => {
 
     expect(settingsService.deleteAccount).toHaveBeenCalled();
     expect(store.logout).toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith('/(auth)/individual-auth');
+    // The guest home with the login over it, nothing of the account beneath
+    expect(resetToSignedOut).toHaveBeenCalled();
     expect(settingsService.deleteIdentity).not.toHaveBeenCalled();
   });
 
@@ -148,6 +153,8 @@ describe('useDeleteAccount', () => {
 
     expect(settingsService.deleteAccount).toHaveBeenCalled();
     expect(store.logout).toHaveBeenCalled();
+    // QA: the company's layout stayed after deleting the whole account
+    expect(resetToSignedOut).toHaveBeenCalled();
     expect(settingsService.deleteIdentity).not.toHaveBeenCalled();
   });
 

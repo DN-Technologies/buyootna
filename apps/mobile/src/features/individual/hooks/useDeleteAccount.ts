@@ -1,7 +1,10 @@
-import { useNavigationContainerRef, useRouter } from 'expo-router';
+import { useNavigationContainerRef } from 'expo-router';
 
 import { settingsService } from '@/shared/api/settings.service';
-import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import {
+  resetToIdentityHome,
+  resetToSignedOut,
+} from '@/shared/navigation/getIdentityHomeRoute';
 import { resetToProfileHome } from '@/shared/navigation/resetToProfileHome';
 import { Identity, useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -26,7 +29,6 @@ export function profileLabel(identity: Identity): string {
  * only (the others stay, under the same login) or the whole account.
  */
 export function useDeleteAccount() {
-  const router = useRouter();
   const navigationRef = useNavigationContainerRef();
 
   const confirmWholeAccount = () => {
@@ -42,7 +44,9 @@ export function useDeleteAccount() {
             try {
               await settingsService.deleteAccount();
               await useAuthStore.getState().logout();
-              router.replace('/(auth)/individual-auth');
+              // Nothing of the account's screens left beneath (QA: the
+              // company's layout stayed until a restart)
+              resetToSignedOut();
             } catch (error) {
               console.error(error);
               showAlert('خطأ', 'حدث خطأ أثناء حذف الحساب');
