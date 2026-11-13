@@ -1,6 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { Keyboard, Platform, Text, View } from 'react-native';
+import {
+  Keyboard,
+  type LayoutChangeEvent,
+  Platform,
+  Text,
+  View,
+} from 'react-native';
 
 import {
   PLACEHOLDER_COLOR,
@@ -75,15 +81,20 @@ interface DescriptionProps {
   value: string;
   onChange: (text: string) => void;
   keyboardAccessoryId: string;
+  // Keeps the box above the keyboard (useScrollFieldAboveKeyboard)
+  onLayout?: (e: LayoutChangeEvent) => void;
+  onFocus?: () => void;
 }
 
 export function QuoteDescriptionField({
   value,
   onChange,
   keyboardAccessoryId,
+  onLayout,
+  onFocus,
 }: DescriptionProps) {
   return (
-    <View className="mb-6 w-full">
+    <View className="mb-6 w-full" onLayout={onLayout}>
       <Text
         className="mb-2 font-cairo-medium text-[14px] text-[#111111]"
         style={{ writingDirection: 'rtl' }}
@@ -92,8 +103,10 @@ export function QuoteDescriptionField({
         <RequirementMark required />
       </Text>
       <BottomSheetTextInput
+        testID="quote-description"
         value={value}
         onChangeText={onChange}
+        onFocus={onFocus}
         placeholder="اشرح تفاصيل الخدمة المطلوبة..."
         placeholderTextColor={PLACEHOLDER_COLOR}
         multiline
