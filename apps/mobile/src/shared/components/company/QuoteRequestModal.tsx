@@ -4,6 +4,7 @@ import {
   type BottomSheetFooterProps,
   BottomSheetModal,
   BottomSheetScrollView,
+  type BottomSheetScrollViewMethods,
 } from '@gorhom/bottom-sheet';
 import {
   forwardRef,
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import RequestQuoteAttachments from '@/features/individual/components/request-quote/RequestQuoteAttachments';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import GovAreaFields from '@/shared/components/forms/GovAreaFields';
+import { useScrollFieldAboveKeyboard } from '@/shared/hooks/useScrollFieldAboveKeyboard';
 
 import KeyboardDoneBar from './quote-request/KeyboardDoneBar';
 import QuoteCompanyCard from './quote-request/QuoteCompanyCard';
@@ -105,6 +107,9 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       [],
     );
 
+    const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
+    const descriptionField = useScrollFieldAboveKeyboard(scrollRef);
+
     const renderFooter = (props: BottomSheetFooterProps) => (
       <QuoteSubmitFooter
         {...props}
@@ -132,12 +137,14 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         <QuoteRequestHeader onClose={() => internalRef.current?.dismiss()} />
 
         <BottomSheetScrollView
+          ref={scrollRef}
           contentContainerStyle={{
             paddingHorizontal: 24,
             paddingTop: 16,
             // Room for the pinned footer, so the last field can scroll
-            // above it
-            paddingBottom: 120,
+            // above it, and for the keyboard while it is up, so «وصف» can
+            // scroll above both (the sheet itself doesn't shrink)
+            paddingBottom: 120 + descriptionField.keyboardSpace,
           }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -210,6 +217,10 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             value={form.description}
             onChange={form.setDescription}
             keyboardAccessoryId={keyboardAccessoryId}
+            // The sheet rose but its content didn't scroll: «وصف» stayed
+            // under «إرسال الطلب» while typing (QA)
+            onLayout={descriptionField.onLayout}
+            onFocus={descriptionField.onFocus}
           />
 
           <RequestQuoteAttachments
