@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 import apiClient from '@/shared/api/api';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { showAlert } from '@/shared/utils/alert';
 
 import { useTermsAgreement } from '../../terms';
@@ -22,9 +23,10 @@ jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
   resetToIdentityHome: jest.fn(),
 }));
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+const mockSetAuth = jest.fn();
 jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: (selector: (state: { setAuth: jest.Mock }) => unknown) =>
-    selector({ setAuth: jest.fn() }),
+    selector({ setAuth: mockSetAuth }),
 }));
 
 const post = apiClient.post as jest.Mock;
@@ -87,7 +89,7 @@ describe('useBusinessAuth › company sign-up ends with the emailed code', () =>
     });
 
     expect(verified).toBe(true);
-    expect(post).toHaveBeenLastCalledWith('/users/register/company/verify', {
+    expect(post).toHaveBeenCalledWith('/users/register/company/verify', {
       email: 'co@example.com',
       otp: '123456',
     });
@@ -126,5 +128,85 @@ describe('useBusinessAuth › company sign-up ends with the emailed code', () =>
     expect(resent).toEqual({ success: true });
     expect(post.mock.calls[1][0]).toBe('/users/register/company');
     expect(sentFields(1)).toMatchObject({ email: 'co@example.com', verification: 'email' });
+  });
+
+  // QA: «العودة الى الرئيسية» opened the guest home, signed out
+  describe('signed in once the code is accepted', () => {
+    const SESSION = {
+      user: { id: 'u1' },
+      activeIdentity: { id: 'c1', type: 'COMPANY' },
+      identities: [{ id: 'c1', type: 'COMPANY' }],
+      access_token: 'tok',
+      sessionId: 's1',
+    };
+
+    async function verified() {
+      const { result } = await renderHook(() => useBusinessAuth());
+      await act(async () => {
+        await result.current.onSignupFinal(FORM);
+      });
+      await act(async () => {
+        await result.current.onVerifySignupOtp('123456');
+      });
+      return result;
+    }
+
+    it('signs in to the new company and «العودة الى الرئيسية» opens its home', async () => {
+      post
+        .mockResolvedValueOnce({ data: { otpRequired: true } })
+        .mockResolvedValueOnce({ data: {} })
+        .mockResolvedValueOnce({ data: SESSION });
+      const result = await verified();
+
+      expect(post).toHaveBeenLastCalledWith('/auth/login', {
+        identifier: 'co@example.com',
+        password: 'password123',
+        identityType: 'COMPANY',
+      });
+      expect(mockSetAuth).toHaveBeenCalledWith(
+        SESSION.user,
+        SESSION.activeIdentity,
+        SESSION.identities,
+        'tok',
+        's1',
+      );
+      // Not before the success sheet's button
+      expect(resetToIdentityHome).not.toHaveBeenCalled();
+
+      await act(async () => result.current.onSignupDone());
+      expect(resetToIdentityHome).toHaveBeenCalledWith('COMPANY');
+      expect(showAlert).not.toHaveBeenCalled();
+    });
+
+    it('an office signs in as the office', async () => {
+      (useLocalSearchParams as jest.Mock).mockReturnValue({ type: 'office', mode: 'signup' });
+      post
+        .mockResolvedValueOnce({ data: { otpRequired: true } })
+        .mockResolvedValueOnce({ data: {} })
+        .mockResolvedValueOnce({
+          data: { ...SESSION, activeIdentity: { id: 'o1', type: 'OFFICE' } },
+        });
+      const result = await verified();
+
+      expect(post).toHaveBeenLastCalledWith(
+        '/auth/login',
+        expect.objectContaining({ identityType: 'OFFICE' }),
+      );
+      await act(async () => result.current.onSignupDone());
+      expect(resetToIdentityHome).toHaveBeenCalledWith('OFFICE');
+    });
+
+    it('if signing in fails, the sign-up still succeeds and asks to log in', async () => {
+      post
+        .mockResolvedValueOnce({ data: { otpRequired: true } })
+        .mockResolvedValueOnce({ data: {} })
+        .mockRejectedValueOnce(new Error('network'));
+      const result = await verified();
+
+      expect(mockSetAuth).not.toHaveBeenCalled();
+      await act(async () => result.current.onSignupDone());
+      expect(resetToIdentityHome).toHaveBeenCalledWith(null);
+      expect(showAlert).toHaveBeenCalledWith('تم إنشاء الحساب', expect.any(String));
+    });
   });
 });
