@@ -11,6 +11,11 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import DeactivateAccountSheet from '../DeactivateAccountSheet';
 
 const mockReplace = jest.fn();
+const mockResetToSignedOut = jest.fn();
+jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
+  ...jest.requireActual('@/shared/navigation/getIdentityHomeRoute'),
+  resetToSignedOut: () => mockResetToSignedOut(),
+}));
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     replace: mockReplace,
@@ -189,7 +194,7 @@ describe('DeactivateAccountSheet', () => {
       });
       expect(mockLogout).toHaveBeenCalledTimes(1);
       expect(onSuccess).toHaveBeenCalledTimes(1);
-      expect(mockReplace).toHaveBeenCalledWith('/(auth)/individual-auth');
+      expect(mockResetToSignedOut).toHaveBeenCalled();
     });
   });
 
