@@ -26,6 +26,7 @@ export default function BusinessAuthScreen() {
     onSignupFinal,
     signupEmail,
     onVerifySignupOtp,
+    onSignupDone,
     onResendSignupOtp,
     handleAccountTypeChange,
     handleBack,
@@ -74,6 +75,9 @@ export default function BusinessAuthScreen() {
               // The emailed code, last: the account is made only then (QA)
               otpEmail={signupEmail}
               onVerifyOtp={onVerifySignupOtp}
+              // Signed in as the new profile, to its home (it opened the
+              // guest home, signed out: QA)
+              onSuccessDone={onSignupDone}
               onResendOtp={onResendSignupOtp}
             />
           )}

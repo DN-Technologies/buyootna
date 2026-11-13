@@ -9,14 +9,15 @@ import {
 } from '@/features/auth/companyAuthSchemas';
 import apiClient from '@/shared/api/api';
 import { type ResendOtpResult } from '@/shared/hooks/verification/useOtpResendTimer';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import { type IdentityType, useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 import { AccountType } from '@/types';
 
 import { requireTermsAccepted } from '../terms';
-import { loginAs } from '../utils/loginAs';
+import { loginAs, signInAfterSignup } from '../utils/loginAs';
 
 export type BusinessAuthMode = 'login' | 'signup';
 export type AuthMode = BusinessAuthMode;
@@ -168,11 +169,24 @@ export function useBusinessAuth() {
     }
   };
 
-  // The emailed code: only now is the company/office created
+  // The profile signed in to once the account exists (null: not signed in)
+  const signedInRef = useRef<IdentityType | null>(null);
+
+  // The emailed code: only now is the company/office created. It is then
+  // signed in to with the email and password just entered: the verify call
+  // makes no session, and «العودة الى الرئيسية» opened the guest home (QA)
   const onVerifySignupOtp = async (otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       await apiClient.post(`${endpoint}/verify`, { email: signupEmail, otp });
+      const data = pendingSignupRef.current;
+      signedInRef.current = data?.password
+        ? await signInAfterSignup(
+            { identifier: signupEmail, password: data.password },
+            type === 'office' ? 'OFFICE' : 'COMPANY',
+            setAuth,
+          )
+        : null;
       return true;
     } catch (error: any) {
       showAlert('خطأ', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
@@ -203,6 +217,19 @@ export function useBusinessAuth() {
     }
   };
 
+  // «العودة الى الرئيسية» on the success sheet: the new profile's home,
+  // signed in. If signing in failed, the guest home and a way to log in
+  const onSignupDone = () => {
+    const signedIn = signedInRef.current;
+    resetToIdentityHome(signedIn);
+    if (!signedIn) {
+      showAlert(
+        'تم إنشاء الحساب',
+        'يرجى تسجيل الدخول بالبريد الإلكتروني وكلمة المرور التي أدخلتها.',
+      );
+    }
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -222,6 +249,7 @@ export function useBusinessAuth() {
     onSignupFinal,
     signupEmail,
     onVerifySignupOtp,
+    onSignupDone,
     onResendSignupOtp,
     handleAccountTypeChange,
     handleBack,
