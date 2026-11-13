@@ -2724,5 +2724,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/quote-sheet-keyboard",
     },
+    {
+      id: "mobile-delete-account-leaves-to-guest",
+      title: {
+        en: "Deleting the whole account leaves no account screens behind",
+        ar: "حذف الحساب بالكامل لا يترك أي شاشة من شاشات الحساب",
+      },
+      priority: "P1",
+      story: {
+        en: "From «اعدادات الحساب», «حذف الحساب بالكامل» (or deleting a single-profile account) signs out at once and opens the login screen over the guest home. Back or closing the login shows the guest home, never the deleted account's screens. Before this fix, from a company or office, the company's layout stayed beneath, signed out, until the app was restarted. Deactivating the account and «تسجيل الخروج من جميع الأجهزة» end the same way.",
+        ar: "من «اعدادات الحساب»، يؤدي «حذف الحساب بالكامل» (أو حذف حساب بملف واحد) إلى تسجيل الخروج فوراً وفتح شاشة تسجيل الدخول فوق صفحة الزائر. والرجوع أو إغلاق شاشة الدخول يُظهر صفحة الزائر، لا شاشات الحساب المحذوف. وقبل هذا الإصلاح، من شركة أو مكتب، كان تصميم الشركة يبقى تحتها دون تسجيل دخول حتى إعادة تشغيل التطبيق. وتعطيل الحساب و«تسجيل الخروج من جميع الأجهزة» ينتهيان بالطريقة نفسها.",
+      },
+      acceptanceCriteria: {
+        en: ["As a user with a company, delete the whole account from the company profile: the login opens; Back shows the guest home.", "No company tabs or screens appear without a restart.", "Deactivating the account and logging out of all devices land the same way."],
+        ar: ["كمستخدم لديه شركة، احذف الحساب بالكامل من ملف الشركة: تُفتح شاشة الدخول، والرجوع يُظهر صفحة الزائر.", "لا تظهر تبويبات أو شاشات الشركة دون إعادة تشغيل.", "تعطيل الحساب والخروج من جميع الأجهزة ينتهيان بالطريقة نفسها."],
+      },
+      testScenarios: {
+        en: ["Log in to an account with a person and a company, switch to the company, open اعدادات الحساب › حذف الحساب › حذف الحساب بالكامل › حذف; then tap Back.", "Repeat with a personal-only account."],
+        ar: ["سجّل الدخول بحساب فيه فرد وشركة وانتقل إلى الشركة، ثم اعدادات الحساب › حذف الحساب › حذف الحساب بالكامل › حذف، ثم اضغط رجوع.", "كرر ذلك بحساب فردي فقط."],
+      },
+      updatedIn: "fix/delete-account-to-guest",
+    },
   ],
 }

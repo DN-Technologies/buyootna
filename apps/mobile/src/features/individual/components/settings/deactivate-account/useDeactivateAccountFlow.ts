@@ -1,8 +1,8 @@
-import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TextInput } from 'react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
+import { resetToSignedOut } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
@@ -31,7 +31,6 @@ export function useDeactivateAccountFlow({
   onSuccess,
   onCancel,
 }: UseDeactivateAccountFlowParams) {
-  const router = useRouter();
 
   const [step, setStep] = useState<DeactivateStep>('intro');
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
@@ -134,7 +133,8 @@ export function useDeactivateAccountFlow({
       await useAuthStore.getState().logout();
       dismiss();
       onSuccess?.();
-      router.replace('/(auth)/individual-auth');
+      // As deleting the account: nothing of its screens left beneath
+      resetToSignedOut();
     } catch (error) {
       console.error('Failed to deactivate account:', error);
       // A wrong/expired code: let them retype straight away

@@ -17,6 +17,7 @@ import DeviceCard, {
 import LogoutConfirmationModal from '@/features/individual/components/more/LogoutConfirmationModal';
 import { devicesService } from '@/shared/api/devices.service';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
+import { resetToSignedOut } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
@@ -76,7 +77,8 @@ export default function RegisteredDevicesScreen() {
       // session too and send the user to login, matching the action's
       // "log out everywhere" promise.
       await logout();
-      router.replace('/(auth)/individual-auth');
+      // Nothing of the signed-out account's screens left beneath
+      resetToSignedOut();
     } catch (e) {
       console.error('Failed to logout all devices:', e);
       showAlert(
