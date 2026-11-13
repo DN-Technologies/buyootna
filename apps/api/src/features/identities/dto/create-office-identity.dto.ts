@@ -1,4 +1,14 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
+import {
+  BUSINESS_NAME_MESSAGE,
+  BUSINESS_NAME_PATTERN,
+} from '../../../core/validators/business-name';
 import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 import { RequireTermsAccepted } from '../../auth/dto/terms-acceptance.dto';
 
@@ -9,6 +19,7 @@ export class CreateOfficeIdentityDto {
 
   @IsNotEmpty()
   @IsString()
+  @Matches(BUSINESS_NAME_PATTERN, { message: BUSINESS_NAME_MESSAGE })
   name: string;
 
   @IsNotEmpty()

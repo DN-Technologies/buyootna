@@ -26,6 +26,8 @@ interface FormInputProps<T extends FieldValues> extends TextInputProps {
   isRequired?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  // Drops characters the field doesn't take, as they are typed or pasted
+  sanitize?: (text: string) => string;
 }
 
 export default function FormInput<T extends FieldValues>({
@@ -36,6 +38,7 @@ export default function FormInput<T extends FieldValues>({
   isRequired = true,
   leftIcon,
   rightIcon,
+  sanitize,
   ...textInputProps
 }: FormInputProps<T>) {
   const [isFocused, setIsFocused] = useState(false);
@@ -118,7 +121,9 @@ export default function FormInput<T extends FieldValues>({
                   onBlur();
                 }}
                 onFocus={() => setIsFocused(true)}
-                onChangeText={onChange}
+                onChangeText={
+                  sanitize ? (text) => onChange(sanitize(text)) : onChange
+                }
                 value={value}
                 secureTextEntry={isSecureText}
                 placeholderTextColor="#9CA3AF"

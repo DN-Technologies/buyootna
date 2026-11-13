@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+import {
+  BUSINESS_NAME_MESSAGE,
+  BUSINESS_NAME_PATTERN,
+} from '@/shared/utils/businessName';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 export const companyLoginSchema = z.object({
@@ -26,7 +30,11 @@ export function createCompanySignupSchema(includeAccountFields: boolean) {
   const base = z.object({
     type: z.enum(['company', 'office']),
     // Step 1: Basic Info
-    name: z.string({ message: 'الاسم مطلوب' }).min(2, 'الاسم قصير جداً'),
+    name: z
+      .string({ message: 'الاسم مطلوب' })
+      .trim()
+      .min(2, 'الاسم قصير جداً')
+      .regex(BUSINESS_NAME_PATTERN, BUSINESS_NAME_MESSAGE),
     email: includeAccountFields
       ? z
           .string({ message: 'البريد الإلكتروني مطلوب' })
