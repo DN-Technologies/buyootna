@@ -4,13 +4,17 @@ import {
   type BottomSheetFooterProps,
   BottomSheetModal,
   BottomSheetScrollView,
+  type BottomSheetScrollViewMethods,
+  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { forwardRef, useCallback, useMemo } from 'react';
+import { forwardRef, useCallback, useMemo, useRef } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackChevronIcon } from '@/assets/icons/activity';
 import { CheckboxOffIcon, CheckboxOnIcon } from '@/assets/icons/company-add';
+import FieldLabel from '@/features/company/components/invoice/FieldLabel';
+import { useScrollFieldAboveKeyboard } from '@/shared/hooks/useScrollFieldAboveKeyboard';
 
 interface SubServicePickerSheetProps {
   options: string[];
@@ -18,10 +22,12 @@ interface SubServicePickerSheetProps {
   // Already added: ticked, greyed, not pressable
   disabled: string[];
   onToggle: (type: string) => void;
-  // The bottom button: adds what is ticked, or, with «اخرى» ticked, goes
-  // back to the sheet for its title («التالي»)
+  // The bottom button adds what is ticked; with «اخرى» ticked, once its
+  // «عنوان الخدمة» (asked right here) is typed
   canAdd: boolean;
   needsTitle: boolean;
+  title: string;
+  onTitleChange: (title: string) => void;
   isSubmitting: boolean;
   onAdd: () => void;
 }
@@ -34,10 +40,24 @@ interface SubServicePickerSheetProps {
  */
 const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheetProps>(
   (
-    { options, selected, disabled, onToggle, canAdd, needsTitle, isSubmitting, onAdd },
+    {
+      options,
+      selected,
+      disabled,
+      onToggle,
+      canAdd,
+      needsTitle,
+      title,
+      onTitleChange,
+      isSubmitting,
+      onAdd,
+    },
     ref,
   ) => {
     const insets = useSafeAreaInsets();
+    // «عنوان الخدمة» under the list, kept above the keyboard while typed
+    const scrollRef = useRef<BottomSheetScrollViewMethods>(null);
+    const titleField = useScrollFieldAboveKeyboard(scrollRef);
     // Below the status bar, so the header is never under it
     const snapPoints = useMemo(() => ['100%'], []);
     const renderBackdrop = useCallback(
@@ -75,14 +95,14 @@ const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheet
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text className="font-cairo-semibold text-[14px] text-white">
-                  {needsTitle ? 'التالي' : 'اضافة'}
+                  اضافة
                 </Text>
               )}
             </TouchableOpacity>
           </View>
         </BottomSheetFooter>
       ),
-      [canAdd, insets.bottom, isSubmitting, needsTitle, onAdd],
+      [canAdd, insets.bottom, isSubmitting, onAdd],
     );
 
     return (
@@ -113,12 +133,17 @@ const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheet
           </Text>
           <View className="h-8 w-8" />
         </View>
-        <BottomSheetScrollView contentContainerStyle={{
+        <BottomSheetScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
             paddingHorizontal: 16,
-            // Clear of the fixed «اضافة» below
-            paddingBottom: insets.bottom + 96,
+            // Clear of the fixed «اضافة» below, and of the keyboard while
+            // «عنوان الخدمة» is typed
+            paddingBottom: insets.bottom + 96 + titleField.keyboardSpace,
             gap: 8,
-          }}>
+          }}
+        >
           {options.map((option) => {
             const isDisabled = disabled.includes(option);
             const isSelected = isDisabled || selected.includes(option);
@@ -156,6 +181,26 @@ const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheet
               </TouchableOpacity>
             );
           })}
+
+          {/* «اخرى» is named here, in the picker: «التالي» used to close it
+              for the sheet beneath, which didn't come back, so the flow just
+              ended (QA) */}
+          {needsTitle && (
+            <View className="gap-1.5 pt-2" onLayout={titleField.onLayout}>
+              <FieldLabel text="عنوان الخدمة" />
+              <BottomSheetTextInput
+                testID="sub-service-picker-title"
+                value={title}
+                onChangeText={onTitleChange}
+                onFocus={titleField.onFocus}
+                maxLength={100}
+                placeholder="اكتب اسم الخدمة..."
+                placeholderTextColor="#979797"
+                className="h-[48px] w-full rounded-[8px] border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              />
+            </View>
+          )}
         </BottomSheetScrollView>
       </BottomSheetModal>
     );

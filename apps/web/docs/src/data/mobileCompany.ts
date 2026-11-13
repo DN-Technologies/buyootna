@@ -1323,5 +1323,26 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "fix/company-signup-stays-signed-in",
     },
+    {
+      id: "mobile-company-sub-service-other-title",
+      title: {
+        en: "Add a sub-service: «اخرى» asks its title in the picker, then adds",
+        ar: "إضافة خدمة فرعية: «اخرى» يطلب عنوانها في القائمة نفسها ثم يضيفها",
+      },
+      priority: "P1",
+      story: {
+        en: "In الخدمات › «اضافة خدمة فرعية» › «اختر الخدمة الفرعية», ticking «اخرى» shows «عنوان الخدمة» under the list, kept above the keyboard while typed. «اضافة» turns on once a title is typed, and adds the service with that title, together with any other ticked types. Before this fix, the button read «التالي» and closed the picker so the title could be typed in the sheet beneath, but that sheet didn't come back, so the flow just ended and «اخرى» services couldn't be added.",
+        ar: "في الخدمات › «اضافة خدمة فرعية» › «اختر الخدمة الفرعية»، يؤدي تحديد «اخرى» إلى ظهور «عنوان الخدمة» تحت القائمة، ويبقى فوق لوحة المفاتيح أثناء الكتابة. ويتفعّل «اضافة» بعد كتابة العنوان، فيضيف الخدمة بهذا العنوان مع أي أنواع أخرى محددة. وقبل هذا الإصلاح كان الزر «التالي» يغلق القائمة لكتابة العنوان في النافذة تحتها، لكنها لم تكن تعود، فينتهي المسار ولا يمكن إضافة خدمة «اخرى».",
+      },
+      acceptanceCriteria: {
+        en: ["Ticking «اخرى» shows «عنوان الخدمة» in the picker.", "«اضافة» stays off until a title is typed.", "«اضافة» adds the service with its title; it appears in الخدمات.", "Without «اخرى», «اضافة» adds the ticked types at once, as before."],
+        ar: ["تحديد «اخرى» يُظهر «عنوان الخدمة» في القائمة.", "يبقى «اضافة» معطلاً حتى كتابة العنوان.", "«اضافة» يضيف الخدمة بعنوانها، وتظهر في الخدمات.", "دون «اخرى» يضيف «اضافة» الأنواع المحددة فوراً كما كان."],
+      },
+      testScenarios: {
+        en: ["As a company with services, open الخدمات › اضافة خدمة فرعية › نوع الخدمة, tick «اخرى», type a title and tap «اضافة».", "Tick «اخرى» and another type together, then add."],
+        ar: ["كشركة لديها خدمات افتح الخدمات › اضافة خدمة فرعية › نوع الخدمة وحدد «اخرى» واكتب عنواناً واضغط «اضافة».", "حدد «اخرى» ونوعاً آخر معاً ثم أضف."],
+      },
+      updatedIn: "fix/service-other-custom-name",
+    },
   ],
 };
