@@ -2703,5 +2703,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/guest-favorite-auth-prompt",
     },
+    {
+      id: "mobile-company-quote-sheet-description-above-keyboard",
+      title: {
+        en: "A company's «تقديم طلب سعر» sheet: «وصف» stays above the keyboard",
+        ar: "نافذة «تقديم طلب سعر» للشركة: حقل «وصف» يبقى فوق لوحة المفاتيح",
+      },
+      priority: "P1",
+      story: {
+        en: "On a company's or office's profile, «طلب عرض سعر» opens the «تقديم طلب سعر» sheet. Tapping «وصف» there opens the keyboard and scrolls the sheet so the box and its label sit above «إرسال الطلب» and the keyboard, and the user sees what they type. Before this fix, the sheet rose with the keyboard but its content didn't scroll, so «وصف» stayed hidden under the button. The «+» › طلب عرض سعر form got the same fix earlier (mobile-request-quote-description-above-keyboard).",
+        ar: "في ملف شركة أو مكتب، يفتح «طلب عرض سعر» نافذة «تقديم طلب سعر». والضغط على «وصف» فيها يفتح لوحة المفاتيح ويمرّر النافذة بحيث يظهر الحقل وعنوانه فوق «إرسال الطلب» ولوحة المفاتيح، فيرى المستخدم ما يكتبه. وقبل هذا الإصلاح كانت النافذة ترتفع مع لوحة المفاتيح دون أن يتحرك محتواها، فيبقى «وصف» مخفياً تحت الزر. ونموذج «+» › طلب عرض سعر حصل على الإصلاح نفسه سابقاً.",
+      },
+      acceptanceCriteria: {
+        en: ["Tapping «وصف» shows the whole box above «إرسال الطلب».", "Several typed lines stay visible.", "Closing the keyboard leaves the sheet usable, and «مرفقات» can still be reached."],
+        ar: ["الضغط على «وصف» يُظهر الحقل كاملاً فوق «إرسال الطلب».", "الأسطر المكتوبة تبقى ظاهرة.", "إغلاق لوحة المفاتيح يُبقي النافذة قابلة للاستخدام، ويمكن الوصول إلى «مرفقات»."],
+      },
+      testScenarios: {
+        en: ["Open a company's profile, tap «طلب عرض سعر», tap «وصف» and type a few lines (a small iPhone too).", "Type a price, then tap «وصف» without closing the keyboard."],
+        ar: ["افتح ملف شركة واضغط «طلب عرض سعر» ثم «وصف» واكتب عدة أسطر (وعلى آيفون صغير أيضاً).", "اكتب سعراً ثم اضغط «وصف» دون إغلاق لوحة المفاتيح."],
+      },
+      updatedIn: "fix/quote-sheet-keyboard",
+    },
   ],
 }
