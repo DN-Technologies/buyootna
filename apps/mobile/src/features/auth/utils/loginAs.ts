@@ -71,3 +71,33 @@ export async function loginAs(
     );
   }
 }
+
+/**
+ * Signs in to a profile just created, staying on the screen: sign-up shows
+ * its success sheet first, and «العودة الى الرئيسية» then opens the home.
+ * The sign-up's verify call makes the account but no session, so a new
+ * company landed on the guest home (QA). Resolves the profile signed in to,
+ * or null if it couldn't (the user can still log in by hand).
+ */
+export async function signInAfterSignup(
+  credentials: Credentials,
+  identityType: IdentityType,
+  setAuth: AuthState['setAuth'],
+): Promise<IdentityType | null> {
+  try {
+    const { data } = await apiClient.post('/auth/login', {
+      ...credentials,
+      identityType,
+    });
+    await setAuth(
+      data.user,
+      data.activeIdentity,
+      data.identities,
+      data.access_token,
+      data.sessionId,
+    );
+    return data.activeIdentity?.type ?? identityType;
+  } catch {
+    return null;
+  }
+}

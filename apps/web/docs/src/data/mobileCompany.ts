@@ -1302,5 +1302,26 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "fix/company-name-letters-only",
     },
+    {
+      id: "mobile-company-signup-stays-signed-in",
+      title: {
+        en: "Company or office sign-up: «العودة الى الرئيسية» opens the new account, signed in",
+        ar: "تسجيل شركة أو مكتب: «العودة الى الرئيسية» يفتح الحساب الجديد مسجلاً الدخول",
+      },
+      priority: "P1",
+      story: {
+        en: "After «إنشاء حساب شركة» (or مكتب), the emailed code creates the account, and the app signs in to it with the email and password just entered. «العودة الى الرئيسية» on the success sheet then opens the company's (or office's) home, signed in, with its own tabs and profile. Before this fix, it opened the guest home and the user had to log in by hand. If signing in fails (for example, the network drops at that moment), the guest home opens with «تم إنشاء الحساب» asking them to log in.",
+        ar: "بعد «إنشاء حساب شركة» (أو مكتب)، يُنشئ الرمز المرسل بالبريد الحساب، ويسجّل التطبيق الدخول إليه بالبريد وكلمة المرور المدخلين. ثم يفتح «العودة الى الرئيسية» في نافذة النجاح الصفحة الرئيسية للشركة (أو المكتب) مسجلاً الدخول، بتبويباتها وملفها. وقبل هذا الإصلاح كان يفتح صفحة الزائر، ويضطر المستخدم لتسجيل الدخول يدوياً. وإن فشل تسجيل الدخول (كانقطاع الشبكة لحظتها) تُفتح صفحة الزائر مع «تم إنشاء الحساب» تطلب تسجيل الدخول.",
+      },
+      acceptanceCriteria: {
+        en: ["After the code and «العودة الى الرئيسية», the company home opens, signed in as the new company.", "An office lands on its own home, signed in.", "Closing and reopening the app keeps the session."],
+        ar: ["بعد الرمز و«العودة الى الرئيسية» تُفتح الصفحة الرئيسية للشركة مسجلاً الدخول بالشركة الجديدة.", "المكتب يصل إلى صفحته الرئيسية مسجلاً الدخول.", "إغلاق التطبيق وفتحه يُبقي الجلسة."],
+      },
+      testScenarios: {
+        en: ["As a guest, create a company account, enter the emailed code, tap «العودة الى الرئيسية».", "Do the same for an office."],
+        ar: ["كزائر أنشئ حساب شركة وأدخل الرمز ثم اضغط «العودة الى الرئيسية».", "كرر ذلك لمكتب."],
+      },
+      updatedIn: "fix/company-signup-stays-signed-in",
+    },
   ],
 };
