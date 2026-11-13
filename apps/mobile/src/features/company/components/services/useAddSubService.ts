@@ -65,13 +65,9 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
     }
   };
 
-  // The picker's «اضافة»: adds at once, unless «اخرى» still needs its
-  // title (back to the sheet)
+  // The picker's «اضافة»: adds at once; with «اخرى», its title is typed
+  // in the picker too (it went back to a sheet that didn't reappear: QA)
   const addFromPicker = () => {
-    if (selection.hasOther) {
-      dismissSheet(pickerRef);
-      return;
-    }
     void submit();
   };
 

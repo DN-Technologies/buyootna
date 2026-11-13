@@ -168,13 +168,31 @@ describe('اختر الخدمة الفرعية › اضافة', () => {
     );
   });
 
-  it('with «اخرى» ticked it reads «التالي» and adds nothing yet (the title comes first)', async () => {
-    const { findByTestId, getByTestId, getByText } = await renderScreen();
+  // QA: «اخرى» then «التالي» closed the picker for a sheet that never came
+  // back, so the flow just ended. Its title is now asked in the picker
+  it('with «اخرى» ticked it asks «عنوان الخدمة» right there, then adds', async () => {
+    const { findByTestId, getByTestId, queryByTestId, queryByText } =
+      await renderScreen();
     await fireEvent.press(await findByTestId('services-add-sub'));
+    expect(queryByTestId('sub-service-picker-title')).toBeNull();
+
     await fireEvent.press(getByTestId('sub-service-option-اخرى'));
-    expect(getByText('التالي')).toBeTruthy();
+    expect(getByTestId('sub-service-picker-title')).toBeTruthy();
+    expect(queryByText('التالي')).toBeNull();
+    // Not before the title is typed
+    expect(
+      getByTestId('sub-service-picker-add').props.accessibilityState?.disabled,
+    ).toBe(true);
+
+    await fireEvent.changeText(getByTestId('sub-service-picker-title'), 'تصميم حدائق');
     await fireEvent.press(getByTestId('sub-service-picker-add'));
-    expect(api.createService).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(api.createService).toHaveBeenCalledWith({
+        specialty: 'مكتب هندسي',
+        types: ['اخرى'],
+        title: 'تصميم حدائق',
+      }),
+    );
   });
 });
 

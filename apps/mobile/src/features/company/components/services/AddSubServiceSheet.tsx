@@ -130,8 +130,10 @@ export default function AddSubServiceSheet({ add }: { add: AddSubService }) {
         selected={add.selectedTypes}
         disabled={add.disabledTypes}
         onToggle={add.toggleType}
-        canAdd={add.types.length > 0}
+        canAdd={add.isValid}
         needsTitle={add.hasOther}
+        title={add.serviceTitle}
+        onTitleChange={add.setServiceTitle}
         isSubmitting={add.isSubmitting}
         onAdd={add.addFromPicker}
       />
