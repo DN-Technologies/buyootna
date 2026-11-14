@@ -123,6 +123,12 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       <BottomSheetModal
         ref={internalRef}
         snapPoints={['90%']}
+        // 90% only, below the status bar: dynamic sizing added a snap point
+        // at the content's full height and over-drag went past it, so the
+        // sheet could be dragged under the clock (as the ad preview, QA)
+        enableDynamicSizing={false}
+        enableOverDrag={false}
+        topInset={insets.top}
         backdropComponent={renderBackdrop}
         footerComponent={renderFooter}
         enablePanDownToClose

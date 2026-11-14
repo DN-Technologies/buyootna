@@ -2766,5 +2766,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/price-range-from-right",
     },
+    {
+      id: "mobile-ad-preview-sheet-below-status-bar",
+      title: {
+        en: "Ad preview sheet stops below the status bar",
+        ar: "نافذة معاينة الإعلان تتوقف أسفل شريط الحالة",
+      },
+      priority: "P2",
+      story: {
+        en: "In نشاطي, an ad's «معاينة» sheet opens at 85% of the screen and stays there. Swiping up scrolls its content (photos, details, actions); the sheet itself never moves past that height, so it never reaches the status bar, the notch or the Dynamic Island. Before this fix, dragging up slid the whole sheet under them. A company's «تقديم طلب سعر» sheet stops at 90% the same way.",
+        ar: "في نشاطي، تُفتح نافذة «معاينة» الإعلان على 85% من الشاشة وتبقى عندها. والسحب للأعلى يمرّر محتواها (الصور والتفاصيل والأزرار)، ولا تتحرك النافذة نفسها فوق هذا الارتفاع، فلا تصل إلى شريط الحالة أو النوتش أو الـDynamic Island. وقبل هذا الإصلاح كان السحب للأعلى يُدخل النافذة كاملة تحتها. ونافذة «تقديم طلب سعر» للشركة تتوقف عند 90% بالطريقة نفسها.",
+      },
+      acceptanceCriteria: {
+        en: ["Swiping up on the preview never moves its top edge above 85%; the content scrolls instead.", "The status bar (time, battery) stays clear on notch and Dynamic Island iPhones.", "Swiping down still closes the sheet."],
+        ar: ["السحب للأعلى في المعاينة لا يرفع حافتها فوق 85%، بل يمرّر المحتوى.", "يبقى شريط الحالة (الوقت والبطارية) ظاهراً على أجهزة النوتش والـDynamic Island.", "السحب للأسفل ما زال يغلق النافذة."],
+      },
+      testScenarios: {
+        en: ["On an iPhone with a notch or Dynamic Island, open نشاطي › مسودة › an ad's معاينة and keep swiping up.", "Do the same on a company's «طلب عرض سعر» sheet."],
+        ar: ["على آيفون بنوتش أو Dynamic Island افتح نشاطي › مسودة › معاينة إعلان واستمر في السحب للأعلى.", "كرر ذلك في نافذة «طلب عرض سعر» لشركة."],
+      },
+      updatedIn: "fix/ad-preview-sheet-safe-area",
+    },
   ],
 }
