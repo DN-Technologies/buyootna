@@ -57,7 +57,7 @@ import {
   OtpRequestRateLimit,
   OtpVerifyRateLimit,
 } from '../../core/decorators/otp-rate-limit.decorator';
-import { VerifyEmailOtpDto } from '../auth/dto/verify-email-otp.dto';
+import { VerifyProviderOtpDto } from '../users/dto/verify-provider-otp.dto';
 
 const LOGO_LICENSE_UPLOAD_BODY = {
   schema: {
@@ -107,7 +107,8 @@ export class CompanyController {
   ) {
     // The account is created only once the emailed code is entered
     // (POST …/verify); a request without it is an app from before that
-    if (dto.verification !== 'email') {
+    // (by email, or by SMS for a sign-up by phone)
+    if (!dto.verification) {
       throw new BadRequestException(
         'يرجى تحديث التطبيق لإكمال التسجيل، فالتسجيل يتطلب الآن رمز تحقق يُرسل إلى بريدك الإلكتروني.',
       );
@@ -128,10 +129,10 @@ export class CompanyController {
   })
   @ApiResponse({ status: 201, type: RegisterCompanyResponseDto })
   @ApiCommonErrors()
-  async verifyCompanyRegistration(@Body() dto: VerifyEmailOtpDto) {
+  async verifyCompanyRegistration(@Body() dto: VerifyProviderOtpDto) {
     return this.registrationService.completeProviderRegistration(
       IdentityType.COMPANY,
-      dto.email,
+      { email: dto.email, phone: dto.phone },
       dto.otp,
     );
   }

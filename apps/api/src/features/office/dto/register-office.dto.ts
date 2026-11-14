@@ -5,9 +5,16 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import {
+  KUWAIT_PHONE_MESSAGE,
+  KUWAIT_PHONE_PATTERN,
+  SIGNUP_CHANNELS,
+  type SignupChannel,
+} from '../../../core/validators/business-contact';
 import { trim } from '../../../core/validators/trim.transform';
 import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
@@ -17,12 +24,14 @@ export class RegisterOfficeDto {
   @IsNotEmpty()
   name: string;
 
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  email: string;
-
-  @IsString()
+  // An email, a phone, or both: the code goes to «verification»'s one
   @IsOptional()
+  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(KUWAIT_PHONE_PATTERN, { message: KUWAIT_PHONE_MESSAGE })
   phone?: string;
 
   @IsString()
@@ -58,7 +67,8 @@ export class RegisterOfficeDto {
   // «verification: email» from apps that enter the emailed code next. Older
   // ones don't send it and are told to update: the account is created only
   // after the code (QA)
+  // 'email' or, for a sign-up by phone, 'phone' (the code by SMS)
   @IsOptional()
-  @IsIn(['email'])
-  verification?: string;
+  @IsIn(SIGNUP_CHANNELS)
+  verification?: SignupChannel;
 }
