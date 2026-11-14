@@ -2787,5 +2787,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/ad-preview-sheet-safe-area",
     },
+    {
+      id: "mobile-plus-sheet-opens-without-pause",
+      title: {
+        en: "«+» opens its sheet on every tap, without a pause",
+        ar: "«+» يفتح نافذته عند كل ضغطة دون تأخير",
+      },
+      priority: "P1",
+      story: {
+        en: "Tapping «+» in the bottom bar opens its sheet («إضافة إعلان» / «تنبيه» / «طلب عرض سعر», or the sign-in sheet for a guest) every time, straight away, including right after closing it by swiping down or tapping outside. Before this fix, every second tap opened it only after a noticeable pause: the tap landed while the previous sheet's close was finishing and was lost, and the app's half-second safety retry opened it. That retry now checks every 50 ms and re-opens the sheet as soon as the close has settled. The same applies to the app's other sheets opened by a tap (home filter, quota sheet).",
+        ar: "الضغط على «+» في الشريط السفلي يفتح نافذته («إضافة إعلان» / «تنبيه» / «طلب عرض سعر»، أو نافذة تسجيل الدخول للزائر) في كل مرة وفوراً، حتى بعد إغلاقها مباشرة بالسحب للأسفل أو الضغط خارجها. وقبل هذا الإصلاح كانت كل ضغطة ثانية تفتحها بعد تأخير واضح: إذ تقع الضغطة أثناء انتهاء إغلاق النافذة السابقة فتضيع، ثم يفتحها الاحتياط بعد نصف ثانية. وصار هذا الاحتياط يتحقق كل 50 جزءاً من الثانية ويعيد الفتح فور انتهاء الإغلاق. وينطبق ذلك على بقية النوافذ التي تُفتح بضغطة (فلتر الرئيسية ونافذة الرصيد).",
+      },
+      acceptanceCriteria: {
+        en: ["Tap «+», close the sheet, tap «+» again at once: it opens without a visible pause.", "Repeated 5 times in a row, every tap opens it.", "As a guest, «+» opens the sign-in sheet the same way."],
+        ar: ["اضغط «+» ثم أغلق النافذة واضغط «+» فوراً: تُفتح دون تأخير ملحوظ.", "عند التكرار 5 مرات متتالية تُفتح عند كل ضغطة.", "كزائر، يفتح «+» نافذة تسجيل الدخول بالطريقة نفسها."],
+      },
+      testScenarios: {
+        en: ["Signed in: tap «+», swipe the sheet down, tap «+» again quickly; repeat with a tap outside to close.", "As a guest: the same with the sign-in sheet."],
+        ar: ["مسجلاً الدخول: اضغط «+» واسحب النافذة للأسفل ثم اضغط «+» بسرعة، وكرر مع الإغلاق بالضغط خارجها.", "كزائر: الشيء نفسه مع نافذة تسجيل الدخول."],
+      },
+      updatedIn: "fix/plus-sheet-every-tap",
+    },
   ],
 }

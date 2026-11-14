@@ -24,6 +24,10 @@ const OPENING: number[] = [STATUS.PRESENTED, STATUS.ANIMATING];
 
 // How long a tap may take to start opening the sheet before it's retried
 export const PRESENT_CHECK_MS = 500;
+// How often it's checked until then: a tap lost to the previous sheet's
+// close is retried as soon as that close settles, not at the deadline (QA:
+// the second tap on «+» opened the sheet only after a noticeable pause)
+export const PRESENT_POLL_MS = 50;
 
 type Ref = RefObject<BottomSheetModal | null>;
 
@@ -60,13 +64,29 @@ export function presentSheet(ref: Ref) {
   }
   if (status === undefined) return;
 
-  setTimeout(() => {
+  // Mounted at the tap (open, closing or left over): unmounted later means
+  // the tap was lost to its close. Not mounted: a fresh sheet may take a
+  // while to start, so only the deadline retries it
+  const wasMounted = status !== STATUS.INITIAL;
+  let waited = 0;
+  const check = () => {
+    waited += PRESENT_POLL_MS;
     const now = statusOf(ref);
-    if (now === undefined || OPENING.includes(now)) return;
-    // Never mounted: just ask again; anything else: clear it first
-    if (now === STATUS.INITIAL) ref.current?.present();
-    else presentFresh(ref);
-  }, PRESENT_CHECK_MS);
+    if (now === undefined || now === STATUS.PRESENTED) return;
+    const atDeadline = waited >= PRESENT_CHECK_MS;
+    if (now === STATUS.INITIAL) {
+      if (wasMounted || atDeadline) ref.current?.present();
+      else setTimeout(check, PRESENT_POLL_MS);
+      return;
+    }
+    if (LEFTOVER.includes(now)) {
+      presentFresh(ref);
+      return;
+    }
+    // Animating (opening, or the previous close finishing): wait
+    if (!atDeadline) setTimeout(check, PRESENT_POLL_MS);
+  };
+  setTimeout(check, PRESENT_POLL_MS);
 }
 
 /**
