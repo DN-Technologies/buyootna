@@ -18,6 +18,21 @@ export class NotificationsService {
     return this.prisma.notification.create({ data: params });
   }
 
+  /** The same notice to many personas at once (one insert). */
+  async createMany(
+    list: {
+      userId: string;
+      type: NotificationType;
+      title: string;
+      body: string;
+      identityId?: string;
+      data?: Prisma.InputJsonValue;
+    }[],
+  ) {
+    if (list.length === 0) return { count: 0 };
+    return this.prisma.notification.createMany({ data: list });
+  }
+
   async findAllForUser(userId: string) {
     return this.prisma.notification.findMany({
       where: { userId },

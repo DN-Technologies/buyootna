@@ -22,7 +22,10 @@ import {
   parsePriceRange,
   type RequestWithClient,
 } from './company-requests.rules';
-import { isBlockedEitherWay } from '../../blocks/block.rules';
+import {
+  isBlockedEitherWay,
+  notBlockedUserWhere,
+} from '../../blocks/block.rules';
 
 /**
  * What the requester does: submit a request (public, or to one company),
@@ -121,6 +124,8 @@ export class CompanyRequestsRequesterActions {
 
     if (targetIdentityId) {
       await this.notifyProviderOfRequest(request, targetIdentityId);
+    } else {
+      await this.notifyCompaniesOfPublicRequest(request);
     }
     return toResponseDto(request, clientIdentityId, 0);
   }
@@ -177,6 +182,85 @@ export class CompanyRequestsRequesterActions {
     } catch (err) {
       this.logger.error(
         `Request notice for ${request.id} failed`,
+        err as Error,
+      );
+    }
+  }
+
+  /**
+   * A public request («+» › طلب عرض سعر): tells every company that will see
+   * it in «الطلبات» -- approved, of its specialty (or with none yet, or the
+   * request has none), not the requester's own account, no block either way
+   * (QA: a public request reached no company's notifications). Offices have
+   * no requests screen. Never throws: a failed notice must not fail the
+   * request.
+   */
+  private async notifyCompaniesOfPublicRequest(request: RequestWithClient) {
+    try {
+      const clientUserId = request.clientIdentity.userId;
+      const companies = await this.prisma.identity.findMany({
+        where: {
+          type: 'COMPANY',
+          userId: { not: clientUserId },
+          companyData: {
+            status: 'APPROVED',
+            ...(request.category
+              ? { OR: [{ specialty: null }, { specialty: request.category }] }
+              : {}),
+          },
+          user: notBlockedUserWhere(clientUserId),
+        },
+        select: { id: true, userId: true },
+      });
+      if (companies.length === 0) return;
+
+      const client = request.clientIdentity;
+      const clientName =
+        (client.individualData || client.officeData || client.companyData)
+          ?.name || 'عميل';
+      const title = 'طلب عرض سعر جديد';
+      const body = `${clientName} نشر طلب «${request.title}»`;
+
+      await this.notifications.createMany(
+        companies.map((company) => ({
+          userId: company.userId,
+          type: 'REQUEST_RECEIVED' as const,
+          title,
+          body,
+          identityId: company.id,
+          data: { requestId: request.id },
+        })),
+      );
+
+      const sessions = await this.prisma.session.findMany({
+        where: {
+          userId: { in: companies.map((c) => c.userId) },
+          pushToken: { not: null },
+        },
+        select: { userId: true, pushToken: true },
+      });
+      // One push per company, opened as that company (an account may have
+      // more than one)
+      for (const company of companies) {
+        const tokens = sessions
+          .filter((s) => s.userId === company.userId)
+          .map((s) => s.pushToken)
+          .filter((t): t is string => !!t);
+        if (tokens.length === 0) continue;
+        await this.push.sendToTokens(tokens, {
+          title,
+          body,
+          data: {
+            type: 'REQUEST_RECEIVED',
+            route: `/(company)/(requests)/${request.id}`,
+            requestId: request.id,
+            identityId: company.id,
+          },
+        });
+      }
+    } catch (err) {
+      this.logger.error(
+        `Public request notices for ${request.id} failed`,
         err as Error,
       );
     }

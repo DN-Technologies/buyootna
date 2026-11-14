@@ -45,7 +45,10 @@ export const baseRequest = {
   offers: [],
 };
 
-export const mockNotifications = { create: jest.fn().mockResolvedValue({}) };
+export const mockNotifications = {
+  create: jest.fn().mockResolvedValue({}),
+  createMany: jest.fn().mockResolvedValue({ count: 0 }),
+};
 export const mockPush = {
   sendToTokens: jest.fn().mockResolvedValue(undefined),
 };
@@ -68,7 +71,7 @@ export interface PrismaMock {
     count: jest.Mock;
   };
   $transaction: jest.Mock;
-  identity: { findUnique: jest.Mock };
+  identity: { findUnique: jest.Mock; findMany: jest.Mock };
   userBlock: { findFirst: jest.Mock };
   companyIdentityData: { findUnique: jest.Mock };
   requestDismissal: { upsert: jest.Mock };
@@ -108,7 +111,10 @@ function createPrisma(): PrismaMock {
     // No block between the two accounts unless a test says so
     userBlock: { findFirst: jest.fn().mockResolvedValue(null) },
     // The caller/target: an approved company unless a test says otherwise
+    // The companies a public request is announced to: none unless a test
+    // sets some
     identity: {
+      findMany: jest.fn().mockResolvedValue([]),
       findUnique: jest.fn().mockResolvedValue({
         id: 'company-1',
         userId: 'user-company',
