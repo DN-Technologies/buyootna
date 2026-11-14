@@ -42,21 +42,17 @@ export const SignupStep1: React.FC<Step1Props> = ({
       />
       {includeAccountFields && (
         <>
+          {/* One field, as an individual's sign-up (QA: an email and a phone
+              field read as both being needed). The code goes by email or SMS */}
           <FormInput
             control={control}
-            name="email"
-            label="البريد الإلكتروني"
+            name="identifier"
+            label="البريد الإلكتروني أو رقم الهاتف"
             placeholder="alisalem@gmail.com"
             keyboardType="email-address"
             autoCapitalize="none"
-          />
-          <FormInput
-            control={control}
-            name="phone"
-            label="رقم الهاتف"
-            placeholder="55123456"
-            keyboardType="phone-pad"
-            isRequired={false}
+            autoCorrect={false}
+            testID="company-signup-identifier-input"
           />
           <FormInput
             control={control}

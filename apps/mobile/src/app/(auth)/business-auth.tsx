@@ -24,7 +24,7 @@ export default function BusinessAuthScreen() {
     profileSheetRef,
     onLogin,
     onSignupFinal,
-    signupEmail,
+    signupIdentifier,
     onVerifySignupOtp,
     onSignupDone,
     onResendSignupOtp,
@@ -73,7 +73,7 @@ export default function BusinessAuthScreen() {
               pickLicense={pickLicense}
               isLoading={isLoading}
               // The emailed code, last: the account is made only then (QA)
-              otpEmail={signupEmail}
+              otpEmail={signupIdentifier}
               onVerifyOtp={onVerifySignupOtp}
               // Signed in as the new profile, to its home (it opened the
               // guest home, signed out: QA)

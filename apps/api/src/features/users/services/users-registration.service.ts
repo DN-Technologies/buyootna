@@ -247,10 +247,21 @@ export class UsersRegistrationService {
     logoFile: Express.Multer.File | undefined,
     licenseFile: Express.Multer.File | undefined,
   ) {
+    // One «البريد الإلكتروني أو رقم الهاتف»: the code goes to the email, or
+    // by SMS to the phone (QA: two fields, where an individual has one)
+    const email = dto.email?.trim() || undefined;
+    const phone = dto.phone?.trim() || undefined;
+    const byPhone = dto.verification === 'phone';
+    const contact = byPhone ? phone : email;
+    if (!contact) {
+      throw new BadRequestException(
+        byPhone ? 'رقم الهاتف مطلوب' : 'البريد الإلكتروني مطلوب',
+      );
+    }
     // The resend cooldown, here: the route's guard can't read a multipart
     // body (it's parsed after guards run)
-    this.rateLimiter?.checkRequestLimit(dto.email);
-    await checkUserExists(this.prisma, dto.email, dto.phone);
+    this.rateLimiter?.checkRequestLimit(contact);
+    await checkUserExists(this.prisma, email, phone);
     // A company may sign up without a licence (it comes with «طلب التوثيق»)
     if (dto.licenseNumber?.trim()) {
       await assertLicenseAvailable(
@@ -273,21 +284,27 @@ export class UsersRegistrationService {
       ),
     );
     try {
-      await this.emailOtpService.sendRegistrationOtp(
-        dto.email,
-        dto.name,
-        hashedPassword,
-      );
-      this.rateLimiter?.recordRequest(dto.email);
+      if (byPhone) {
+        await this.twilioService.sendVerification(contact, 'SIGNUP');
+      } else {
+        await this.emailOtpService.sendRegistrationOtp(
+          contact,
+          dto.name,
+          hashedPassword,
+        );
+      }
+      this.rateLimiter?.recordRequest(contact);
     } catch (error) {
       await this.identitiesService.deleteUploads(uploaded);
       console.log(error);
       throw new InternalServerErrorException(
-        'تعذر إرسال رمز التحقق إلى بريدك الإلكتروني. يرجى المحاولة مرة أخرى لاحقاً.',
+        byPhone
+          ? 'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.'
+          : 'تعذر إرسال رمز التحقق إلى بريدك الإلكتروني. يرجى المحاولة مرة أخرى لاحقاً.',
       );
     }
     // A signup started again replaces the old one: its files go
-    const replaced = this.providerPending.save(dto.email, {
+    const replaced = this.providerPending.save(contact, {
       type,
       data,
       hashedPassword,
@@ -297,29 +314,54 @@ export class UsersRegistrationService {
 
     return {
       otpRequired: true,
-      identifier: dto.email,
-      message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+      identifier: contact,
+      message: byPhone
+        ? 'تم إرسال رمز التحقق إلى هاتفك'
+        : 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
     };
   }
 
   /**
-   * Direct company/office signup, step 2: the emailed code proves the email,
+   * Direct company/office signup, step 2: the code proves the email (or, for
+   * a sign-up by phone, the phone: Twilio Verify, as an individual's),
    * and only then are the login and the persona created, through
    * IdentitiesService -- the same path (and rules) as adding a company/
    * office in the app. Uploads are removed again if the write fails.
    */
   async completeProviderRegistration(
     type: typeof IdentityType.COMPANY | typeof IdentityType.OFFICE,
-    email: string,
+    contact: { email?: string; phone?: string },
     otp: string,
   ) {
-    const code = this.emailOtpService.verifyAndConsume(email, otp);
-    // Wrong guesses count towards the verify limit (the route's guard checks it)
-    this.rateLimiter?.recordVerifyAttempt(email, !!code);
-    if (!code) {
-      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+    const email = contact.email?.trim() || undefined;
+    const phone = contact.phone?.trim() || undefined;
+    const key = email ?? phone;
+    if (!key) {
+      throw new BadRequestException('البريد الإلكتروني أو رقم الهاتف مطلوب');
     }
-    const pending = this.providerPending.consume(email, type);
+    if (email) {
+      const code = this.emailOtpService.verifyAndConsume(email, otp);
+      // Wrong guesses count towards the verify limit (the route's guard checks it)
+      this.rateLimiter?.recordVerifyAttempt(email, !!code);
+      if (!code) {
+        throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+      }
+    } else {
+      // The route's guard keys on the email: the phone's limit is kept here
+      this.rateLimiter?.checkVerifyLimit(key);
+      if (!this.providerPending.has(key, type)) {
+        this.rateLimiter?.recordVerifyAttempt(key, false);
+        throw new BadRequestException(
+          'انتهت جلسة التسجيل، يرجى إعادة المحاولة',
+        );
+      }
+      const valid = await this.twilioService.checkVerification(key, otp);
+      this.rateLimiter?.recordVerifyAttempt(key, valid);
+      if (!valid) {
+        throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+      }
+    }
+    const pending = this.providerPending.consume(key, type);
     if (!pending) {
       throw new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
     }

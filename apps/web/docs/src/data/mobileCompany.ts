@@ -1344,5 +1344,26 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "fix/service-other-custom-name",
     },
+    {
+      id: "mobile-business-signup-email-or-phone",
+      title: {
+        en: "Company or office sign-up: one «البريد الإلكتروني أو رقم الهاتف» field, code by email or SMS",
+        ar: "تسجيل شركة أو مكتب: حقل واحد «البريد الإلكتروني أو رقم الهاتف» والرمز بالبريد أو برسالة نصية",
+      },
+      priority: "P1",
+      story: {
+        en: "Step 1 of «إنشاء حساب شركة» (or مكتب) asks one «البريد الإلكتروني أو رقم الهاتف» field instead of a required email and an optional phone, as an individual's sign-up does. An email gets the code by email, as before. A Kuwaiti mobile (e.g. 55123456 or +96555123456) gets it by SMS. «تحقق من الرمز» shows where it went, and «إعادة الإرسال» resends by the same way. Nothing is created until the code is entered. The account then logs in with that email or phone, and «العودة الى الرئيسية» opens it signed in. A business that signed up by phone has no email: payments, password recovery (by SMS) and push notices work as for a person who signed up by phone.",
+        ar: "الخطوة الأولى من «إنشاء حساب شركة» (أو مكتب) تطلب حقلاً واحداً «البريد الإلكتروني أو رقم الهاتف» بدلاً من بريد إلزامي وهاتف اختياري، كما في تسجيل الأفراد. البريد يصله الرمز بالبريد كما كان، ورقم الجوال الكويتي (مثل 55123456 أو +96555123456) يصله برسالة نصية. وتعرض «تحقق من الرمز» أين أُرسل، و«إعادة الإرسال» يعيده بالطريقة نفسها. ولا يُنشأ شيء قبل إدخال الرمز، ثم يُسجّل الدخول بذلك البريد أو الهاتف، و«العودة الى الرئيسية» يفتح الحساب مسجلاً الدخول. والنشاط المسجل بالهاتف بلا بريد: الدفع واستعادة كلمة المرور (برسالة نصية) والإشعارات تعمل كما للفرد المسجل بالهاتف.",
+      },
+      acceptanceCriteria: {
+        en: ["Step 1 shows one «البريد الإلكتروني أو رقم الهاتف» field.", "An email gets the code by email; a Kuwaiti mobile gets it by SMS.", "A wrong code is refused and nothing is created; the right one creates the account, signed in.", "Anything that is neither an email nor a Kuwaiti mobile shows «أدخل بريد إلكتروني أو رقم هاتف كويتي صحيح».", "A phone or email already registered is refused."],
+        ar: ["تعرض الخطوة الأولى حقلاً واحداً «البريد الإلكتروني أو رقم الهاتف».", "البريد يصله الرمز بالبريد، والجوال الكويتي برسالة نصية.", "الرمز الخاطئ يُرفض ولا يُنشأ شيء، والصحيح يُنشئ الحساب مسجلاً الدخول.", "أي إدخال ليس بريداً ولا جوالاً كويتياً يُظهر «أدخل بريد إلكتروني أو رقم هاتف كويتي صحيح».", "الهاتف أو البريد المسجل مسبقاً يُرفض."],
+      },
+      testScenarios: {
+        en: ["Sign up a company with a phone number: enter the SMS code, then «العودة الى الرئيسية».", "Sign up an office with an email: enter the emailed code.", "Log out and log back in with that phone or email."],
+        ar: ["سجّل شركة برقم هاتف وأدخل رمز الرسالة ثم «العودة الى الرئيسية».", "سجّل مكتباً ببريد وأدخل الرمز المرسل بالبريد.", "سجّل الخروج ثم الدخول بذلك الهاتف أو البريد."],
+      },
+      updatedIn: "feat/business-signup-email-or-phone",
+    },
   ],
 };
