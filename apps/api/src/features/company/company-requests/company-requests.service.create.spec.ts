@@ -216,16 +216,109 @@ describe('CompanyRequestsService: create', () => {
       });
     });
 
-    it('a public request tells no one', async () => {
-      prisma.companyRequest.create.mockResolvedValue({
-        ...baseRequest,
-        targetIdentityId: null,
+    // QA: a public request («+» › طلب عرض سعر) reached no company
+    describe('a public request', () => {
+      const publicRequest = (category: string | null) =>
+        prisma.companyRequest.create.mockResolvedValue({
+          ...baseRequest,
+          targetIdentityId: null,
+          category,
+        });
+      beforeEach(() => mockNotifications.createMany.mockClear());
+
+      it('tells every company that will see it: a notice on each and a push', async () => {
+        publicRequest('مقاول عام');
+        prisma.identity.findMany.mockResolvedValue([
+          { id: 'company-1', userId: 'user-a' },
+          { id: 'company-2', userId: 'user-b' },
+        ]);
+        prisma.session.findMany.mockResolvedValue([
+          { userId: 'user-a', pushToken: 'ta' },
+          { userId: 'user-b', pushToken: null },
+        ]);
+
+        await service.create('client-1', dto);
+
+        expect(mockNotifications.createMany).toHaveBeenCalledWith([
+          expect.objectContaining({
+            userId: 'user-a',
+            identityId: 'company-1',
+            type: 'REQUEST_RECEIVED',
+            title: 'طلب عرض سعر جديد',
+            body: 'نواف الجارحي نشر طلب «تشطيب محل»',
+            data: { requestId: 'req-1' },
+          }),
+          expect.objectContaining({
+            userId: 'user-b',
+            identityId: 'company-2',
+          }),
+        ]);
+        // Only the account with a device gets a push, opened as its company
+        expect(mockPush.sendToTokens).toHaveBeenCalledTimes(1);
+        expect(mockPush.sendToTokens).toHaveBeenCalledWith(['ta'], {
+          title: 'طلب عرض سعر جديد',
+          body: 'نواف الجارحي نشر طلب «تشطيب محل»',
+          data: {
+            type: 'REQUEST_RECEIVED',
+            route: '/(company)/(requests)/req-1',
+            requestId: 'req-1',
+            identityId: 'company-1',
+          },
+        });
+        expect(mockNotifications.create).not.toHaveBeenCalled();
       });
 
-      await service.create('client-1', dto);
+      it('asks only for approved companies of its specialty (or none), not the requester, no blocks', async () => {
+        publicRequest('مقاول عام');
 
-      expect(mockNotifications.create).not.toHaveBeenCalled();
-      expect(mockPush.sendToTokens).not.toHaveBeenCalled();
+        await service.create('client-1', dto);
+
+        const { where } = (
+          prisma.identity.findMany.mock.calls[0] as unknown[]
+        )[0] as {
+          where: Record<string, unknown>;
+        };
+        expect(where).toMatchObject({
+          type: 'COMPANY',
+          userId: { not: 'user-client' },
+          companyData: {
+            status: 'APPROVED',
+            OR: [{ specialty: null }, { specialty: 'مقاول عام' }],
+          },
+        });
+        expect(where.user).toBeDefined();
+      });
+
+      it('one with no specialty goes to every approved company', async () => {
+        publicRequest(null);
+
+        await service.create('client-1', dto);
+
+        const { where } = (
+          prisma.identity.findMany.mock.calls[0] as unknown[]
+        )[0] as {
+          where: { companyData: Record<string, unknown> };
+        };
+        expect(where.companyData).toEqual({ status: 'APPROVED' });
+      });
+
+      it('no matching company: nothing is sent', async () => {
+        publicRequest('مقاول عام');
+
+        await service.create('client-1', dto);
+
+        expect(mockNotifications.createMany).not.toHaveBeenCalled();
+        expect(mockPush.sendToTokens).not.toHaveBeenCalled();
+      });
+
+      it('a failed notice does not fail the request', async () => {
+        publicRequest('مقاول عام');
+        prisma.identity.findMany.mockRejectedValueOnce(new Error('db down'));
+
+        const result = await service.create('client-1', dto);
+
+        expect(result.id).toBe('req-1');
+      });
     });
 
     it('a failed notice does not fail the request', async () => {
