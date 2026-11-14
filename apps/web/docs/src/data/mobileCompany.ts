@@ -1365,5 +1365,26 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "feat/business-signup-email-or-phone",
     },
+    {
+      id: "mobile-company-notified-of-public-request",
+      title: {
+        en: "Companies are notified of a public quote request",
+        ar: "الشركات تصلها إشعارات طلبات عرض السعر العامة",
+      },
+      priority: "P1",
+      story: {
+        en: "When a person sends «+» › طلب عرض سعر to companies in general (not to one company), every company that will see it in «الطلبات» gets a notification «طلب عرض سعر جديد — <name> نشر طلب «<type>»». That means approved companies whose «التخصص» matches the request's «مجال التخصص», companies with no specialty yet, and, for a request with no specialty, all approved companies. It's a notice in the bell list and a push on their devices; tapping it opens the request as that company. The requester's own companies and companies blocked either way are left out. Offices are not notified (they have no requests screen). Before this fix, only a request sent to one company notified it; a public request notified no one.",
+        ar: "عندما يرسل شخص «+» › طلب عرض سعر إلى الشركات عموماً (لا لشركة واحدة)، يصل إشعار «طلب عرض سعر جديد — <الاسم> نشر طلب «<النوع>»» إلى كل شركة ستراه في «الطلبات»: الشركات المعتمدة التي يطابق «التخصص» فيها «مجال التخصص» في الطلب، والشركات التي لم تحدد تخصصاً بعد، وكل الشركات المعتمدة لطلب بلا تخصص. ويكون إشعاراً في قائمة الإشعارات ودفعاً على أجهزتها، والضغط عليه يفتح الطلب باسم تلك الشركة. وتُستثنى شركات صاحب الطلب نفسه والشركات المحظورة من أي طرف. ولا تُشعر المكاتب (ليس لديها شاشة طلبات). وقبل هذا الإصلاح كان الطلب المرسل لشركة واحدة فقط يُشعرها، أما الطلب العام فلم يكن يُشعر أحداً.",
+      },
+      acceptanceCriteria: {
+        en: ["A public request in a specialty notifies the approved companies of that specialty, with a push.", "A company of another specialty is not notified.", "Tapping the notice opens the request as that company.", "A request sent to one company still notifies only it."],
+        ar: ["الطلب العام في تخصص يُشعر الشركات المعتمدة في ذلك التخصص مع إشعار دفع.", "الشركة في تخصص آخر لا تُشعر.", "الضغط على الإشعار يفتح الطلب باسم تلك الشركة.", "الطلب المرسل لشركة واحدة ما زال يُشعرها وحدها."],
+      },
+      testScenarios: {
+        en: ["As a person, send «+» › طلب عرض سعر with مجال التخصص = a company's specialty; on that company's phone, check the push and الإشعارات.", "Send one with another specialty: that company gets nothing."],
+        ar: ["كشخص أرسل «+» › طلب عرض سعر بمجال تخصص الشركة، وتحقق على هاتف الشركة من إشعار الدفع والإشعارات.", "أرسل طلباً بتخصص آخر: لا يصل شيء لتلك الشركة."],
+      },
+      updatedIn: "fix/public-request-notifies-companies",
+    },
   ],
 };
