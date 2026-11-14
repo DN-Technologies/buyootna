@@ -2808,5 +2808,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/plus-sheet-every-tap",
     },
+    {
+      id: "mobile-guest-review-sign-in-every-tap",
+      title: {
+        en: "Guest: «شارك برأيك» asks to sign in on every tap",
+        ar: "الزائر: «شارك برأيك» يطلب تسجيل الدخول عند كل ضغطة",
+      },
+      priority: "P1",
+      story: {
+        en: "On a company's, office's or person's profile, a guest who taps «شارك برأيك» gets the sign-in sheet («تسجيل الدخول» / «إنشاء حساب») and no review form. This works every time, including after closing the sheet by swiping it down. Before this fix, the sheet opened the first time, but once swiped closed, the next tap could do nothing. The same applies to every other action that asks a guest to sign in (report, block, contact a company).",
+        ar: "في ملف شركة أو مكتب أو شخص، يحصل الزائر الذي يضغط «شارك برأيك» على نافذة تسجيل الدخول («تسجيل الدخول» / «إنشاء حساب») ولا يظهر له نموذج التقييم. ويعمل ذلك في كل مرة، حتى بعد إغلاق النافذة بالسحب للأسفل. وقبل هذا الإصلاح كانت النافذة تظهر في المرة الأولى، ثم بعد إغلاقها بالسحب قد لا تفعل الضغطة التالية شيئاً. وينطبق ذلك على كل إجراء آخر يطلب من الزائر تسجيل الدخول (الإبلاغ والحظر والتواصل مع شركة).",
+      },
+      acceptanceCriteria: {
+        en: ["As a guest, «شارك برأيك» opens the sign-in sheet, never the review form.", "After swiping it closed, tapping «شارك برأيك» again opens it again.", "Signed in, «شارك برأيك» opens the review form as before."],
+        ar: ["كزائر، يفتح «شارك برأيك» نافذة تسجيل الدخول، لا نموذج التقييم.", "بعد إغلاقها بالسحب، يفتحها الضغط على «شارك برأيك» مرة أخرى.", "بعد تسجيل الدخول، يفتح «شارك برأيك» نموذج التقييم كما كان."],
+      },
+      testScenarios: {
+        en: ["Without logging in, open a company's profile › «شارك برأيك»; swipe the sheet down; tap again. Repeat on an office."],
+        ar: ["دون تسجيل الدخول افتح ملف شركة › «شارك برأيك» واسحب النافذة للأسفل واضغط مرة أخرى. كرر ذلك في مكتب."],
+      },
+      updatedIn: "fix/guest-review-sign-in",
+    },
   ],
 }
