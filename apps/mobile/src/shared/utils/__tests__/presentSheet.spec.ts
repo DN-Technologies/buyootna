@@ -1,6 +1,7 @@
 import {
   dismissSheet,
   PRESENT_CHECK_MS,
+  PRESENT_POLL_MS,
   presentSheet,
 } from '../presentSheet';
 
@@ -35,6 +36,44 @@ describe('presentSheet', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
+  });
+
+  // QA: the second tap on «+» opened the sheet only after a pause: it
+  // landed while the first sheet's close was finishing, and was lost
+  it('a tap lost to the closing sheet is retried as soon as the close ends', () => {
+    const s = sheet(ANIMATING);
+    presentSheet(refOf(s));
+    expect(s.present).toHaveBeenCalledTimes(1);
+
+    // The close finishes and the sheet unmounts, with no open started
+    s.status.current = INITIAL;
+    jest.advanceTimersByTime(2 * PRESENT_POLL_MS);
+    expect(s.present).toHaveBeenCalledTimes(2);
+
+    // Not again at the deadline
+    jest.advanceTimersByTime(PRESENT_CHECK_MS);
+    expect(s.present).toHaveBeenCalledTimes(2);
+  });
+
+  it('one left closed after the close is cleared and presented at once', () => {
+    const s = sheet(ANIMATING);
+    presentSheet(refOf(s));
+    s.status.current = MINIMIZED;
+    jest.advanceTimersByTime(PRESENT_POLL_MS);
+    expect(s.dismiss).toHaveBeenCalledTimes(1);
+    expect(s.present).toHaveBeenCalledTimes(2);
+  });
+
+  it('a sheet that opens normally is never presented twice', () => {
+    const s = sheet(INITIAL);
+    presentSheet(refOf(s));
+    // Mounting takes a moment, then it animates open
+    jest.advanceTimersByTime(3 * PRESENT_POLL_MS);
+    s.status.current = ANIMATING;
+    jest.advanceTimersByTime(3 * PRESENT_POLL_MS);
+    s.status.current = PRESENTED;
+    jest.advanceTimersByTime(PRESENT_CHECK_MS);
+    expect(s.present).toHaveBeenCalledTimes(1);
   });
 
   it('presents a closed sheet once, and leaves it when it opens', () => {
