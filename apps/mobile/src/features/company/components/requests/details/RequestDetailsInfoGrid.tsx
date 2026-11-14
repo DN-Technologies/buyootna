@@ -11,6 +11,16 @@ export interface RequestDetailsInfoGridProps {
   offersCount?: number;
 }
 
+/**
+ * «الموقع» shows the area alone: a request's location is «المحافظة -
+ * المنطقة» (the form's two pickers), and the whole of it ran into
+ * «الميزانية» (owner). One picked on the map, with no « - », shows as is.
+ */
+export function requestArea(location: string): string {
+  const parts = location.split(' - ');
+  return (parts[parts.length - 1] ?? '').trim() || location;
+}
+
 const offersLabel = (count: number) =>
   count === 0 ? 'لا توجد عروض' : count === 1 ? 'عرض واحد' : `${count} عروض`;
 
@@ -29,7 +39,9 @@ export default function RequestDetailsInfoGrid({
           <View className="size-[26px] items-center justify-center rounded-full bg-[#DEE3E8]">
             <LocationPinSmallIcon size={14} color="#15304D" />
           </View>
-          <View>
+          {/* flex-1: its own half, so a long value is cut, not run over
+              the next cell */}
+          <View className="flex-1">
             <Text
               className="font-cairo-semibold text-[12px] text-[#A0A0A0]"
               style={{ writingDirection: 'rtl' }}
@@ -42,7 +54,7 @@ export default function RequestDetailsInfoGrid({
               style={{ writingDirection: 'rtl' }}
               numberOfLines={1}
             >
-              {location}
+              {requestArea(location)}
             </Text>
           </View>
         </View>
@@ -52,7 +64,7 @@ export default function RequestDetailsInfoGrid({
           <View className="size-[26px] items-center justify-center rounded-full bg-[#DEE3E8]">
             <WalletSmallIcon size={14} color="#15304D" />
           </View>
-          <View>
+          <View className="flex-1">
             <Text
               className="font-cairo-semibold text-[12px] text-[#A0A0A0]"
               style={{ writingDirection: 'rtl' }}
