@@ -2,6 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { presentSheet } from '@/shared/utils/presentSheet';
 
 export function useAuthGuard() {
   const token = useAuthStore((state) => state.token);
@@ -15,7 +16,10 @@ export function useAuthGuard() {
     if (token) {
       await action();
     } else {
-      authSheetRef.current?.present();
+      // Through presentSheet, as every tap-opened sheet: a bare present()
+      // did nothing once the sheet had been swiped closed, so «شارك برأيك»
+      // (and other guarded actions) were a dead tap for a guest (QA)
+      presentSheet(authSheetRef);
     }
   };
 
