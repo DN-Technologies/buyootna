@@ -2745,5 +2745,26 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/delete-account-to-guest",
     },
+    {
+      id: "mobile-quote-price-range-from-right",
+      title: {
+        en: "Request a quote: «نطاق السعر» reads «من» on the right, «الى» on the left",
+        ar: "طلب عرض سعر: «نطاق السعر» يبدأ بـ«من» على اليمين ثم «الى» على اليسار",
+      },
+      priority: "P2",
+      story: {
+        en: "In «+» › طلب عرض سعر and in a company's or office's «تقديم طلب سعر» sheet, «نطاق السعر» shows «من» (the minimum) on the right and «الى» (the maximum) on the left, so it reads right to left as «من … الى». Before this fix, the two fields were the other way round.",
+        ar: "في «+» › طلب عرض سعر وفي نافذة «تقديم طلب سعر» للشركة أو المكتب، يعرض «نطاق السعر» حقل «من» (الحد الأدنى) على اليمين و«الى» (الحد الأعلى) على اليسار، فيُقرأ من اليمين «من … الى». وقبل هذا الإصلاح كان الحقلان معكوسين.",
+      },
+      acceptanceCriteria: {
+        en: ["«من» is the right-hand field and «الى» the left-hand one, in both forms.", "The number typed in «من» is sent as the minimum, the one in «الى» as the maximum."],
+        ar: ["«من» هو الحقل الأيمن و«الى» الأيسر في النموذجين.", "الرقم في «من» يُرسل حداً أدنى، والرقم في «الى» حداً أعلى."],
+      },
+      testScenarios: {
+        en: ["Open «+» › طلب عرض سعر and look at نطاق السعر.", "Open a company's profile › طلب عرض سعر and look at نطاق السعر."],
+        ar: ["افتح «+» › طلب عرض سعر وانظر إلى نطاق السعر.", "افتح ملف شركة › طلب عرض سعر وانظر إلى نطاق السعر."],
+      },
+      updatedIn: "fix/price-range-from-right",
+    },
   ],
 }
