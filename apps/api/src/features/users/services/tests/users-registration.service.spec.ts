@@ -55,7 +55,10 @@ const buildPrismaMock = () => ({
 describe('UsersRegistrationService', () => {
   let service: UsersRegistrationService;
   let prisma: ReturnType<typeof buildPrismaMock>;
-  let twilioService: { sendVerification: jest.Mock };
+  let twilioService: {
+    sendVerification: jest.Mock;
+    checkVerification: jest.Mock;
+  };
   let emailOtpService: {
     sendRegistrationOtp: jest.Mock;
     verifyAndConsume: jest.Mock;
@@ -68,6 +71,7 @@ describe('UsersRegistrationService', () => {
   let rateLimiter: {
     recordRequest: jest.Mock;
     checkRequestLimit: jest.Mock;
+    checkVerifyLimit: jest.Mock;
     recordVerifyAttempt: jest.Mock;
   };
   let providerPending: ProviderRegistrationPendingService;
@@ -81,6 +85,7 @@ describe('UsersRegistrationService', () => {
     prisma = buildPrismaMock();
     twilioService = {
       sendVerification: jest.fn().mockResolvedValue({ success: true }),
+      checkVerification: jest.fn().mockResolvedValue(true),
     };
     emailOtpService = {
       sendRegistrationOtp: jest.fn().mockResolvedValue(undefined),
@@ -94,6 +99,7 @@ describe('UsersRegistrationService', () => {
     rateLimiter = {
       recordRequest: jest.fn(),
       checkRequestLimit: jest.fn(),
+      checkVerifyLimit: jest.fn(),
       recordVerifyAttempt: jest.fn(),
     };
     identitiesService = {
@@ -453,7 +459,7 @@ describe('UsersRegistrationService', () => {
 
       const result = await service.completeProviderRegistration(
         'COMPANY',
-        'co@example.com',
+        { email: 'co@example.com' },
         '123456',
       );
 
@@ -489,7 +495,7 @@ describe('UsersRegistrationService', () => {
       await expect(
         service.completeProviderRegistration(
           'COMPANY',
-          'co@example.com',
+          { email: 'co@example.com' },
           '000000',
         ),
       ).rejects.toThrow('رمز التحقق غير صحيح أو منتهي الصلاحية');
@@ -511,7 +517,7 @@ describe('UsersRegistrationService', () => {
       await expect(
         service.completeProviderRegistration(
           'OFFICE',
-          'co@example.com',
+          { email: 'co@example.com' },
           '123456',
         ),
       ).rejects.toThrow('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
@@ -567,13 +573,133 @@ describe('UsersRegistrationService', () => {
       await expect(
         service.completeProviderRegistration(
           'COMPANY',
-          'co@example.com',
+          { email: 'co@example.com' },
           '123456',
         ),
       ).rejects.toThrow(ConflictException);
       expect(identitiesService.deleteUploads).toHaveBeenCalledWith({
         logoUrl: 'https://bucket/logo.png',
       });
+    });
+  });
+
+  // QA: one «البريد الإلكتروني أو رقم الهاتف», as an individual's sign-up
+  describe('company or office signup with a phone (code by SMS)', () => {
+    const byPhone = {
+      phone: '55123456',
+      password: 'password123',
+      name: 'شركة',
+      specialty: 'مكتب هندسي',
+      verification: 'phone',
+    } as never;
+    const withLicenseLookups = () =>
+      Object.assign(prisma, {
+        companyIdentityData: { findFirst: jest.fn().mockResolvedValue(null) },
+        officeIdentityData: { findFirst: jest.fn().mockResolvedValue(null) },
+      });
+
+    it('step 1 sends the code by SMS, keyed by the phone, and creates nothing', async () => {
+      withLicenseLookups();
+
+      const result = await service.registerCompany(byPhone);
+
+      expect(result).toEqual({
+        otpRequired: true,
+        identifier: '55123456',
+        message: 'تم إرسال رمز التحقق إلى هاتفك',
+      });
+      expect(twilioService.sendVerification).toHaveBeenCalledWith(
+        '55123456',
+        'SIGNUP',
+      );
+      expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
+      expect(rateLimiter.checkRequestLimit).toHaveBeenCalledWith('55123456');
+      expect(rateLimiter.recordRequest).toHaveBeenCalledWith('55123456');
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('step 2 checks the SMS code and creates a login with the phone, no email', async () => {
+      withLicenseLookups();
+      await service.registerCompany(byPhone);
+
+      const result = await service.completeProviderRegistration(
+        'COMPANY',
+        { phone: '55123456' },
+        '123456',
+      );
+
+      expect(twilioService.checkVerification).toHaveBeenCalledWith(
+        '55123456',
+        '123456',
+      );
+      expect(emailOtpService.verifyAndConsume).not.toHaveBeenCalled();
+      expect(rateLimiter.checkVerifyLimit).toHaveBeenCalledWith('55123456');
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith(
+        '55123456',
+        true,
+      );
+      expect(identitiesService.createProviderPersonaInTx).toHaveBeenCalled();
+      expect(result.profile).toEqual({ id: 'cd-1' });
+    });
+
+    it('a wrong SMS code creates nothing, counts the attempt, and the signup still waits', async () => {
+      withLicenseLookups();
+      await service.registerCompany(byPhone);
+      twilioService.checkVerification.mockResolvedValueOnce(false);
+
+      await expect(
+        service.completeProviderRegistration(
+          'COMPANY',
+          { phone: '55123456' },
+          '000000',
+        ),
+      ).rejects.toThrow('رمز التحقق غير صحيح أو منتهي الصلاحية');
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith(
+        '55123456',
+        false,
+      );
+      expect(providerPending.has('55123456', 'COMPANY')).toBe(true);
+    });
+
+    it('a phone with no signup waiting is refused without asking Twilio', async () => {
+      await expect(
+        service.completeProviderRegistration(
+          'OFFICE',
+          { phone: '55999999' },
+          '123456',
+        ),
+      ).rejects.toThrow('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
+      expect(twilioService.checkVerification).not.toHaveBeenCalled();
+    });
+
+    it('«verification: phone» without a phone is refused before anything is sent', async () => {
+      withLicenseLookups();
+      await expect(
+        service.registerCompany({
+          email: 'co@example.com',
+          password: 'password123',
+          name: 'شركة',
+          specialty: 'مكتب هندسي',
+          verification: 'phone',
+        } as never),
+      ).rejects.toThrow('رقم الهاتف مطلوب');
+      expect(twilioService.sendVerification).not.toHaveBeenCalled();
+      expect(identitiesService.uploadProviderFiles).not.toHaveBeenCalled();
+    });
+
+    it('a code by email still needs the email', async () => {
+      withLicenseLookups();
+      await expect(
+        service.registerOffice({
+          phone: '55123456',
+          password: 'password123',
+          name: 'مكتب',
+          licenseNumber: '9',
+          verification: 'email',
+        } as never),
+      ).rejects.toThrow('البريد الإلكتروني مطلوب');
+      expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
     });
   });
 });

@@ -4,7 +4,7 @@ import { getOtpRateLimitConfig } from '../../../core/otp-rate-limiter/otp-rate-l
 
 type ProviderType = typeof IdentityType.COMPANY | typeof IdentityType.OFFICE;
 
-/** A company/office signup waiting for its email code (no account yet). */
+/** A company/office signup waiting for its code (no account yet). */
 export interface PendingProviderRegistration {
   type: ProviderType;
   // The signup form, without the password
@@ -28,8 +28,9 @@ export class ProviderRegistrationPendingService {
     return getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
   }
 
-  private key(email: string) {
-    return email.trim().toLowerCase();
+  // By the email or the phone the code went to
+  private key(contact: string) {
+    return contact.trim().toLowerCase();
   }
 
   /** Holds a signup; returns the one it replaced (its uploads to remove). */
@@ -43,6 +44,12 @@ export class ProviderRegistrationPendingService {
       expiresAt: new Date(Date.now() + this.ttlMs()),
     });
     return previous;
+  }
+
+  /** Whether a live signup of this type waits for this contact's code. */
+  has(contact: string, type: ProviderType): boolean {
+    const entry = this.pending.get(this.key(contact));
+    return !!entry && entry.type === type && entry.expiresAt > new Date();
   }
 
   /** The signup for this email and type, once; null if none or expired. */

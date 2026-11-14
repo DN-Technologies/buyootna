@@ -33,7 +33,7 @@ const post = apiClient.post as jest.Mock;
 const FORM = {
   type: 'company',
   name: 'شركة البناء',
-  email: 'co@example.com',
+  identifier: 'co@example.com',
   password: 'password123',
   confirmPassword: 'password123',
   specialty: 'مكتب هندسي',
@@ -73,7 +73,7 @@ describe('useBusinessAuth › company sign-up ends with the emailed code', () =>
       specialty: 'مكتب هندسي',
       verification: 'email',
     });
-    expect(result.current.signupEmail).toBe('co@example.com');
+    expect(result.current.signupIdentifier).toBe('co@example.com');
   });
 
   it('the code completes the sign-up on …/verify', async () => {
@@ -207,6 +207,56 @@ describe('useBusinessAuth › company sign-up ends with the emailed code', () =>
       await act(async () => result.current.onSignupDone());
       expect(resetToIdentityHome).toHaveBeenCalledWith(null);
       expect(showAlert).toHaveBeenCalledWith('تم إنشاء الحساب', expect.any(String));
+    });
+  });
+
+  // QA: one «البريد الإلكتروني أو رقم الهاتف»; a phone gets the code by SMS
+  describe('signing up with a phone', () => {
+    const BY_PHONE = { ...(FORM as object), identifier: '55123456' } as never;
+
+    it('sends the phone with «verification: phone», and no email', async () => {
+      post.mockResolvedValueOnce({ data: { otpRequired: true } });
+      const { result } = await renderHook(() => useBusinessAuth());
+      await act(async () => {
+        await result.current.onSignupFinal(BY_PHONE);
+      });
+
+      const fields = sentFields(0);
+      expect(fields).toMatchObject({ phone: '55123456', verification: 'phone' });
+      expect(fields).not.toHaveProperty('email');
+      expect(result.current.signupIdentifier).toBe('55123456');
+    });
+
+    it('verifies with the phone and signs in with it', async () => {
+      post
+        .mockResolvedValueOnce({ data: { otpRequired: true } })
+        .mockResolvedValueOnce({ data: {} })
+        .mockResolvedValueOnce({
+          data: {
+            user: { id: 'u1' },
+            activeIdentity: { id: 'c1', type: 'COMPANY' },
+            identities: [],
+            access_token: 'tok',
+            sessionId: 's1',
+          },
+        });
+      const { result } = await renderHook(() => useBusinessAuth());
+      await act(async () => {
+        await result.current.onSignupFinal(BY_PHONE);
+      });
+      await act(async () => {
+        await result.current.onVerifySignupOtp('123456');
+      });
+
+      expect(post).toHaveBeenCalledWith('/users/register/company/verify', {
+        phone: '55123456',
+        otp: '123456',
+      });
+      expect(post).toHaveBeenLastCalledWith('/auth/login', {
+        identifier: '55123456',
+        password: 'password123',
+        identityType: 'COMPANY',
+      });
     });
   });
 });

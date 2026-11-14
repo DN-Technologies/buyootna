@@ -6,6 +6,8 @@ import {
 } from '@/shared/utils/businessName';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
+import { isEmailIdentifier, isPhoneIdentifier } from './authSchemas';
+
 export const companyLoginSchema = z.object({
   identifier: z
     .string({ message: 'هذا الحقل مطلوب' })
@@ -35,19 +37,18 @@ export function createCompanySignupSchema(includeAccountFields: boolean) {
       .trim()
       .min(2, 'الاسم قصير جداً')
       .regex(BUSINESS_NAME_PATTERN, BUSINESS_NAME_MESSAGE),
-    email: includeAccountFields
+    // One «البريد الإلكتروني أو رقم الهاتف», as an individual's sign-up (QA:
+    // two fields). An email gets the code by email, a phone by SMS
+    identifier: includeAccountFields
       ? z
-          .string({ message: 'البريد الإلكتروني مطلوب' })
-          .email('البريد الإلكتروني غير صالح')
+          .string({ message: 'هذا الحقل مطلوب' })
+          .trim()
+          .min(1, 'هذا الحقل مطلوب')
+          .refine(
+            (val) => isEmailIdentifier(val) || isPhoneIdentifier(val),
+            'أدخل بريد إلكتروني أو رقم هاتف كويتي صحيح',
+          )
       : z.string().optional(),
-    phone: z
-      .string()
-      .regex(
-        /^(?:\+?965)?[569]\d{7}$/,
-        'رقم الهاتف يجب أن يكون رقم كويتي صالح',
-      )
-      .optional()
-      .or(z.literal('')),
     password: includeAccountFields
       ? z
           .string({ message: 'كلمة المرور مطلوبة' })
@@ -107,7 +108,7 @@ export function getStep1Fields(
   includeAccountFields: boolean,
 ): (keyof CompanySignupFormValues)[] {
   return includeAccountFields
-    ? ['name', 'email', 'phone', 'password', 'confirmPassword']
+    ? ['name', 'identifier', 'password', 'confirmPassword']
     : ['name'];
 }
 export const STEP_2_FIELDS: (keyof CompanySignupFormValues)[] = [

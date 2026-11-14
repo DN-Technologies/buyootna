@@ -16,6 +16,7 @@ import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { type PickedImage, pickSquareImage } from '@/shared/utils/pickImage';
 import { AccountType } from '@/types';
 
+import { isPhoneIdentifier } from '../authSchemas';
 import { requireTermsAccepted } from '../terms';
 import { loginAs, signInAfterSignup } from '../utils/loginAs';
 
@@ -98,10 +99,9 @@ export function useBusinessAuth() {
 
     // 2. Append all text fields from React Hook Form
     formData.append('name', data.name);
-    formData.append('email', data.email || '');
-    if (data.phone) {
-      formData.append('phone', data.phone);
-    }
+    // «البريد الإلكتروني أو رقم الهاتف»: whichever was typed
+    const contact = signupContactOf(data);
+    formData.append(contact.channel, contact.value);
     formData.append('password', data.password || '');
     formData.append('services', data.services || '');
     formData.append('hqLocation', data.hqLocation || '');
@@ -135,14 +135,17 @@ export function useBusinessAuth() {
       } as any);
     }
 
-    // The account is made only once the emailed code is entered (QA)
-    formData.append('verification', 'email');
+    // The account is made only once the code is entered (QA): by email, or
+    // by SMS for a phone
+    formData.append('verification', contact.channel);
     return formData;
   };
 
-  // The form waiting for its code, and the email it went to
+  // The form waiting for its code, and the email or phone it went to
   const pendingSignupRef = useRef<CompanySignupFormValues | null>(null);
-  const [signupEmail, setSignupEmail] = useState('');
+  const [signupContact, setSignupContact] = useState<SignupContact | null>(
+    null,
+  );
 
   // «إنشاء حساب»: sends the form; the server emails a code and creates
   // nothing yet. 'otp' moves the form on to «تحقق من الرمز», its last step
@@ -156,7 +159,7 @@ export function useBusinessAuth() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       pendingSignupRef.current = data;
-      setSignupEmail(data.email || '');
+      setSignupContact(signupContactOf(data));
       return 'otp';
     } catch (error: any) {
       showAlert(
@@ -178,11 +181,15 @@ export function useBusinessAuth() {
   const onVerifySignupOtp = async (otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      await apiClient.post(`${endpoint}/verify`, { email: signupEmail, otp });
+      if (!signupContact) throw new Error('no signup waiting');
+      await apiClient.post(`${endpoint}/verify`, {
+        [signupContact.channel]: signupContact.value,
+        otp,
+      });
       const data = pendingSignupRef.current;
       signedInRef.current = data?.password
         ? await signInAfterSignup(
-            { identifier: signupEmail, password: data.password },
+            { identifier: signupContact.value, password: data.password },
             type === 'office' ? 'OFFICE' : 'COMPANY',
             setAuth,
           )
@@ -247,7 +254,8 @@ export function useBusinessAuth() {
     profileSheetRef,
     onLogin,
     onSignupFinal,
-    signupEmail,
+    // Where the code went, shown on «تحقق من الرمز»
+    signupIdentifier: signupContact?.value ?? '',
     onVerifySignupOtp,
     onSignupDone,
     onResendSignupOtp,
@@ -257,3 +265,17 @@ export function useBusinessAuth() {
 }
 
 export default useBusinessAuth;
+
+export interface SignupContact {
+  channel: 'email' | 'phone';
+  value: string;
+}
+
+/** The sign-up's email or phone, and so where its code goes. */
+export function signupContactOf(data: CompanySignupFormValues): SignupContact {
+  const value = (data.identifier ?? '').trim();
+  return {
+    channel: isPhoneIdentifier(value) ? 'phone' : 'email',
+    value,
+  };
+}

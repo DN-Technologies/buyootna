@@ -68,7 +68,25 @@ describe('company/office signup endpoints', () => {
     await call();
     expect(registration.completeProviderRegistration).toHaveBeenCalledWith(
       type,
-      'a@b.co',
+      { email: 'a@b.co', phone: undefined },
+      '1',
+    );
+  });
+
+  // One «البريد الإلكتروني أو رقم الهاتف»: the code may go by SMS
+  it('step 1 by phone goes ahead too', async () => {
+    await office.registerOffice(
+      { phone: '55123456', verification: 'phone' } as never,
+      {},
+    );
+    expect(registration.registerOffice).toHaveBeenCalled();
+  });
+
+  it('step 2 by phone passes the phone on', async () => {
+    await company.verifyCompanyRegistration({ phone: '55123456', otp: '1' });
+    expect(registration.completeProviderRegistration).toHaveBeenCalledWith(
+      'COMPANY',
+      { email: undefined, phone: '55123456' },
       '1',
     );
   });
