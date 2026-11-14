@@ -46,11 +46,13 @@ export function QuotePriceRangeFields({
         <Feather name="info" size={13} color="#94A3B8" />
       </View>
       <View className="flex-row gap-3">
+        {/* «من» first: the row runs right to left, so it sits on the right
+            and reads «من … الى» (QA: «الى» was on the right) */}
         <View className="flex-1">
           <BottomSheetTextInput
-            value={priceTo}
-            onChangeText={onPriceToChange}
-            placeholder="الى"
+            value={priceFrom}
+            onChangeText={onPriceFromChange}
+            placeholder="من"
             placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="numeric"
             returnKeyType="done"
@@ -61,9 +63,9 @@ export function QuotePriceRangeFields({
         </View>
         <View className="flex-1">
           <BottomSheetTextInput
-            value={priceFrom}
-            onChangeText={onPriceFromChange}
-            placeholder="من"
+            value={priceTo}
+            onChangeText={onPriceToChange}
+            placeholder="الى"
             placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="numeric"
             returnKeyType="done"
