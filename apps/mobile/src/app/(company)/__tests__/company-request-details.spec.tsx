@@ -143,6 +143,17 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     expect(getByText('قيد الانتظار')).toBeTruthy();
   });
 
+  // Owner: «الموقع» shows the area only; «الفروانية - …» ran into الميزانية
+  it('«الموقع» shows only the area of «المحافظة - المنطقة»', async () => {
+    mockDetails({ location: 'الفروانية - جنوب عبدالله المبارك' });
+    const { getByTestId } = await render(<CompanyRequestDetailsScreen />);
+
+    expect(getByTestId('request-details-location-val')).toHaveTextContent(
+      'جنوب عبدالله المبارك',
+      { exact: true },
+    );
+  });
+
   it('renders 2x2 key info grid with location, budget, publish time, and offer type', async () => {
     const { getByTestId, getByText } = await render(
       <CompanyRequestDetailsScreen />,
