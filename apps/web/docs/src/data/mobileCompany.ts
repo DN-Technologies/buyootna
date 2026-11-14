@@ -1386,5 +1386,26 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "fix/public-request-notifies-companies",
     },
+    {
+      id: "mobile-company-request-details-area",
+      title: {
+        en: "Request details: «الموقع» shows the area only",
+        ar: "تفاصيل الطلب: «الموقع» يعرض المنطقة فقط",
+      },
+      priority: "P2",
+      story: {
+        en: "On the company's «تفاصيل الطلب», «الموقع» shows the request's area alone (e.g. «جنوب عبدالله المبارك»), not «الفروانية - جنوب عبدالله المبارك». A location picked on the map, with no governorate, shows as it was. Long values in «الموقع» and «الميزانية» are cut with … inside their own half instead of running into each other.",
+        ar: "في «تفاصيل الطلب» لدى الشركة، يعرض «الموقع» منطقة الطلب وحدها (مثل «جنوب عبدالله المبارك») بدلاً من «الفروانية - جنوب عبدالله المبارك». والموقع المختار من الخريطة دون محافظة يُعرض كما كان. والقيم الطويلة في «الموقع» و«الميزانية» تُقص بـ… داخل نصفها بدلاً من أن تتداخل.",
+      },
+      acceptanceCriteria: {
+        en: ["A request with المحافظة «الفروانية» and المنطقة «جنوب عبدالله المبارك» shows «جنوب عبدالله المبارك» under الموقع.", "«الموقع» and «الميزانية» never overlap."],
+        ar: ["الطلب بمحافظة «الفروانية» ومنطقة «جنوب عبدالله المبارك» يعرض «جنوب عبدالله المبارك» تحت الموقع.", "لا يتداخل «الموقع» و«الميزانية»."],
+      },
+      testScenarios: {
+        en: ["As a company, open a request sent from «+» › طلب عرض سعر with a governorate and an area."],
+        ar: ["كشركة افتح طلباً مرسلاً من «+» › طلب عرض سعر بمحافظة ومنطقة."],
+      },
+      updatedIn: "fix/request-details-area-only",
+    },
   ],
 };
