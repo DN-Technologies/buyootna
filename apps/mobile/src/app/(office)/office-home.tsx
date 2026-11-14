@@ -201,7 +201,8 @@ export default function OfficeHomeScreen() {
                     <ContentContainer className="mt-6 px-4">
                       <OfficeSectionHeader
                         title="عقارات السوق"
-                        onPressAction={() => router.push('/search')}
+                        // The whole market, by deal type (Figma 4494:147645)
+                        onPressAction={() => router.push('/office-market')}
                       />
                     </ContentContainer>
                     <CardRow>
