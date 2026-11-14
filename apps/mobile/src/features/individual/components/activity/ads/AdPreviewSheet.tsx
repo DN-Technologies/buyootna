@@ -110,6 +110,14 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        // 85% is its only height. Dynamic sizing (on by default) added a
+        // snap point at the content's full height, past the screen's top,
+        // and over-drag stretched it further: dragging up slid the sheet
+        // under the status bar and Dynamic Island (QA). Past 85% a swipe
+        // scrolls the content instead
+        enableDynamicSizing={false}
+        enableOverDrag={false}
+        topInset={insets.top}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
