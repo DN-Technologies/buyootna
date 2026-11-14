@@ -492,5 +492,26 @@ export const mobileOffice: DocSection = {
       },
       updatedIn: "feat/offices",
     },
+    {
+      id: "mobile-office-market-screen",
+      title: {
+        en: "Office: «عقارات السوق», the market by بيع / ايجار / بدل",
+        ar: "المكتب: «عقارات السوق» حسب بيع / ايجار / بدل",
+      },
+      priority: "P1",
+      story: {
+        en: "On the office home, «عرض الكل» next to «عقارات السوق» opens the market screen (Figma 4494:147645 بيع, 4494:147837 ايجار, 4494:147888 بدل). Tabs بيع / ايجار / بدل each list other advertisers' ads (never the office's own), page by page, in the default order or the one picked in «الترتيب حسب». «المحافظة» then «المنطقة» narrow the list, and «تصفية البحث» opens the full filter (category, price, years for بدل). The list/photos toggle switches between the market card and the photo card. Each market card shows the price (or «السعر غير معلن») and «مميز» if featured, then the category, place and size; a sale with income adds «مدخول العقار», and an exchange adds «طلب <سنة> مع <سنة>». Its buttons are «عرض تفاصيل» (the ad), «اقتراح لعميل» (shows «قريباً» until its flow is designed), share, and the heart (favorites).",
+        ar: "في الصفحة الرئيسية للمكتب، يفتح «عرض الكل» بجانب «عقارات السوق» شاشة السوق. تعرض تبويبات بيع / ايجار / بدل إعلانات المعلنين الآخرين (دون إعلانات المكتب نفسه) صفحة بعد صفحة، بالترتيب الافتراضي أو المختار في «الترتيب حسب». ويُضيّق «المحافظة» ثم «المنطقة» القائمة، ويفتح «تصفية البحث» التصفية الكاملة (الفئة والسعر والسنوات للبدل). ويبدّل زر العرض بين بطاقة السوق وبطاقة الصور. وتعرض كل بطاقة السعر (أو «السعر غير معلن») و«مميز» للمميز، ثم الفئة والموقع والمساحة، ويضيف البيع ذو الدخل «مدخول العقار»، والبدل «طلب <سنة> مع <سنة>». وأزرارها «عرض تفاصيل» (الإعلان) و«اقتراح لعميل» (يظهر «قريباً» حتى يُصمَّم مساره) والمشاركة والقلب (المفضلة).",
+      },
+      acceptanceCriteria: {
+        en: ["«عرض الكل» on the home's «عقارات السوق» opens the screen on بيع.", "Each tab lists its deal type only, without the office's own ads.", "Picking المحافظة then المنطقة narrows the list; المنطقة is off until a governorate is picked.", "The photos toggle shows photo cards; the list toggle the market cards.", "«عرض تفاصيل» opens the ad; «اقتراح لعميل» shows «قريباً»; the heart saves it."],
+        ar: ["«عرض الكل» في «عقارات السوق» بالرئيسية يفتح الشاشة على بيع.", "كل تبويب يعرض نوعه فقط، دون إعلانات المكتب.", "اختيار المحافظة ثم المنطقة يُضيّق القائمة، والمنطقة معطلة حتى اختيار محافظة.", "زر الصور يعرض بطاقات الصور، وزر القائمة بطاقات السوق.", "«عرض تفاصيل» يفتح الإعلان، و«اقتراح لعميل» يظهر «قريباً»، والقلب يحفظه."],
+      },
+      testScenarios: {
+        en: ["As an office, open home › عقارات السوق › عرض الكل; switch بيع / ايجار / بدل.", "Pick a governorate and an area; open تصفية البحث and set a price.", "Tap «عرض تفاصيل», «اقتراح لعميل», share and the heart on a card."],
+        ar: ["كمكتب افتح الرئيسية › عقارات السوق › عرض الكل وبدّل بين بيع / ايجار / بدل.", "اختر محافظة ومنطقة، وافتح تصفية البحث وحدد سعراً.", "اضغط «عرض تفاصيل» و«اقتراح لعميل» والمشاركة والقلب في بطاقة."],
+      },
+      updatedIn: "feat/office-market-screen",
+    },
   ],
 };

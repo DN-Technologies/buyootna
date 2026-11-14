@@ -34,6 +34,8 @@ interface HomeFilterSheetProps {
   onApply: (tab: HomeFilterTab, filters: HomeFilters) => void;
   // إعادة التعيين: that tab's list unfiltered again
   onReset: (tab: HomeFilterTab) => void;
+  // The tabs offered (all by default): عقارات السوق has no مكاتب
+  tabs?: HomeFilterTab[];
 }
 
 const LABEL = 'font-cairo-medium text-[14px] leading-[21px] text-[#111111]';
@@ -171,7 +173,7 @@ function NumberField({
  * only (the offices list filters by place). Each tab keeps its own filters.
  */
 const HomeFilterSheet = forwardRef<BottomSheetModal, HomeFilterSheetProps>(
-  ({ initialTab, applied, onApply, onReset }, ref) => {
+  ({ initialTab, applied, onApply, onReset, tabs }, ref) => {
     const insets = useSafeAreaInsets();
     const snapPoints = useMemo(() => ['88%'], []);
     const [tab, setTab] = useState<HomeFilterTab>(initialTab);
@@ -309,7 +311,9 @@ const HomeFilterSheet = forwardRef<BottomSheetModal, HomeFilterSheetProps>(
 
           {/* بيع / ايجار / بدل / مكاتب */}
           <View className="mt-[2px] flex-row border-b border-[#EBECEE] px-[16px]">
-            {HOME_FILTER_TABS.map((option) => {
+            {HOME_FILTER_TABS.filter(
+              (option) => !tabs || tabs.includes(option.id),
+            ).map((option) => {
               const active = option.id === tab;
               return (
                 <TouchableOpacity
