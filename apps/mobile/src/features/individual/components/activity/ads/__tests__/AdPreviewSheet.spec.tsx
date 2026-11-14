@@ -10,13 +10,16 @@ beforeEach(() => {
   renderedImages.length = 0;
 });
 
+// The sheet's props, as last rendered
+let mockSheetProps: Record<string, unknown> = {};
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = require('react');
   const MockBottomSheetModal = React.forwardRef(
     function MockBottomSheetModal(
-      { children }: { children: React.ReactNode },
+      { children, ...props }: { children: React.ReactNode },
       _ref: any,
     ) {
+      mockSheetProps = props;
       return <>{children}</>;
     },
   );
@@ -34,6 +37,18 @@ jest.mock('@gorhom/bottom-sheet', () => {
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 
 describe('AdPreviewSheet', () => {
+  // QA: dragging up slid the sheet under the status bar and Dynamic Island
+  it('stops at 85%, below the status bar, however far it is dragged', async () => {
+    await render(<AdPreviewSheet property={makeActivityItem()} />);
+
+    expect(mockSheetProps).toMatchObject({
+      snapPoints: ['85%'],
+      enableDynamicSizing: false,
+      enableOverDrag: false,
+    });
+    expect(typeof mockSheetProps.topInset).toBe('number');
+  });
+
   it('shows every uploaded image, in order', async () => {
     await render(
       <AdPreviewSheet property={makeActivityItem()} />,
